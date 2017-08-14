@@ -1,0 +1,28 @@
+plugins {
+  id 'groovy'
+  id 'java-gradle-plugin'
+  id 'maven'
+}
+
+group = 'org.jetbrains.gradle.plugin'
+version = '0.1-SNAPSHOT'
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  testCompile('org.spockframework:spock-core:1.1-groovy-2.4') {
+    exclude module: 'groovy-all'
+  }
+}
+
+
+gradlePlugin {
+  plugins {
+    ideaExtPlugin {
+      id = "org.jetbrains.gradle.plugin.idea-ext"
+      implementationClass = "org.jetbrains.gradle.ext.IdeaExtPlugin"
+    }
+  }
+}
