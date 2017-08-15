@@ -86,4 +86,48 @@ class IdeaModelExtensionFunctionalTest extends Specification {
     // result.output.contains("p1")
     result.task(":projects").outcome == TaskOutcome.SUCCESS
   }
+
+    def "gradle project api can be used for the settings construction"() {
+        given:
+        buildFile << """
+          plugins {
+              id 'org.jetbrains.gradle.plugin.idea-ext'
+          }
+          
+          idea {
+            project {
+              settings {
+                  runManager {
+                      configuration(name: 'App', type: 'Application') {
+                          mainClass 'foo.App'
+                          workingDirectory "\$projectDir"
+                          moduleName "\$idea.module.name" 
+                      }
+                  }
+              }
+            }
+          }
+          
+          task printSettings {
+            doLast {
+              println project.projectDir
+              println project.idea.module.name
+              println project.idea.project.settings
+            }
+          }
+        """
+        when:
+        def result = GradleRunner.create()
+                .withProjectDir(testProjectDir.root)
+                .withArguments("printSettings", "-q")
+                .withPluginClasspath()
+                .build()
+        then:
+        def lines = result.output.readLines()
+        def projectDir = lines[0]
+        def moduleName = lines[1]
+        lines[2] == '{"runManager":{"configuration":[{"name":"App","type":"Application"},{"mainClass":"foo.App",' +
+                '"workingDirectory":"' + projectDir + '","moduleName":"' + moduleName + '"}]}}'
+        result.task(":printSettings").outcome == TaskOutcome.SUCCESS
+    }
 }
