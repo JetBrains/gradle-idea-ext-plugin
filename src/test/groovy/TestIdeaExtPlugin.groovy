@@ -31,14 +31,18 @@ class IdeaModelExtensionFunctionalTest extends Specification {
         }
         module {
           settings {
-           facetManager {
-              facet(type: "Spring", name: "Spring") {
+           facets {
+              spring {
                   descriptorXml 'file.xml'
+                  priority 1
+                  flag false
               }
             }
           }
         }
       }
+      
+      idea.module.settings.facets.spring.priority = 2
       
       task printSettings {
         doLast {
@@ -55,7 +59,7 @@ class IdeaModelExtensionFunctionalTest extends Specification {
             .build()
     then:
     result.output.contains('{"compiler":{"resourcePatterns":"!*.java;!*.class"}}')
-    result.output.contains('{"facetManager":{"facet":[{"type":"Spring","name":"Spring"},{"descriptorXml":"file.xml"}]}}')
+    result.output.contains('{"facets":{"spring":{"descriptorXml":"file.xml","priority":2,"flag":false}}}')
     result.task(":printSettings").outcome == TaskOutcome.SUCCESS
   }
 
