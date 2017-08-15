@@ -14,7 +14,9 @@ class IdeaExtPlugin implements Plugin<Project> {
     def ideaModel = project.extensions.findByName('idea') as ExtensionAware
     if (!ideaModel) { return }
 
-    (ideaModel.project as ExtensionAware).extensions.create("settings", DynamicSettings)
+    if (ideaModel.project) {
+      (ideaModel.project as ExtensionAware).extensions.create("settings", DynamicSettings)
+    }
     (ideaModel.module as ExtensionAware).extensions.create("settings", DynamicSettings)
   }
 }
