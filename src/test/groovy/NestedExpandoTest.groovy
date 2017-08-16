@@ -14,11 +14,11 @@ class NestedExpandoTest extends Specification {
     when:
     obj.configure {
       k1 "v1"
-      k2 "v2"
+      k2 "v2","v3"
     }
 
     then:
-    JsonOutput.toJson(obj) == '{"k1":"v1","k2":"v2"}'
+    JsonOutput.toJson(obj) == '{"k1":"v1","k2":["v2","v3"]}'
   }
 
   def "nested object properly created"() {

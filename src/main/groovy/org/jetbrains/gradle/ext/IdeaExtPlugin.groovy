@@ -86,7 +86,7 @@ class NestedExpando extends Expando implements Configurable<NestedExpando>  {
   Object invokeMethod(String name, Object args) {
     if (args instanceof Object[] && args.length == 1 && args[0] instanceof Closure) {
       def nested = new NestedExpando()
-      ConfigureUtil.configure(args[0] as Closure, nested)
+      nested.configure(args[0] as Closure)
       setProperty(name, nested)
       return nested
     } else if (args instanceof Object[] && args.length == 1) {
