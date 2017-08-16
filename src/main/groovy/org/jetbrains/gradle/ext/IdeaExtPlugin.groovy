@@ -19,23 +19,38 @@ class IdeaExtPlugin implements Plugin<Project> {
     if (!ideaModel) { return }
 
     if (ideaModel.project) {
-      (ideaModel.project as ExtensionAware).extensions.create("settings", ProjectSettings)
+      def projectSettings = (ideaModel.project as ExtensionAware).extensions.create("settings", ProjectSettings) as ProjectSettings
+      projectSettings.runConfigurations = project.container(NamedSettings)
     }
+
     def moduleSettings = (ideaModel.module as ExtensionAware).extensions.create("settings", ModuleSettings) as ModuleSettings
     moduleSettings.facets = project.container(NamedSettings)
   }
 }
 
 class ProjectSettings {
-
-  NestedExpando compiler = new NestedExpando()
+  NestedExpando compiler
+  NamedDomainObjectContainer<NamedSettings> runConfigurations
 
   def compiler(final Closure configureClosure) {
+    if (compiler == null) {
+      compiler = new NestedExpando()
+    }
     ConfigureUtil.configure(configureClosure, compiler)
   }
 
+  def runConfigurations(final Closure configureClosure) {
+    runConfigurations.configure(configureClosure)
+  }
+
   String toString() {
-    def map  = ["compiler" : compiler]
+    def map  = [:]
+    if (compiler != null) {
+      map["compiler"] = compiler
+    }
+    if (!runConfigurations.isEmpty()) {
+      map["runConfigurations"] = runConfigurations.asMap
+    }
     return JsonOutput.toJson(map)
   }
 }
@@ -56,6 +71,7 @@ class ModuleSettings {
 
 
 class NestedExpando extends Expando implements Configurable<NestedExpando>  {
+
 
   @Override
   NestedExpando configure(Closure closure) {
@@ -79,6 +95,16 @@ class NestedExpando extends Expando implements Configurable<NestedExpando>  {
     } else {
       setProperty(name, args)
       return args
+    }
+  }
+
+  @Override
+  Object getProperty(String property) {
+    Object result = super.getProperty(property)
+    if (result != null) {
+      return result
+    } else {
+      throw new MissingPropertyException(property, NestedExpando)
     }
   }
 

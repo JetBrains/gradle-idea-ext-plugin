@@ -1,3 +1,4 @@
+import groovy.json.JsonOutput
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Rule
@@ -101,11 +102,16 @@ class IdeaModelExtensionFunctionalTest extends Specification {
           idea {
             project {
               settings {
-                  runManager {
-                      configuration(name: 'App', type: 'Application') {
+                  runConfigurations {
+                      App {
+                          type 'Application'
                           mainClass 'foo.App'
                           workingDirectory "\$projectDir"
                           moduleName "\$idea.module.name" 
+                      }
+                      DoTest {
+                          type 'JUnit'
+                          className 'my.test.className'
                       }
                   }
               }
@@ -130,8 +136,11 @@ class IdeaModelExtensionFunctionalTest extends Specification {
         def lines = result.output.readLines()
         def projectDir = lines[0]
         def moduleName = lines[1]
-        lines[2] == '{"runManager":{"configuration":[{"name":"App","type":"Application"},{"mainClass":"foo.App",' +
-                '"workingDirectory":"' + projectDir + '","moduleName":"' + moduleName + '"}]}}'
+        lines[2] == '{"runConfigurations":{' +
+                '"App":{"type":"Application","mainClass":"foo.App",' +
+                '"workingDirectory":' + JsonOutput.toJson(projectDir) + ',"moduleName":' + JsonOutput.toJson(moduleName) + '},' +
+                '"DoTest":{"type":"JUnit","className":"my.test.className"}' +
+                '}}'
         result.task(":printSettings").outcome == TaskOutcome.SUCCESS
     }
 }
