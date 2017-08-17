@@ -19,18 +19,20 @@ class IdeaExtPlugin implements Plugin<Project> {
     if (!ideaModel) { return }
 
     if (ideaModel.project) {
-      def projectSettings = (ideaModel.project as ExtensionAware).extensions.create("settings", ProjectSettings) as ProjectSettings
-      projectSettings.runConfigurations = project.container(NamedSettings)
+      (ideaModel.project as ExtensionAware).extensions.create("settings", ProjectSettings, project)
     }
 
-    def moduleSettings = (ideaModel.module as ExtensionAware).extensions.create("settings", ModuleSettings) as ModuleSettings
-    moduleSettings.facets = project.container(NamedSettings)
+    (ideaModel.module as ExtensionAware).extensions.create("settings", ModuleSettings, project)
   }
 }
 
 class ProjectSettings {
   NestedExpando compiler
   NamedDomainObjectContainer<NamedSettings> runConfigurations
+
+  ProjectSettings(Project project) {
+    runConfigurations = project.container(NamedSettings)
+  }
 
   def compiler(final Closure configureClosure) {
     if (compiler == null) {
@@ -57,6 +59,10 @@ class ProjectSettings {
 
 class ModuleSettings {
   NamedDomainObjectContainer<NamedSettings> facets
+
+  ModuleSettings(Project project) {
+    facets = project.container(NamedSettings)
+  }
 
   def facets(final Closure configureClosure) {
     facets.configure(configureClosure)
