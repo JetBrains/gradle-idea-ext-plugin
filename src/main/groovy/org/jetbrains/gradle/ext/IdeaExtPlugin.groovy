@@ -58,18 +58,31 @@ class ProjectSettings {
 
 class ModuleSettings {
   NamedDomainObjectContainer<NamedSettings> facets
+  NamedDomainObjectContainer<NamedSettings> runConfigurations
 
   ModuleSettings(Project project) {
     facets = project.container(NamedSettings)
+    runConfigurations = project.container(NamedSettings)
   }
 
   def facets(final Closure configureClosure) {
     facets.configure(configureClosure)
   }
 
+  def runConfigurations(final Closure configureClosure) {
+    runConfigurations.configure(configureClosure)
+  }
+
   @Override
   String toString() {
-    def map = ["facets": facets.asMap]
+    def map = [:]
+    if (!facets.isEmpty()) {
+      map["facets"] = facets.asMap
+    }
+
+    if (!runConfigurations.isEmpty()) {
+      map["runConfigurations"] = runConfigurations.asMap
+    }
     return JsonOutput.toJson(map)
   }
 }

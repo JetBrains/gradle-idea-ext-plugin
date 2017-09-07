@@ -100,14 +100,19 @@ class IdeaModelExtensionFunctionalTest extends Specification {
           }
           
           idea {
-            project {
+            module {
               settings {
+                  facets {
+                      SomeFacet {
+                        type 'unknown'
+                        moduleName "\$idea.module.name"
+                      }
+                  }
                   runConfigurations {
                       App {
                           type 'Application'
                           mainClass 'foo.App'
-                          workingDirectory "\$projectDir"
-                          moduleName "\$idea.module.name" 
+                          workingDirectory "\$projectDir" 
                       }
                       DoTest {
                           type 'JUnit'
@@ -122,7 +127,7 @@ class IdeaModelExtensionFunctionalTest extends Specification {
             doLast {
               println project.projectDir
               println project.idea.module.name
-              println project.idea.project.settings
+              println project.idea.module.settings
             }
           }
         """
@@ -136,9 +141,10 @@ class IdeaModelExtensionFunctionalTest extends Specification {
         def lines = result.output.readLines()
         def projectDir = lines[0]
         def moduleName = lines[1]
-        lines[2] == '{"runConfigurations":{' +
+        lines[2] == '{"facets":{"SomeFacet":{"type":"unknown","moduleName":' + JsonOutput.toJson(moduleName)+ '}},' +
+                '"runConfigurations":{' +
                 '"App":{"type":"Application","mainClass":"foo.App",' +
-                '"workingDirectory":' + JsonOutput.toJson(projectDir) + ',"moduleName":' + JsonOutput.toJson(moduleName) + '},' +
+                '"workingDirectory":' + JsonOutput.toJson(projectDir) + '},' +
                 '"DoTest":{"type":"JUnit","className":"my.test.className"}' +
                 '}}'
         result.task(":printSettings").outcome == TaskOutcome.SUCCESS
