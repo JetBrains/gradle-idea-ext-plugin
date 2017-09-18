@@ -27,6 +27,7 @@ class IdeaExtPlugin implements Plugin<Project> {
 
 class ProjectSettings {
   NestedExpando compiler
+  NestedExpando codeStyle
   NamedDomainObjectContainer<NamedSettings> runConfigurations
 
   ProjectSettings(Project project) {
@@ -42,6 +43,13 @@ class ProjectSettings {
 
   def runConfigurations(final Closure configureClosure) {
     runConfigurations.configure(configureClosure)
+  }
+
+  def codeStyle(final Closure configureClosure) {
+    if (codeStyle == null) {
+      codeStyle = new NestedExpando()
+    }
+    ConfigureUtil.configure(configureClosure, codeStyle)
   }
 
   String toString() {

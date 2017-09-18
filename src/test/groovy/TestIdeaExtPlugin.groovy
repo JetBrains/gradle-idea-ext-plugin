@@ -28,6 +28,9 @@ class IdeaModelExtensionFunctionalTest extends Specification {
             compiler {
               resourcePatterns '!*.java;!*.class'
             }
+            codeStyle {
+              indent 'tabs'
+            }
           }
         }
         module {
