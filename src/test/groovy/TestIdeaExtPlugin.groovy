@@ -62,7 +62,7 @@ class IdeaModelExtensionFunctionalTest extends Specification {
             .withPluginClasspath()
             .build()
     then:
-    result.output.contains('{"compiler":{"resourcePatterns":"!*.java;!*.class"}}')
+    result.output.contains('{"compiler":{"resourcePatterns":"!*.java;!*.class"},"codeStyle":{"indent":"tabs"}}')
     result.output.contains('{"facets":{"spring":{"descriptorXml":"file.xml","priority":2,"flag":false}}}')
     result.task(":printSettings").outcome == TaskOutcome.SUCCESS
   }

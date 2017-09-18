@@ -60,6 +60,9 @@ class ProjectSettings {
     if (!runConfigurations.isEmpty()) {
       map["runConfigurations"] = runConfigurations.asMap
     }
+    if (codeStyle != null) {
+      map["codeStyle"] = codeStyle
+    }
     return JsonOutput.toJson(map)
   }
 }
