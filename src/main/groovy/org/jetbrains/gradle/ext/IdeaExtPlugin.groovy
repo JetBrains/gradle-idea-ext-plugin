@@ -28,6 +28,7 @@ class IdeaExtPlugin implements Plugin<Project> {
 class ProjectSettings {
   NestedExpando compiler
   NestedExpando codeStyle
+  NestedExpando inspections
   NamedDomainObjectContainer<NamedSettings> runConfigurations
 
   ProjectSettings(Project project) {
@@ -52,6 +53,13 @@ class ProjectSettings {
     ConfigureUtil.configure(configureClosure, codeStyle)
   }
 
+  def inspections(final Closure configureClosure) {
+    if (inspections == null) {
+      inspections = new NestedExpando()
+    }
+    ConfigureUtil.configure(configureClosure, inspections)
+  }
+
   String toString() {
     def map  = [:]
     if (compiler != null) {
@@ -62,6 +70,9 @@ class ProjectSettings {
     }
     if (codeStyle != null) {
       map["codeStyle"] = codeStyle
+    }
+    if (inspections != null) {
+      map["inspections"] = inspections
     }
     return JsonOutput.toJson(map)
   }
