@@ -1,9 +1,11 @@
 package org.jetbrains.gradle.ext
 
 import groovy.json.JsonOutput
+import org.gradle.api.Action
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.util.ConfigureUtil
 
@@ -26,20 +28,23 @@ class IdeaExtPlugin implements Plugin<Project> {
 }
 
 class ProjectSettings {
-  NestedExpando compiler
+  IdeaCompilerConfiguration compilerConfig
+  ObjectFactory objectFactory
+
   NestedExpando codeStyle
   NestedExpando inspections
   NamedDomainObjectContainer<NamedSettings> runConfigurations
 
   ProjectSettings(Project project) {
     runConfigurations = project.container(NamedSettings)
+    objectFactory = project.objects
   }
 
-  def compiler(final Closure configureClosure) {
-    if (compiler == null) {
-      compiler = new NestedExpando()
+  void compiler(Action<IdeaCompilerConfiguration> action) {
+    if (compilerConfig == null) {
+      compilerConfig = objectFactory.newInstance(IdeaCompilerConfiguration)
     }
-    ConfigureUtil.configure(configureClosure, compiler)
+    action.execute(compilerConfig)
   }
 
   def runConfigurations(final Closure configureClosure) {
@@ -62,18 +67,23 @@ class ProjectSettings {
 
   String toString() {
     def map  = [:]
-    if (compiler != null) {
-      map["compiler"] = compiler
+
+    if (compilerConfig != null) {
+      map["compiler"] = compilerConfig.toMap()
     }
+
     if (!runConfigurations.isEmpty()) {
       map["runConfigurations"] = runConfigurations.asMap
     }
+
     if (codeStyle != null) {
       map["codeStyle"] = codeStyle
     }
+
     if (inspections != null) {
       map["inspections"] = inspections
     }
+
     return JsonOutput.toJson(map)
   }
 }
