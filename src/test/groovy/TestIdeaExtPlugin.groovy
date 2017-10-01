@@ -103,6 +103,8 @@ class IdeaModelExtensionFunctionalTest extends Specification {
     def "gradle project api can be used for the settings construction"() {
         given:
         buildFile << """
+          import org.jetbrains.gradle.ext.runConfigurations.*
+          
           plugins {
               id 'org.jetbrains.gradle.plugin.idea-ext'
           }
@@ -117,14 +119,12 @@ class IdeaModelExtensionFunctionalTest extends Specification {
                       }
                   }
                   runConfigurations {
-                      App {
-                          type 'Application'
-                          mainClass 'foo.App'
-                          workingDirectory "\$projectDir" 
+                      create('App', Application) { o ->
+                          o.mainClass = 'foo.App'
+                          o.workingDirectory = "\$projectDir" 
                       }
-                      DoTest {
-                          type 'JUnit'
-                          className 'my.test.className'
+                      create('DoTest', JUnit) { o ->
+                          o.className = 'my.test.className'
                       }
                   }
               }
@@ -151,9 +151,9 @@ class IdeaModelExtensionFunctionalTest extends Specification {
         def moduleName = lines[1]
         lines[2] == '{"facets":{"SomeFacet":{"type":"unknown","moduleName":' + JsonOutput.toJson(moduleName)+ '}},' +
                 '"runConfigurations":{' +
-                '"App":{"type":"Application","mainClass":"foo.App",' +
-                '"workingDirectory":' + JsonOutput.toJson(projectDir) + '},' +
-                '"DoTest":{"type":"JUnit","className":"my.test.className"}' +
+                '"App":{"type":"Application",' +
+                '"workingDirectory":' + JsonOutput.toJson(projectDir) + ',"mainClass":"foo.App","name":"App"},' +
+                '"DoTest":{"type":"JUnit","className":"my.test.className","name":"DoTest"}' +
                 '}}'
         result.task(":printSettings").outcome == TaskOutcome.SUCCESS
     }

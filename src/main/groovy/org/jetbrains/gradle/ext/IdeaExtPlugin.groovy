@@ -1,13 +1,15 @@
 package org.jetbrains.gradle.ext
 
 import groovy.json.JsonOutput
-import org.gradle.api.Action
-import org.gradle.api.NamedDomainObjectContainer
-import org.gradle.api.Plugin
-import org.gradle.api.Project
+import org.gradle.api.*
+import org.gradle.api.internal.DefaultPolymorphicDomainObjectContainer
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.plugins.ExtensionAware
+import org.gradle.internal.reflect.Instantiator
 import org.gradle.util.ConfigureUtil
+import org.jetbrains.gradle.ext.runConfigurations.Application
+import org.jetbrains.gradle.ext.runConfigurations.JUnit
+import org.jetbrains.gradle.ext.runConfigurations.RunConfiguration
 
 class IdeaExtPlugin implements Plugin<Project> {
   void apply(Project p) {
@@ -33,10 +35,8 @@ class ProjectSettings {
 
   NestedExpando codeStyle
   NestedExpando inspections
-  NamedDomainObjectContainer<NamedSettings> runConfigurations
 
   ProjectSettings(Project project) {
-    runConfigurations = project.container(NamedSettings)
     objectFactory = project.objects
   }
 
@@ -45,10 +45,6 @@ class ProjectSettings {
       compilerConfig = objectFactory.newInstance(IdeaCompilerConfiguration)
     }
     action.execute(compilerConfig)
-  }
-
-  def runConfigurations(final Closure configureClosure) {
-    runConfigurations.configure(configureClosure)
   }
 
   def codeStyle(final Closure configureClosure) {
@@ -72,10 +68,6 @@ class ProjectSettings {
       map["compiler"] = compilerConfig.toMap()
     }
 
-    if (!runConfigurations.isEmpty()) {
-      map["runConfigurations"] = runConfigurations.asMap
-    }
-
     if (codeStyle != null) {
       map["codeStyle"] = codeStyle
     }
@@ -90,11 +82,21 @@ class ProjectSettings {
 
 class ModuleSettings {
   NamedDomainObjectContainer<NamedSettings> facets
-  NamedDomainObjectContainer<NamedSettings> runConfigurations
+  PolymorphicDomainObjectContainer<RunConfiguration> runConfigurations
 
   ModuleSettings(Project project) {
     facets = project.container(NamedSettings)
-    runConfigurations = project.container(NamedSettings)
+    Instantiator instantiator = project.getServices().get(Instantiator.class);
+    runConfigurations = new DefaultPolymorphicDomainObjectContainer<>(RunConfiguration.class, instantiator, new Namer<RunConfiguration>() {
+      @Override
+      String determineName(RunConfiguration runConfiguration) {
+        project.logger.warn("Calling get name for $runConfiguration. Result will be $runConfiguration.name")
+        return runConfiguration.name
+      }
+    })
+
+    runConfigurations.registerFactory(Application) { new Application(it) }
+    runConfigurations.registerFactory(JUnit) { new JUnit(it) }
   }
 
   def facets(final Closure configureClosure) {
