@@ -90,7 +90,6 @@ class ModuleSettings {
     runConfigurations = instantiator.newInstance(DefaultPolymorphicDomainObjectContainer, RunConfiguration.class, instantiator,  new Namer<RunConfiguration>() {
       @Override
       String determineName(RunConfiguration runConfiguration) {
-        project.logger.warn("Calling get name for $runConfiguration. Result will be $runConfiguration.name")
         return runConfiguration.name
       }
     })
