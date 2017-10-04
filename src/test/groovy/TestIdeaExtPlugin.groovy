@@ -151,9 +151,9 @@ class IdeaModelExtensionFunctionalTest extends Specification {
         def moduleName = lines[1]
         lines[2] == '{"facets":{"SomeFacet":{"type":"unknown","moduleName":' + JsonOutput.toJson(moduleName)+ '}},' +
                 '"runConfigurations":{' +
-                '"App":{"type":"Application",' +
+                '"App":{"type":"application",' +
                 '"workingDirectory":' + JsonOutput.toJson(projectDir) + ',"mainClass":"foo.App","name":"App"},' +
-                '"DoTest":{"type":"JUnit","className":"my.test.className","name":"DoTest"}' +
+                '"DoTest":{"type":"junit","className":"my.test.className","name":"DoTest"}' +
                 '}}'
         result.task(":printSettings").outcome == TaskOutcome.SUCCESS
     }
