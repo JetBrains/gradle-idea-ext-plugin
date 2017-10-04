@@ -87,7 +87,7 @@ class ModuleSettings {
   ModuleSettings(Project project) {
     facets = project.container(NamedSettings)
     Instantiator instantiator = project.getServices().get(Instantiator.class);
-    runConfigurations = new DefaultPolymorphicDomainObjectContainer<>(RunConfiguration.class, instantiator, new Namer<RunConfiguration>() {
+    runConfigurations = instantiator.newInstance(DefaultPolymorphicDomainObjectContainer, RunConfiguration.class, instantiator,  new Namer<RunConfiguration>() {
       @Override
       String determineName(RunConfiguration runConfiguration) {
         project.logger.warn("Calling get name for $runConfiguration. Result will be $runConfiguration.name")

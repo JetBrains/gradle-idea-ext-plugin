@@ -119,12 +119,12 @@ class IdeaModelExtensionFunctionalTest extends Specification {
                       }
                   }
                   runConfigurations {
-                      create('App', Application) { o ->
-                          o.mainClass = 'foo.App'
-                          o.workingDirectory = "\$projectDir" 
+                      create('App', Application) {
+                          mainClass = 'foo.App'
+                          workingDirectory = "\$projectDir" 
                       }
-                      create('DoTest', JUnit) { o ->
-                          o.className = 'my.test.className'
+                      create('DoTest', JUnit) {
+                          className = 'my.test.className'
                       }
                   }
               }
