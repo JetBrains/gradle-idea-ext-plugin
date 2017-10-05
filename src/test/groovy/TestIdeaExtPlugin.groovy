@@ -14,7 +14,7 @@ class IdeaModelExtensionFunctionalTest extends Specification {
     buildFile = testProjectDir.newFile('build.gradle')
   }
 
-  def "idea extension plugin exposes settings as Json"() {
+  def "test project settings"() {
     given:
     // language=groovy
     buildFile << """import org.jetbrains.gradle.ext.facets.SpringFacet
@@ -36,32 +36,12 @@ class IdeaModelExtensionFunctionalTest extends Specification {
             }
           }
         }
-        module {
-          settings {
-           facets {
-              create('spring', SpringFacet) {
-                contexts {
-                  p1 {
-                    file = 'spring_parent.xml'
-                  }
-                  
-                  p2 {
-                    file = 'spring_child.xml'
-                    parent = 'p1'
-                  }
-                }
-              }
-            }
-          }
-        }
       }
       
-      idea.module.settings.facets.spring.contexts.p2.file = 'spring_new_child.xml'
       
       task printSettings {
         doLast {
           println(project.idea.project.settings)
-          println(project.idea.module.settings)
         }
       }
     """
@@ -75,9 +55,6 @@ class IdeaModelExtensionFunctionalTest extends Specification {
     result.output.contains('{"compiler":{"resourcePatterns":"!*.java;!*.class"},' +
             '"codeStyle":{"indent":"tabs"},' +
             '"inspections":{"name":"value"}}')
-    result.output.contains('{"facets":{"spring":{"type":"spring","contexts":' +
-            '[{"file":"spring_parent.xml","name":"p1","parent":null},' +
-            '{"file":"spring_new_child.xml","name":"p2","parent":"p1"}],"name":"spring"}}}')
     result.task(":printSettings").outcome == TaskOutcome.SUCCESS
   }
 
@@ -109,10 +86,11 @@ class IdeaModelExtensionFunctionalTest extends Specification {
     result.task(":projects").outcome == TaskOutcome.SUCCESS
   }
 
-    def "gradle project api can be used for the settings construction"() {
+    def "test module settings"() {
         given:
         buildFile << """
           import org.jetbrains.gradle.ext.runConfigurations.*
+          import org.jetbrains.gradle.ext.facets.*
           
           plugins {
               id 'org.jetbrains.gradle.plugin.idea-ext'
@@ -130,9 +108,25 @@ class IdeaModelExtensionFunctionalTest extends Specification {
                           className = 'my.test.className'
                       }
                   }
+                  facets {
+                      create('spring', SpringFacet) {
+                        contexts {
+                          p1 {
+                            file = 'spring_parent.xml'
+                          }
+                          
+                          p2 {
+                            file = 'spring_child.xml'
+                            parent = 'p1'
+                          }
+                        }
+                      }
+                    }
               }
             }
           }
+
+          idea.module.settings.facets.spring.contexts.p2.file = 'spring_new_child.xml'
           
           task printSettings {
             doLast {
@@ -150,11 +144,14 @@ class IdeaModelExtensionFunctionalTest extends Specification {
         then:
         def lines = result.output.readLines()
         def projectDir = lines[0]
-        lines[1] == '{"runConfigurations":{' +
-                '"App":{"type":"application",' +
+        lines[1] == '{"facets":{"spring":{"type":"spring","contexts":' +
+                '[{"file":"spring_parent.xml","name":"p1","parent":null},' +
+                '{"file":"spring_new_child.xml","name":"p2","parent":"p1"}],"name":"spring"}},' +
+                '"runConfigurations":{"App":{"type":"application",' +
                 '"workingDirectory":' + JsonOutput.toJson(projectDir) + ',"mainClass":"foo.App","name":"App"},' +
                 '"DoTest":{"type":"junit","className":"my.test.className","name":"DoTest"}' +
                 '}}'
+
         result.task(":printSettings").outcome == TaskOutcome.SUCCESS
     }
 }
