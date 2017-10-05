@@ -148,7 +148,7 @@ class IdeaModelExtensionFunctionalTest extends Specification {
                 '[{"file":"spring_parent.xml","name":"p1","parent":null},' +
                 '{"file":"spring_new_child.xml","name":"p2","parent":"p1"}],"name":"spring"}},' +
                 '"runConfigurations":{"Run my app":{"type":"application",' +
-                '"workingDirectory":' + JsonOutput.toJson(projectDir) + ',"mainClass":"foo.App","name":"Run my app"},' +
+                '"workingDirectory":' + JsonOutput.toJson(projectDir) + ',"mainClass":"foo.App","jvmArgs":null,"name":"Run my app"},' +
                 '"Run my test":{"type":"junit","className":"my.test.className","name":"Run my test"}' +
                 '}}'
 
