@@ -7,6 +7,8 @@ import org.gradle.api.model.ObjectFactory
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.internal.reflect.Instantiator
 import org.gradle.util.ConfigureUtil
+import org.jetbrains.gradle.ext.facets.Facet
+import org.jetbrains.gradle.ext.facets.SpringFacet
 import org.jetbrains.gradle.ext.runConfigurations.Application
 import org.jetbrains.gradle.ext.runConfigurations.JUnit
 import org.jetbrains.gradle.ext.runConfigurations.RunConfiguration
@@ -81,11 +83,10 @@ class ProjectSettings {
 }
 
 class ModuleSettings {
-  NamedDomainObjectContainer<NamedSettings> facets
+  PolymorphicDomainObjectContainer<Facet> facets
   PolymorphicDomainObjectContainer<RunConfiguration> runConfigurations
 
   ModuleSettings(Project project) {
-    facets = project.container(NamedSettings)
     Instantiator instantiator = project.getServices().get(Instantiator.class);
     runConfigurations = instantiator.newInstance(DefaultPolymorphicDomainObjectContainer, RunConfiguration.class, instantiator,  new Namer<RunConfiguration>() {
       @Override
@@ -96,6 +97,15 @@ class ModuleSettings {
 
     runConfigurations.registerFactory(Application) { new Application(it) }
     runConfigurations.registerFactory(JUnit) { new JUnit(it) }
+
+    facets = instantiator.newInstance(DefaultPolymorphicDomainObjectContainer, Facet.class, instantiator, new Namer<Facet>() {
+      @Override
+      String determineName(Facet facet) {
+        return facet.name
+      }
+    })
+
+    facets.registerFactory(SpringFacet) { new SpringFacet(it, project) }
   }
 
   def facets(final Closure configureClosure) {

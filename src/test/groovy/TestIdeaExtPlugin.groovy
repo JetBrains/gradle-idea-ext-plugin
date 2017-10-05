@@ -17,7 +17,7 @@ class IdeaModelExtensionFunctionalTest extends Specification {
   def "idea extension plugin exposes settings as Json"() {
     given:
     // language=groovy
-    buildFile << """
+    buildFile << """import org.jetbrains.gradle.ext.facets.SpringFacet
       plugins {
           id 'org.jetbrains.gradle.plugin.idea-ext'
       }
@@ -39,17 +39,24 @@ class IdeaModelExtensionFunctionalTest extends Specification {
         module {
           settings {
            facets {
-              spring {
-                  descriptorXml 'file.xml'
-                  priority 1
-                  flag false
+              create('spring', SpringFacet) {
+                contexts {
+                  p1 {
+                    file = 'spring_parent.xml'
+                  }
+                  
+                  p2 {
+                    file = 'spring_child.xml'
+                    parent = 'p1'
+                  }
+                }
               }
             }
           }
         }
       }
       
-      idea.module.settings.facets.spring.priority = 2
+      idea.module.settings.facets.spring.contexts.p2.file = 'spring_new_child.xml'
       
       task printSettings {
         doLast {
@@ -68,7 +75,9 @@ class IdeaModelExtensionFunctionalTest extends Specification {
     result.output.contains('{"compiler":{"resourcePatterns":"!*.java;!*.class"},' +
             '"codeStyle":{"indent":"tabs"},' +
             '"inspections":{"name":"value"}}')
-    result.output.contains('{"facets":{"spring":{"descriptorXml":"file.xml","priority":2,"flag":false}}}')
+    result.output.contains('{"facets":{"spring":{"type":"spring","contexts":' +
+            '[{"file":"spring_parent.xml","name":"p1","parent":null},' +
+            '{"file":"spring_new_child.xml","name":"p2","parent":"p1"}],"name":"spring"}}}')
     result.task(":printSettings").outcome == TaskOutcome.SUCCESS
   }
 
@@ -112,12 +121,6 @@ class IdeaModelExtensionFunctionalTest extends Specification {
           idea {
             module {
               settings {
-                  facets {
-                      SomeFacet {
-                        type 'unknown'
-                        moduleName "\$idea.module.name"
-                      }
-                  }
                   runConfigurations {
                       create('App', Application) {
                           mainClass = 'foo.App'
@@ -134,7 +137,6 @@ class IdeaModelExtensionFunctionalTest extends Specification {
           task printSettings {
             doLast {
               println project.projectDir
-              println project.idea.module.name
               println project.idea.module.settings
             }
           }
@@ -148,9 +150,7 @@ class IdeaModelExtensionFunctionalTest extends Specification {
         then:
         def lines = result.output.readLines()
         def projectDir = lines[0]
-        def moduleName = lines[1]
-        lines[2] == '{"facets":{"SomeFacet":{"type":"unknown","moduleName":' + JsonOutput.toJson(moduleName)+ '}},' +
-                '"runConfigurations":{' +
+        lines[1] == '{"runConfigurations":{' +
                 '"App":{"type":"application",' +
                 '"workingDirectory":' + JsonOutput.toJson(projectDir) + ',"mainClass":"foo.App","name":"App"},' +
                 '"DoTest":{"type":"junit","className":"my.test.className","name":"DoTest"}' +
