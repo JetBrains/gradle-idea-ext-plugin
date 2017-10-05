@@ -100,16 +100,16 @@ class IdeaModelExtensionFunctionalTest extends Specification {
             module {
               settings {
                   runConfigurations {
-                      create('App', Application) {
+                      "Run my app"(Application) {
                           mainClass = 'foo.App'
                           workingDirectory = "\$projectDir" 
                       }
-                      create('DoTest', JUnit) {
+                      "Run my test"(JUnit) {
                           className = 'my.test.className'
                       }
                   }
                   facets {
-                      create('spring', SpringFacet) {
+                      spring(SpringFacet) {
                         contexts {
                           p1 {
                             file = 'spring_parent.xml'
@@ -147,9 +147,9 @@ class IdeaModelExtensionFunctionalTest extends Specification {
         lines[1] == '{"facets":{"spring":{"type":"spring","contexts":' +
                 '[{"file":"spring_parent.xml","name":"p1","parent":null},' +
                 '{"file":"spring_new_child.xml","name":"p2","parent":"p1"}],"name":"spring"}},' +
-                '"runConfigurations":{"App":{"type":"application",' +
-                '"workingDirectory":' + JsonOutput.toJson(projectDir) + ',"mainClass":"foo.App","name":"App"},' +
-                '"DoTest":{"type":"junit","className":"my.test.className","name":"DoTest"}' +
+                '"runConfigurations":{"Run my app":{"type":"application",' +
+                '"workingDirectory":' + JsonOutput.toJson(projectDir) + ',"mainClass":"foo.App","name":"Run my app"},' +
+                '"Run my test":{"type":"junit","className":"my.test.className","name":"Run my test"}' +
                 '}}'
 
         result.task(":printSettings").outcome == TaskOutcome.SUCCESS
