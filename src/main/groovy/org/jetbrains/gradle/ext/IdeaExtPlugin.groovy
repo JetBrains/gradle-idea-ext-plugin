@@ -3,7 +3,6 @@ package org.jetbrains.gradle.ext
 import groovy.json.JsonOutput
 import org.gradle.api.*
 import org.gradle.api.internal.DefaultPolymorphicDomainObjectContainer
-import org.gradle.api.model.ObjectFactory
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.internal.reflect.Instantiator
 import org.gradle.util.ConfigureUtil
@@ -33,18 +32,19 @@ class IdeaExtPlugin implements Plugin<Project> {
 
 class ProjectSettings {
   IdeaCompilerConfiguration compilerConfig
-  ObjectFactory objectFactory
+  CopyrightConfiguration copyrightConfig
+  Project project
 
   NestedExpando codeStyle
   NestedExpando inspections
 
   ProjectSettings(Project project) {
-    objectFactory = project.objects
+    this.project = project
   }
 
   void compiler(Action<IdeaCompilerConfiguration> action) {
     if (compilerConfig == null) {
-      compilerConfig = objectFactory.newInstance(IdeaCompilerConfiguration)
+      compilerConfig = project.objects.newInstance(IdeaCompilerConfiguration)
     }
     action.execute(compilerConfig)
   }
@@ -63,6 +63,13 @@ class ProjectSettings {
     ConfigureUtil.configure(configureClosure, inspections)
   }
 
+  def copyright(final Closure copyrightClosure) {
+    if (copyrightConfig == null) {
+      copyrightConfig = new CopyrightConfiguration(project)
+    }
+    ConfigureUtil.configure(copyrightClosure, copyrightConfig)
+  }
+
   String toString() {
     def map  = [:]
 
@@ -76,6 +83,10 @@ class ProjectSettings {
 
     if (inspections != null) {
       map["inspections"] = inspections
+    }
+
+    if (copyrightConfig != null) {
+      map["copyright"] = copyrightConfig.toMap()
     }
 
     return JsonOutput.toJson(map)
