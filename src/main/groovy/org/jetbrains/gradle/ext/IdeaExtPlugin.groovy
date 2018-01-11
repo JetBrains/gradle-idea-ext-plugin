@@ -137,11 +137,11 @@ class ModuleSettings {
   String toString() {
     def map = [:]
     if (!facets.isEmpty()) {
-      map["facets"] = facets.asMap
+      map["facets"] = facets.asList()
     }
 
     if (!runConfigurations.isEmpty()) {
-      map["runConfigurations"] = runConfigurations.asMap
+      map["runConfigurations"] = runConfigurations.asList()
     }
     return JsonOutput.toJson(map)
   }
