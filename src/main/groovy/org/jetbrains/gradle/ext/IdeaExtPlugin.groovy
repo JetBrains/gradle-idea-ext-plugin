@@ -109,6 +109,12 @@ class ModuleSettings {
     runConfigurations.registerFactory(Application) { new Application(it) }
     runConfigurations.registerFactory(JUnit) { new JUnit(it) }
 
+    runConfigurations.ext.defaults = { Class clazz, Closure configuration ->
+      def aDefault = runConfigurations.maybeCreate("default_$clazz.name", clazz)
+      aDefault.defaults = true
+      ConfigureUtil.configure(configuration, aDefault)
+    }
+
     facets = instantiator.newInstance(DefaultPolymorphicDomainObjectContainer, Facet.class, instantiator, new Namer<Facet>() {
       @Override
       String determineName(Facet facet) {

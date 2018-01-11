@@ -107,6 +107,14 @@ class IdeaModelExtensionFunctionalTest extends Specification {
                       "Run my test"(JUnit) {
                           className = 'my.test.className'
                       }
+
+                      defaults(Application) {
+                          jvmArgs = '-DmyKey=myVal'
+                      }
+
+                      defaults(JUnit) {
+                          className = 'MyDefaultClass'
+                      }
                   }
                   facets {
                       spring(SpringFacet) {
@@ -149,7 +157,9 @@ class IdeaModelExtensionFunctionalTest extends Specification {
                 '{"file":"spring_new_child.xml","name":"p2","parent":"p1"}],"name":"spring"}},' +
                 '"runConfigurations":{"Run my app":{"type":"application",' +
                 '"workingDirectory":' + JsonOutput.toJson(projectDir) + ',"mainClass":"foo.App","jvmArgs":null,"name":"Run my app"},' +
-                '"Run my test":{"type":"junit","className":"my.test.className","name":"Run my test"}' +
+                '"Run my test":{"type":"junit","className":"my.test.className","name":"Run my test"},' +
+                '"":{"defaults":"true","type":"application","jvmArgs":"-DmyKey=myVal"},' +
+                '"":{"defaults":"true","type":"junit","className":"MyDefaultClass"},' +
                 '}}'
 
         result.task(":printSettings").outcome == TaskOutcome.SUCCESS

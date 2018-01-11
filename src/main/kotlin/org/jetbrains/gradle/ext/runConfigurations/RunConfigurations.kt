@@ -5,7 +5,9 @@ package org.jetbrains.gradle.ext.runConfigurations
  * date: 01.10.2017.
  */
 
-open class RunConfiguration(val name: String, val type: String)
+open class RunConfiguration(val name: String, val type: String) {
+  var defaults: Boolean = false
+}
 
 
 open class Application(name: String) : RunConfiguration(name, "application") {
