@@ -101,7 +101,6 @@ rootProject.name = "ProjectName"
 
   def "idea extension plugin can be applied in multiproject build"() {
     given:
-    File settingsFile = testProjectDir.newFile('settings.gradle')
     settingsFile << """
     include 'p1', 'p2', 'p3'
 """
@@ -174,16 +173,9 @@ rootProject.name = "ProjectName"
                 .build()
         then:
         def lines = result.output.readLines()
-        def projectDir = lines[0]
         lines[1] == '{"facets":[{"type":"spring","contexts":' +
                           '[{"file":"spring_parent.xml","name":"p1","parent":null},' +
-                          '{"file":"spring_new_child.xml","name":"p2","parent":"p1"}],"name":"spring"}],' +
-                '"runConfigurations":[{"type":"application",' +
-                  '"workingDirectory":' + JsonOutput.toJson(projectDir) + ',"mainClass":"foo.App","jvmArgs":null,"defaults":false,"name":"Run my app"},' +
-                  '{"type":"junit","className":"my.test.className","defaults":false,"name":"Run my test"},' +
-                '{"type":"application","workingDirectory":null,"mainClass":null,"jvmArgs":"-DmyKey=myVal","defaults":true,"name":"default_'+ Application.name +'"},' +
-                '{"type":"junit","className":"MyDefaultClass","defaults":true,"name":"default_'+ JUnit.name +'"}' +
-                ']}'
+                          '{"file":"spring_new_child.xml","name":"p2","parent":"p1"}],"name":"spring"}]}'
 
         result.task(":printSettings").outcome == TaskOutcome.SUCCESS
     }
