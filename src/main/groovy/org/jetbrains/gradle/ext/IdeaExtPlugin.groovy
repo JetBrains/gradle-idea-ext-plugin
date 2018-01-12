@@ -33,12 +33,29 @@ class IdeaExtPlugin implements Plugin<Project> {
 class ProjectSettings {
   IdeaCompilerConfiguration compilerConfig
   CopyrightConfiguration copyrightConfig
+  PolymorphicDomainObjectContainer<RunConfiguration> runConfigurations
   Project project
 
   NestedExpando codeStyle
   NestedExpando inspections
 
   ProjectSettings(Project project) {
+    Instantiator instantiator = project.getServices().get(Instantiator.class)
+    runConfigurations = instantiator.newInstance(DefaultPolymorphicDomainObjectContainer, RunConfiguration.class, instantiator,  new Namer<RunConfiguration>() {
+      @Override
+      String determineName(RunConfiguration runConfiguration) {
+        return runConfiguration.name
+      }
+    })
+
+    runConfigurations.registerFactory(Application) { new Application(it) }
+    runConfigurations.registerFactory(JUnit) { new JUnit(it) }
+
+    runConfigurations.ext.defaults = { Class clazz, Closure configuration ->
+      def aDefault = runConfigurations.maybeCreate("default_$clazz.name", clazz)
+      aDefault.defaults = true
+      ConfigureUtil.configure(configuration, aDefault)
+    }
     this.project = project
   }
 
@@ -70,6 +87,10 @@ class ProjectSettings {
     ConfigureUtil.configure(copyrightClosure, copyrightConfig)
   }
 
+  def runConfigurations(final Closure configureClosure) {
+    runConfigurations.configure(configureClosure)
+  }
+
   String toString() {
     def map  = [:]
 
@@ -89,31 +110,19 @@ class ProjectSettings {
       map["copyright"] = copyrightConfig.toMap()
     }
 
+    if (!runConfigurations.isEmpty()) {
+      map["runConfigurations"] = runConfigurations.asList()
+    }
+
     return JsonOutput.toJson(map)
   }
 }
 
 class ModuleSettings {
   PolymorphicDomainObjectContainer<Facet> facets
-  PolymorphicDomainObjectContainer<RunConfiguration> runConfigurations
 
   ModuleSettings(Project project) {
     Instantiator instantiator = project.getServices().get(Instantiator.class);
-    runConfigurations = instantiator.newInstance(DefaultPolymorphicDomainObjectContainer, RunConfiguration.class, instantiator,  new Namer<RunConfiguration>() {
-      @Override
-      String determineName(RunConfiguration runConfiguration) {
-        return runConfiguration.name
-      }
-    })
-
-    runConfigurations.registerFactory(Application) { new Application(it) }
-    runConfigurations.registerFactory(JUnit) { new JUnit(it) }
-
-    runConfigurations.ext.defaults = { Class clazz, Closure configuration ->
-      def aDefault = runConfigurations.maybeCreate("default_$clazz.name", clazz)
-      aDefault.defaults = true
-      ConfigureUtil.configure(configuration, aDefault)
-    }
 
     facets = instantiator.newInstance(DefaultPolymorphicDomainObjectContainer, Facet.class, instantiator, new Namer<Facet>() {
       @Override
@@ -129,19 +138,11 @@ class ModuleSettings {
     facets.configure(configureClosure)
   }
 
-  def runConfigurations(final Closure configureClosure) {
-    runConfigurations.configure(configureClosure)
-  }
-
   @Override
   String toString() {
     def map = [:]
     if (!facets.isEmpty()) {
       map["facets"] = facets.asList()
-    }
-
-    if (!runConfigurations.isEmpty()) {
-      map["runConfigurations"] = runConfigurations.asList()
     }
     return JsonOutput.toJson(map)
   }

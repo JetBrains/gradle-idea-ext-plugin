@@ -11,15 +11,22 @@ class IdeaModelExtensionFunctionalTest extends Specification {
   @Rule
   final TemporaryFolder testProjectDir = new TemporaryFolder()
   File buildFile
+  File settingsFile
 
   def setup() {
     buildFile = testProjectDir.newFile('build.gradle')
+    settingsFile = testProjectDir.newFile('settings.gradle')
   }
 
   def "test project settings"() {
     given:
+    settingsFile << """
+rootProject.name = "ProjectName"
+"""
     // language=groovy
-    buildFile << """import org.jetbrains.gradle.ext.facets.SpringFacet
+    buildFile << """
+      import org.jetbrains.gradle.ext.runConfigurations.*
+
       plugins {
           id 'org.jetbrains.gradle.plugin.idea-ext'
       }
@@ -36,6 +43,24 @@ class IdeaModelExtensionFunctionalTest extends Specification {
             inspections {
               name 'value'
             }
+            runConfigurations {
+                "Run my app"(Application) {
+                    mainClass = 'foo.App'
+                    workingDirectory = "\$projectDir" 
+                    moduleName = getProject().idea.module.name
+                }
+                "Run my test"(JUnit) {
+                    className = 'my.test.className'
+                }
+
+                defaults(Application) {
+                    jvmArgs = '-DmyKey=myVal'
+                }
+
+                defaults(JUnit) {
+                    className = 'MyDefaultClass'
+                }
+            }
           }
         }
       }
@@ -43,6 +68,7 @@ class IdeaModelExtensionFunctionalTest extends Specification {
       
       task printSettings {
         doLast {
+          println(projectDir)
           println(project.idea.project.settings)
         }
       }
@@ -50,13 +76,26 @@ class IdeaModelExtensionFunctionalTest extends Specification {
     when:
     def result = GradleRunner.create()
             .withProjectDir(testProjectDir.root)
-            .withArguments("printSettings")
+            .withArguments("printSettings", "-q")
             .withPluginClasspath()
             .build()
     then:
-    result.output.contains('{"compiler":{"resourcePatterns":"!*.java;!*.class"},' +
-            '"codeStyle":{"indent":"tabs"},' +
-            '"inspections":{"name":"value"}}')
+
+    def lines = result.output.readLines()
+    def projectDir = lines[0]
+    def output = lines[1]
+    output.contains('{"compiler":{"resourcePatterns":"!*.java;!*.class"}')
+    output.contains('"codeStyle":{"indent":"tabs"}')
+    output.contains('"inspections":{"name":"value"}')
+
+    output.contains(
+            '"runConfigurations":[{"type":"application",' +
+                    '"workingDirectory":' + JsonOutput.toJson(projectDir) + ',"mainClass":"foo.App","moduleName":"ProjectName","jvmArgs":null,"defaults":false,"name":"Run my app"},' +
+                    '{"type":"junit","className":"my.test.className","defaults":false,"name":"Run my test"},' +
+                    '{"type":"application","workingDirectory":null,"mainClass":null,"moduleName":null,"jvmArgs":"-DmyKey=myVal","defaults":true,"name":"default_'+ Application.name +'"},' +
+                    '{"type":"junit","className":"MyDefaultClass","defaults":true,"name":"default_'+ JUnit.name +'"}]'
+    )
+
     result.task(":printSettings").outcome == TaskOutcome.SUCCESS
   }
 
@@ -91,7 +130,6 @@ class IdeaModelExtensionFunctionalTest extends Specification {
     def "test module settings"() {
         given:
         buildFile << """
-          import org.jetbrains.gradle.ext.runConfigurations.*
           import org.jetbrains.gradle.ext.facets.*
           
           plugins {
@@ -101,23 +139,6 @@ class IdeaModelExtensionFunctionalTest extends Specification {
           idea {
             module {
               settings {
-                  runConfigurations {
-                      "Run my app"(Application) {
-                          mainClass = 'foo.App'
-                          workingDirectory = "\$projectDir" 
-                      }
-                      "Run my test"(JUnit) {
-                          className = 'my.test.className'
-                      }
-
-                      defaults(Application) {
-                          jvmArgs = '-DmyKey=myVal'
-                      }
-
-                      defaults(JUnit) {
-                          className = 'MyDefaultClass'
-                      }
-                  }
                   facets {
                       spring(SpringFacet) {
                         contexts {
