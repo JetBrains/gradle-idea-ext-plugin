@@ -48,7 +48,7 @@ class ProjectSettings {
       }
     })
 
-    runConfigurations.registerFactory(Application) { new Application(it) }
+    runConfigurations.registerFactory(Application) { new Application(it, project) }
     runConfigurations.registerFactory(JUnit) { new JUnit(it) }
 
     runConfigurations.ext.defaults = { Class clazz, Closure configuration ->

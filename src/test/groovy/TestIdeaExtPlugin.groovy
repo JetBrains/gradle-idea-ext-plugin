@@ -89,10 +89,10 @@ rootProject.name = "ProjectName"
     output.contains('"inspections":{"name":"value"}')
 
     output.contains(
-            '"runConfigurations":[{"type":"application",' +
-                    '"workingDirectory":' + JsonOutput.toJson(projectDir) + ',"mainClass":"foo.App","moduleName":"ProjectName","jvmArgs":null,"defaults":false,"name":"Run my app"},' +
+            '"runConfigurations":[{"type":"application","envs":null,' +
+                    '"workingDirectory":' + JsonOutput.toJson(projectDir) + ',"mainClass":"foo.App","moduleName":"ProjectName","beforeRun":[],"jvmArgs":null,"defaults":false,"name":"Run my app","programParameters":null},' +
                     '{"type":"junit","className":"my.test.className","defaults":false,"name":"Run my test"},' +
-                    '{"type":"application","workingDirectory":null,"mainClass":null,"moduleName":null,"jvmArgs":"-DmyKey=myVal","defaults":true,"name":"default_'+ Application.name +'"},' +
+                    '{"type":"application","envs":null,"workingDirectory":null,"mainClass":null,"moduleName":null,"beforeRun":[],"jvmArgs":"-DmyKey=myVal","defaults":true,"name":"default_'+ Application.name +'","programParameters":null},' +
                     '{"type":"junit","className":"MyDefaultClass","defaults":true,"name":"default_'+ JUnit.name +'"}]'
     )
 
