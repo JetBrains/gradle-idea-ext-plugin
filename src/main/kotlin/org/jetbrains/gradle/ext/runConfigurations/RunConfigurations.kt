@@ -1,5 +1,6 @@
 package org.jetbrains.gradle.ext.runConfigurations
 
+import groovy.lang.Closure
 import org.gradle.api.Namer
 import org.gradle.api.Project
 import org.gradle.api.internal.DefaultPolymorphicDomainObjectContainer
@@ -25,7 +26,7 @@ open class Application(name: String, project: Project) : RunConfiguration(name, 
   var envs: Map<String, String>? = null
 
   val beforeRun: DefaultPolymorphicDomainObjectContainer<BeforeRunTask>
-  // fun beforeRun(action: Closure<*>) = beforeRun.configure(action)
+  fun beforeRun(action: Closure<*>) = beforeRun.configure(action)
 
   init {
     val instantiator = (project as ProjectInternal).services.get(Instantiator::class.java)
