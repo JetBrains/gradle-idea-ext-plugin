@@ -58,6 +58,7 @@ class RunConfigurationTests {
     |    "port": 1234,
     |    "transport": "SOCKET",
     |    "host": "hostname",
+    |    "defaults": false,
     |    "name": "remote debug",
     |    "sharedMemoryAddress": "jvmdebug"
     |}
