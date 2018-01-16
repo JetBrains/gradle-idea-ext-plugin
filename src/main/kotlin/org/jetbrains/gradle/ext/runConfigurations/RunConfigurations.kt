@@ -51,11 +51,24 @@ open class Make: BeforeRunTask(ID) {
 
 
 open class JUnit(name: String): RunConfiguration(name, "junit") {
-  var className: String? = null
+
+  // only one (first not null) type will be used
+  var packageName : String? = null
+  var directory : String? = null
+  var pattern : String? = null
+  var className : String? = null
+  var method : String? = null
+  var category : String? = null
+  // end of type list
+
+  var workingDirectory: String? = null
+  var vmParameters: String? = null
+  var passParentEnvs = true
+  var moduleName: String? = null
+  var envs: Map<String, String>? = null
 }
 
 open class Remote(name: String): RunConfiguration(name, "remote") {
-
   enum class RemoteMode { ATTACH, LISTEN }
   enum class RemoteTransport { SOCKET, SHARED_MEM }
 
