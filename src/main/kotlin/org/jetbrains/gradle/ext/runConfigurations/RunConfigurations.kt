@@ -54,3 +54,15 @@ open class JUnit(name: String): RunConfiguration(name, "junit") {
   var className: String? = null
 }
 
+open class Remote(name: String): RunConfiguration(name, "remote") {
+
+  enum class RemoteMode { ATTACH, LISTEN }
+  enum class RemoteTransport { SOCKET, SHARED_MEM }
+
+  var transport: RemoteTransport = RemoteTransport.SOCKET
+  var mode: RemoteMode = RemoteMode.ATTACH
+  var host: String? = null
+  var port: Int = 0
+  var sharedMemoryAddress: String? = null
+}
+
