@@ -10,6 +10,7 @@ import org.jetbrains.gradle.ext.facets.Facet
 import org.jetbrains.gradle.ext.facets.SpringFacet
 import org.jetbrains.gradle.ext.runConfigurations.Application
 import org.jetbrains.gradle.ext.runConfigurations.JUnit
+import org.jetbrains.gradle.ext.runConfigurations.Remote
 import org.jetbrains.gradle.ext.runConfigurations.RunConfiguration
 
 class IdeaExtPlugin implements Plugin<Project> {
@@ -50,6 +51,7 @@ class ProjectSettings {
 
     runConfigurations.registerFactory(Application) { new Application(it, project) }
     runConfigurations.registerFactory(JUnit) { new JUnit(it) }
+    runConfigurations.registerFactory(Remote) { new Remote(it) }
 
     runConfigurations.ext.defaults = { Class clazz, Closure configuration ->
       def aDefault = runConfigurations.maybeCreate("default_$clazz.name", clazz)
