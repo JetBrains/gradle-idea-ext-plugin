@@ -13,7 +13,7 @@ open class GroovyCompilerConfiguration(instantiator: Instantiator) {
     ConfigureUtil.configure(closure, excludes)
   }
 
-  fun toMap(): Map<String, Any?> = mapOf("heapSize" to heapSize, "excludes" to excludes.data)
+  fun toMap(): Map<String, Any?> = mapOf("heapSize" to heapSize.toString(), "excludes" to excludes.data)
 }
 
 open class ExcludesConfig {

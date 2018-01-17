@@ -138,7 +138,7 @@ task printSettings {
     then:
 
     def lines = result.output.readLines()
-    lines[0] == '{"groovyCompiler":{"heapSize":2000,"excludes":[{"url":"/some/myFile","includeSubdirectories":false,"isFile":true},' +
+    lines[0] == '{"groovyCompiler":{"heapSize":"2000","excludes":[{"url":"/some/myFile","includeSubdirectories":false,"isFile":true},' +
             '{"url":"/a/dir","includeSubdirectories":true,"isFile":false}]}}'
     
   }
