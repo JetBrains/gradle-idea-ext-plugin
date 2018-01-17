@@ -2,6 +2,7 @@ package org.jetbrains.gradle.ext
 
 import groovy.json.JsonOutput
 import junit.framework.Assert.assertEquals
+import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 import org.jetbrains.gradle.ext.runConfigurations.Application
@@ -10,7 +11,7 @@ import org.jetbrains.gradle.ext.runConfigurations.Remote
 import org.junit.Before
 import org.junit.Test
 
-class RunConfigurationTests {
+class SerializationTests {
 
   lateinit var myProject: Project
 
@@ -65,6 +66,43 @@ class RunConfigurationTests {
     """.trimMargin(),
             JsonOutput.prettyPrint(JsonOutput.toJson(remote)))
 
+  }
+
+  @Test fun `test Groovy config output`() {
+    val config = GroovyCompilerConfiguration()
+    config.heapSize = 2049
+    config.excludes(object: Action<ExcludesConfig> {
+      override fun execute(excludeCfg: ExcludesConfig?) {
+        if (excludeCfg == null) return
+        excludeCfg.file("C:/myFile.ext")
+        excludeCfg.dir("C:/myDir")
+        excludeCfg.dir("C:/recursiveDir", true)
+      }
+    })
+
+    assertEquals("""
+      |{
+      |    "excludes": [
+      |        {
+      |            "url": "C:/myFile.ext",
+      |            "includeSubdirectories": false,
+      |            "isFile": true
+      |        },
+      |        {
+      |            "url": "C:/myDir",
+      |            "includeSubdirectories": false,
+      |            "isFile": false
+      |        },
+      |        {
+      |            "url": "C:/recursiveDir",
+      |            "includeSubdirectories": true,
+      |            "isFile": false
+      |        }
+      |    ],
+      |    "heapSize": 2049
+      |}
+    """.trimMargin(),
+            JsonOutput.prettyPrint(JsonOutput.toJson(config)))
   }
 }
 

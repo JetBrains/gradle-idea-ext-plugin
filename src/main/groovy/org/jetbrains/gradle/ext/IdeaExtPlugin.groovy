@@ -33,6 +33,7 @@ class IdeaExtPlugin implements Plugin<Project> {
 
 class ProjectSettings {
   IdeaCompilerConfiguration compilerConfig
+  GroovyCompilerConfiguration groovyCompilerConfig
   CopyrightConfiguration copyrightConfig
   PolymorphicDomainObjectContainer<RunConfiguration> runConfigurations
   Project project
@@ -66,6 +67,13 @@ class ProjectSettings {
       compilerConfig = project.objects.newInstance(IdeaCompilerConfiguration)
     }
     action.execute(compilerConfig)
+  }
+
+  void groovyCompiler(Action<GroovyCompilerConfiguration> action) {
+    if (groovyCompilerConfig == null) {
+      groovyCompilerConfig = project.objects.newInstance(GroovyCompilerConfiguration)
+    }
+    action.execute(groovyCompilerConfig)
   }
 
   def codeStyle(final Closure configureClosure) {

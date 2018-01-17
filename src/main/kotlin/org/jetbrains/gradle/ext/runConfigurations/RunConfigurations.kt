@@ -64,7 +64,7 @@ open class JUnit(name: String): RunConfiguration(name, "junit") {
   var repeat: String? = null
   var workingDirectory: String? = null
   var vmParameters: String? = null
-  var passParentEnvs = true
+  var passParentEnvs: Boolean? = null
   var moduleName: String? = null
   var envs: Map<String, String>? = null
 }
