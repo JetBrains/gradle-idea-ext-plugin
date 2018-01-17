@@ -108,6 +108,10 @@ class ProjectSettings {
       map["compiler"] = compilerConfig.toMap()
     }
 
+    if (groovyCompilerConfig != null) {
+      map["groovyCompiler"] = groovyCompilerConfig
+    }
+
     if (codeStyle != null) {
       map["codeStyle"] = codeStyle
     }
