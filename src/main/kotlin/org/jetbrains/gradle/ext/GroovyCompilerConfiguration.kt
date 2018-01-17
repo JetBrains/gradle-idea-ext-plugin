@@ -2,7 +2,7 @@ package org.jetbrains.gradle.ext
 
 import org.gradle.api.Action
 
-class GroovyCompilerConfiguration {
+open class GroovyCompilerConfiguration {
 
   var heapSize: Int? = null
 
@@ -12,7 +12,7 @@ class GroovyCompilerConfiguration {
   }
 }
 
-class ExcludesConfig(val data: MutableList<Map<String, Any>>) {
+open class ExcludesConfig(val data: MutableList<Map<String, Any>>) {
   fun file(path: String) {
     data.add(mapOf(
             "url" to path,
