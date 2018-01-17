@@ -40,10 +40,11 @@ class ProjectSettings {
 
   NestedExpando codeStyle
   NestedExpando inspections
+  private Instantiator instantiator
 
   ProjectSettings(Project project) {
-    Instantiator instantiator = project.getServices().get(Instantiator.class)
-    runConfigurations = instantiator.newInstance(DefaultPolymorphicDomainObjectContainer, RunConfiguration.class, instantiator,  new Namer<RunConfiguration>() {
+    instantiator = project.getServices().get(Instantiator.class)
+    runConfigurations = this.instantiator.newInstance(DefaultPolymorphicDomainObjectContainer, RunConfiguration.class, this.instantiator,  new Namer<RunConfiguration>() {
       @Override
       String determineName(RunConfiguration runConfiguration) {
         return runConfiguration.name
@@ -69,11 +70,11 @@ class ProjectSettings {
     action.execute(compilerConfig)
   }
 
-  void groovyCompiler(Action<GroovyCompilerConfiguration> action) {
+  void groovyCompiler(final Closure configureClosure) {
     if (groovyCompilerConfig == null) {
-      groovyCompilerConfig = project.objects.newInstance(GroovyCompilerConfiguration)
+      groovyCompilerConfig = new GroovyCompilerConfiguration(instantiator)
     }
-    action.execute(groovyCompilerConfig)
+    ConfigureUtil.configure(configureClosure, groovyCompilerConfig)
   }
 
   def codeStyle(final Closure configureClosure) {
@@ -108,8 +109,9 @@ class ProjectSettings {
       map["compiler"] = compilerConfig.toMap()
     }
 
+
     if (groovyCompilerConfig != null) {
-      map["groovyCompiler"] = groovyCompilerConfig
+      map["groovyCompiler"] = groovyCompilerConfig.toMap()
     }
 
     if (codeStyle != null) {

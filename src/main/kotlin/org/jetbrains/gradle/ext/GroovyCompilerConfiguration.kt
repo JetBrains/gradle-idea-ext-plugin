@@ -1,18 +1,24 @@
 package org.jetbrains.gradle.ext
 
-import org.gradle.api.Action
+import groovy.lang.Closure
+import org.gradle.internal.reflect.Instantiator
+import org.gradle.util.ConfigureUtil
 
-open class GroovyCompilerConfiguration {
+open class GroovyCompilerConfiguration(instantiator: Instantiator) {
 
   var heapSize: Int? = null
+  var excludes: ExcludesConfig = instantiator.newInstance(ExcludesConfig::class.java)
 
-  val excludes: MutableList<Map<String, Any>> = mutableListOf()
-  fun excludes(configure: Action<ExcludesConfig>) {
-    configure.execute(ExcludesConfig(excludes))
+  fun excludes(closure: Closure<*>) {
+    ConfigureUtil.configure(closure, excludes)
   }
+
+  fun toMap(): Map<String, Any?> = mapOf("heapSize" to heapSize, "excludes" to excludes.data)
 }
 
-open class ExcludesConfig(val data: MutableList<Map<String, Any>>) {
+open class ExcludesConfig {
+  internal val data: MutableList<Map<String, Any>> = mutableListOf()
+
   fun file(path: String) {
     data.add(mapOf(
             "url" to path,

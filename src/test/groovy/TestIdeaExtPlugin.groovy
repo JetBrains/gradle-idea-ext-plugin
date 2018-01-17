@@ -101,6 +101,48 @@ rootProject.name = "ProjectName"
     result.task(":printSettings").outcome == TaskOutcome.SUCCESS
   }
 
+  def "test groovy compiler settings"() {
+    given:
+    buildFile << """
+plugins {
+  id 'org.jetbrains.gradle.plugin.idea-ext'
+}
+
+idea {
+  project {
+    settings {
+      groovyCompiler {
+        heapSize = 2000
+        excludes {
+          file("/some/myFile")
+          dir("/a/dir", true)
+        }
+      }
+    }
+  }
+}
+
+task printSettings {
+  doLast {
+    println(project.idea.project.settings)
+  }
+}
+"""
+
+    when:
+    def result = GradleRunner.create()
+            .withProjectDir(testProjectDir.root)
+            .withArguments("printSettings", "-q")
+            .withPluginClasspath()
+            .build()
+    then:
+
+    def lines = result.output.readLines()
+    lines[0] == '{"groovyCompiler":{"heapSize":2000,"excludes":[{"url":"/some/myFile","includeSubdirectories":false,"isFile":true},' +
+            '{"url":"/a/dir","includeSubdirectories":true,"isFile":false}]}}'
+    
+  }
+
   def "idea extension plugin can be applied in multiproject build"() {
     given:
     settingsFile << """
