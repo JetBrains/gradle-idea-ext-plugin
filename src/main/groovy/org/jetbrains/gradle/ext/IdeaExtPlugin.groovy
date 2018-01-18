@@ -38,6 +38,8 @@ class ProjectSettings {
   PolymorphicDomainObjectContainer<RunConfiguration> runConfigurations
   Project project
   CodeStyleConfig codeStyle
+  GradleIDESettings gradleSettings
+  FrameworkDetectionExclusionSettings detectExclusions
 
   NestedExpando inspections
   private Instantiator instantiator
@@ -102,6 +104,20 @@ class ProjectSettings {
     runConfigurations.configure(configureClosure)
   }
 
+  def gradleSettings(final Closure configureClosure) {
+    if (gradleSettings == null) {
+      gradleSettings = new GradleIDESettings()
+    }
+    ConfigureUtil.configure(configureClosure, gradleSettings)
+  }
+
+  def doNotDetectFrameworks(String... ids) {
+    if (detectExclusions == null) {
+      detectExclusions = new FrameworkDetectionExclusionSettings()
+    }
+    detectExclusions.excludes.addAll(ids)
+  }
+
   String toString() {
     def map  = [:]
 
@@ -128,6 +144,14 @@ class ProjectSettings {
 
     if (!runConfigurations.isEmpty()) {
       map["runConfigurations"] = runConfigurations.asList()
+    }
+
+    if (gradleSettings != null) {
+      map["gradleSettings"] = gradleSettings
+    }
+
+    if (detectExclusions != null) {
+      map["frameworkDetectionExcludes"] = detectExclusions.excludes
     }
 
     return JsonOutput.toJson(map)
