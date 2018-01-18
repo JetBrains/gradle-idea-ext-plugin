@@ -37,8 +37,8 @@ class ProjectSettings {
   CopyrightConfiguration copyrightConfig
   PolymorphicDomainObjectContainer<RunConfiguration> runConfigurations
   Project project
+  CodeStyleConfig codeStyle
 
-  NestedExpando codeStyle
   NestedExpando inspections
   private Instantiator instantiator
 
@@ -79,7 +79,7 @@ class ProjectSettings {
 
   def codeStyle(final Closure configureClosure) {
     if (codeStyle == null) {
-      codeStyle = new NestedExpando()
+      codeStyle = new CodeStyleConfig()
     }
     ConfigureUtil.configure(configureClosure, codeStyle)
   }

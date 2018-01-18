@@ -143,6 +143,87 @@ task printSettings {
     
   }
 
+  def "test code style settings"() {
+    given:
+    buildFile << """
+plugins {
+  id 'org.jetbrains.gradle.plugin.idea-ext'
+}
+
+idea {
+  project {
+    settings {
+      codeStyle {
+        RIGHT_MARGIN = 200
+        JD_ALIGN_PARAM_COMMENTS = false
+        groovy {
+          ALIGN_NAMED_ARGS_IN_MAP = false
+          CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND = 999
+        }
+      }
+    }
+  }
+}
+
+task printSettings {
+  doLast {
+    println(project.idea.project.settings)
+  }
+}
+"""
+
+    when:
+    def result = GradleRunner.create()
+            .withProjectDir(testProjectDir.root)
+            .withArguments("printSettings", "-q")
+            .withPluginClasspath()
+            .build()
+    then:
+
+    def lines = result.output.readLines()
+    JsonOutput.prettyPrint(lines[0]) == """{
+    "codeStyle": {
+        "WHILE_BRACE_FORCE": null,
+        "JD_KEEP_EMPTY_RETURN": null,
+        "WRAP_COMMENTS": null,
+        "ALIGN_NAMED_ARGS_IN_MAP": null,
+        "CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND": null,
+        "languages": {
+            "groovy": {
+                "WHILE_BRACE_FORCE": null,
+                "JD_KEEP_EMPTY_RETURN": null,
+                "WRAP_COMMENTS": null,
+                "ALIGN_NAMED_ARGS_IN_MAP": false,
+                "CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND": 999,
+                "JD_ALIGN_EXCEPTION_COMMENTS": null,
+                "FOR_BRACE_FORCE": null,
+                "JD_KEEP_EMPTY_EXCEPTION": null,
+                "JD_KEEP_EMPTY_PARAMETER": null,
+                "JD_P_AT_EMPTY_LINES": null,
+                "DOWHILE_BRACE_FORCE": null,
+                "USE_SAME_IDENTS": null,
+                "JD_ALIGN_PARAM_COMMENTS": null,
+                "KEEP_CONTROL_STATEMENT_IN_ONE_LINE": null,
+                "RIGHT_MARGIN": null,
+                "IF_BRACE_FORCE": null
+            }
+        },
+        "JD_ALIGN_EXCEPTION_COMMENTS": null,
+        "FOR_BRACE_FORCE": null,
+        "JD_KEEP_EMPTY_EXCEPTION": null,
+        "JD_KEEP_EMPTY_PARAMETER": null,
+        "JD_P_AT_EMPTY_LINES": null,
+        "DOWHILE_BRACE_FORCE": null,
+        "USE_SAME_IDENTS": null,
+        "JD_ALIGN_PARAM_COMMENTS": false,
+        "RIGHT_MARGIN": 200,
+        "KEEP_CONTROL_STATEMENT_IN_ONE_LINE": null,
+        "IF_BRACE_FORCE": null
+    }
+}"""
+
+  }
+
   def "idea extension plugin can be applied in multiproject build"() {
     given:
     settingsFile << """
