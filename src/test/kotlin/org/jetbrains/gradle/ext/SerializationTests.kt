@@ -2,7 +2,7 @@ package org.jetbrains.gradle.ext
 
 import groovy.json.JsonOutput
 import groovy.lang.Closure
-import junit.framework.Assert.assertEquals
+import org.junit.Assert.assertEquals
 import org.gradle.api.Project
 import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.internal.reflect.Instantiator
@@ -71,8 +71,7 @@ class SerializationTests {
   }
 
   @Test fun `test Groovy config output`() {
-    val instantiator = (myProject as ProjectInternal).services.get(Instantiator::class.java)
-    val config = GroovyCompilerConfiguration(instantiator)
+    val config = GroovyCompilerConfiguration()
     config.heapSize = 2049
     config.excludes(object: Closure<ExcludesConfig>(this) {
       override fun call(): ExcludesConfig {

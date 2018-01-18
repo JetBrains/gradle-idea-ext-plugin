@@ -72,7 +72,7 @@ class ProjectSettings {
 
   void groovyCompiler(final Closure configureClosure) {
     if (groovyCompilerConfig == null) {
-      groovyCompilerConfig = new GroovyCompilerConfiguration(instantiator)
+      groovyCompilerConfig = new GroovyCompilerConfiguration()
     }
     ConfigureUtil.configure(configureClosure, groovyCompilerConfig)
   }

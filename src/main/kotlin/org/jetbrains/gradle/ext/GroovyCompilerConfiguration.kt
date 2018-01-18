@@ -4,10 +4,10 @@ import groovy.lang.Closure
 import org.gradle.internal.reflect.Instantiator
 import org.gradle.util.ConfigureUtil
 
-open class GroovyCompilerConfiguration(instantiator: Instantiator) {
+open class GroovyCompilerConfiguration {
 
   var heapSize: Int? = null
-  var excludes: ExcludesConfig = instantiator.newInstance(ExcludesConfig::class.java)
+  var excludes: ExcludesConfig = ExcludesConfig()
 
   fun excludes(closure: Closure<*>) {
     ConfigureUtil.configure(closure, excludes)
