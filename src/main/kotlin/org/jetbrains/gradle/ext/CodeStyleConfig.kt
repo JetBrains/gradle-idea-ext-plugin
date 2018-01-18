@@ -3,7 +3,7 @@ package org.jetbrains.gradle.ext
 import groovy.lang.Closure
 import org.gradle.util.ConfigureUtil
 
-enum class BraceForce { DO_NOT_FORCE, FORCE_BRACES_IF_MULTILINE, FORCE_BRACES_ALWAYS}
+enum class ForceBraces { DO_NOT_FORCE, FORCE_BRACES_IF_MULTILINE, FORCE_BRACES_ALWAYS }
 
 open class LanguageCodeStyleConfig {
 
@@ -18,10 +18,10 @@ open class LanguageCodeStyleConfig {
   var JD_KEEP_EMPTY_RETURN: Boolean? = null
   var WRAP_COMMENTS: Boolean? = null
 
-  var IF_BRACE_FORCE: BraceForce? = null
-  var DOWHILE_BRACE_FORCE: BraceForce? = null
-  var WHILE_BRACE_FORCE: BraceForce? = null
-  var FOR_BRACE_FORCE: BraceForce? = null
+  var IF_BRACE_FORCE: ForceBraces? = null
+  var DOWHILE_BRACE_FORCE: ForceBraces? = null
+  var WHILE_BRACE_FORCE: ForceBraces? = null
+  var FOR_BRACE_FORCE: ForceBraces? = null
 
   var KEEP_CONTROL_STATEMENT_IN_ONE_LINE: Boolean? = null
   var ALIGN_NAMED_ARGS_IN_MAP: Boolean? = null

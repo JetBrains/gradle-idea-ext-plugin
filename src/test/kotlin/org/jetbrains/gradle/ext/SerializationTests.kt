@@ -109,13 +109,13 @@ class SerializationTests {
   @Test fun `test code style output`() {
     val config = CodeStyleConfig()
 
-    config.IF_BRACE_FORCE = BraceForce.FORCE_BRACES_IF_MULTILINE
+    config.IF_BRACE_FORCE = ForceBraces.FORCE_BRACES_IF_MULTILINE
 
     config.java(object: Closure<LanguageCodeStyleConfig>(this) {
       override fun call(): LanguageCodeStyleConfig {
         val javaCfg = (delegate as LanguageCodeStyleConfig)
         javaCfg.CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND = 42
-        javaCfg.FOR_BRACE_FORCE = BraceForce.FORCE_BRACES_ALWAYS
+        javaCfg.FOR_BRACE_FORCE = ForceBraces.FORCE_BRACES_ALWAYS
         return javaCfg
       }
     })
