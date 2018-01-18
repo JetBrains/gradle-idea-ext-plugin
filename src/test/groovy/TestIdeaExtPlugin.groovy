@@ -37,9 +37,6 @@ rootProject.name = "ProjectName"
             compiler {
               resourcePatterns '!*.java;!*.class'
             }
-            codeStyle {
-              indent 'tabs'
-            }
             inspections {
               name 'value'
             }
@@ -85,7 +82,6 @@ rootProject.name = "ProjectName"
     def projectDir = lines[0]
     def output = lines[1]
     output.contains('{"compiler":{"resourcePatterns":"!*.java;!*.class"}')
-    output.contains('"codeStyle":{"indent":"tabs"}')
     output.contains('"inspections":{"name":"value"}')
 
     output.contains(
