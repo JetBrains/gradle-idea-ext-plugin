@@ -21,41 +21,4 @@ Drop resulting jar into root directory of a project and add following snippet to
     }
     apply plugin: 'org.jetbrains.gradle.plugin.idea-ext'
 
-### DSL Extensions
-#### supported by IJ 2017.3 EAP 173.2290.1
-
-    idea {
-      module {
-        settings {
-          runConfigurations {
-            ConfigurationName {
-              type 'app'
-              mainClass 'my.package.MainClass'
-              jvmArgs  '-Xmx1g'
-            }
-            
-            TestConfigName {
-              type 'junit'
-              class  'my.package.MyJUnitTestClass'
-              jvmArgs '-Xmx500m'
-            }
-          }
-        }
-      }
-      project {
-        settings {
-          compiler {
-            resourcePatterns '!*.java;!*.class'
-            clearOutputDirectory false
-            addNotNullAssertions false
-            autoShowFirstErrorInEditor false
-            displayNotificationPopup false
-            enableAutomake false
-            parallelCompilation true
-            rebuildModuleOnDependencyChange false
-          }
-        }
-      }
-    }
-      
       
