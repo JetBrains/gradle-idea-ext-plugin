@@ -10,12 +10,6 @@ import org.gradle.api.plugins.ExtensionAware
 import org.gradle.internal.reflect.Instantiator
 import org.gradle.plugins.ide.idea.model.IdeaModel
 import org.gradle.util.ConfigureUtil
-import org.jetbrains.gradle.ext.facets.Facet
-import org.jetbrains.gradle.ext.facets.SpringFacet
-import org.jetbrains.gradle.ext.runConfigurations.Application
-import org.jetbrains.gradle.ext.runConfigurations.JUnit
-import org.jetbrains.gradle.ext.runConfigurations.Remote
-import org.jetbrains.gradle.ext.runConfigurations.RunConfiguration
 
 @CompileStatic
 class IdeaExtPlugin implements Plugin<Project> {
@@ -38,15 +32,15 @@ class IdeaExtPlugin implements Plugin<Project> {
 
 @CompileStatic
 class ProjectSettings {
-  IdeaCompilerConfiguration compilerConfig
-  GroovyCompilerConfiguration groovyCompilerConfig
-  CopyrightConfiguration copyrightConfig
-  PolymorphicDomainObjectContainer<RunConfiguration> runConfigurations
-  Project project
-  CodeStyleConfig codeStyle
-  GradleIDESettings gradleSettings
-  FrameworkDetectionExclusionSettings detectExclusions
-  NamedDomainObjectContainer<Inspection> inspections
+  private IdeaCompilerConfiguration compilerConfig
+  private GroovyCompilerConfiguration groovyCompilerConfig
+  private CopyrightConfiguration copyrightConfig
+  private PolymorphicDomainObjectContainer<RunConfiguration> runConfigurations
+  private Project project
+  private CodeStyleConfig codeStyle
+  private GradleIDESettings gradleSettings
+  private FrameworkDetectionExclusionSettings detectExclusions
+  private NamedDomainObjectContainer<Inspection> inspections
 
   private Instantiator instantiator
 
@@ -59,9 +53,9 @@ class ProjectSettings {
       }
     })
 
-    runConfigurations.registerFactory(Application) { String name -> new Application(name, project) }
-    runConfigurations.registerFactory(JUnit) { String name -> new JUnit(name) }
-    runConfigurations.registerFactory(Remote) { String name -> new Remote(name) }
+    runConfigurations.registerFactory(Application) { String name -> project.objects.newInstance(Application, name, project) }
+    runConfigurations.registerFactory(JUnit) { String name -> project.objects.newInstance(JUnit, name) }
+    runConfigurations.registerFactory(Remote) { String name -> project.objects.newInstance(Remote, name) }
 
     installDefaultsExtraProperty(runConfigurations)
     this.runConfigurations = runConfigurations
@@ -78,55 +72,83 @@ class ProjectSettings {
     }
   }
 
-  void compiler(Action<IdeaCompilerConfiguration> action) {
+  IdeaCompilerConfiguration getCompiler() {
     if (compilerConfig == null) {
       compilerConfig = project.objects.newInstance(IdeaCompilerConfiguration)
     }
-    action.execute(compilerConfig)
+    return compilerConfig
   }
 
-  void groovyCompiler(final Closure configureClosure) {
+  void compiler(Action<IdeaCompilerConfiguration> action) {
+    action.execute(getCompiler())
+  }
+
+  GroovyCompilerConfiguration getGroovyCompiler() {
     if (groovyCompilerConfig == null) {
-      groovyCompilerConfig = new GroovyCompilerConfiguration()
+      groovyCompilerConfig = project.objects.newInstance(GroovyCompilerConfiguration);
     }
-    ConfigureUtil.configure(configureClosure, groovyCompilerConfig)
+    return groovyCompilerConfig
   }
 
-  def codeStyle(final Closure configureClosure) {
+  void groovyCompiler(Action<GroovyCompilerConfiguration> action) {
+    action.execute(getGroovyCompiler())
+  }
+
+  CodeStyleConfig getCodeStyle() {
     if (codeStyle == null) {
-      codeStyle = new CodeStyleConfig()
+      codeStyle = project.objects.newInstance(CodeStyleConfig)
     }
-    ConfigureUtil.configure(configureClosure, codeStyle)
+    return codeStyle
   }
 
-  def inspections(final Closure configureClosure) {
+  def codeStyle(Action<CodeStyleConfig> action) {
+    action.execute(getCodeStyle())
+  }
+
+  NamedDomainObjectContainer<Inspection> getInspections() {
     if (inspections == null) {
       inspections = project.container(Inspection)
     }
-    ConfigureUtil.configure(configureClosure, inspections)
+    return inspections
   }
 
-  def copyright(final Closure copyrightClosure) {
+  def inspections(Action<NamedDomainObjectContainer<Inspection>> action) {
+    action.execute(getInspections())
+  }
+
+  CopyrightConfiguration getCopyright() {
     if (copyrightConfig == null) {
-      copyrightConfig = new CopyrightConfiguration(project)
+      copyrightConfig = project.objects.newInstance(CopyrightConfiguration, project)
     }
-    ConfigureUtil.configure(copyrightClosure, copyrightConfig)
+    return copyrightConfig
   }
 
-  def runConfigurations(final Closure configureClosure) {
-    runConfigurations.configure(configureClosure)
+  def copyright(Action<CopyrightConfiguration> action) {
+    action.execute(getCopyright())
   }
 
-  def gradleSettings(final Closure configureClosure) {
+  PolymorphicDomainObjectContainer<RunConfiguration> getRunConfigurations() {
+    return runConfigurations
+  }
+
+  def runConfigurations(Action<PolymorphicDomainObjectContainer<RunConfiguration>> action) {
+    action.execute(runConfigurations)
+  }
+
+  GradleIDESettings getGradleSettings() {
     if (gradleSettings == null) {
-      gradleSettings = new GradleIDESettings()
+      gradleSettings = project.objects.newInstance(GradleIDESettings)
     }
-    ConfigureUtil.configure(configureClosure, gradleSettings)
+    return gradleSettings
+  }
+
+  def gradleSettings(Action<GradleIDESettings> action) {
+    action.execute(getGradleSettings())
   }
 
   def doNotDetectFrameworks(String... ids) {
     if (detectExclusions == null) {
-      detectExclusions = new FrameworkDetectionExclusionSettings()
+      detectExclusions = project.objects.newInstance(FrameworkDetectionExclusionSettings)
     }
     detectExclusions.excludes.addAll(ids)
   }
@@ -144,11 +166,11 @@ class ProjectSettings {
     }
 
     if (codeStyle != null) {
-      map["codeStyle"] = codeStyle
+      map["codeStyle"] = codeStyle.toMap()
     }
 
     if (inspections != null) {
-      map["inspections"] = inspections.asList()
+      map["inspections"] = inspections.asList().collect { it.toMap() }
     }
 
     if (copyrightConfig != null) {
@@ -156,11 +178,11 @@ class ProjectSettings {
     }
 
     if (!runConfigurations.isEmpty()) {
-      map["runConfigurations"] = runConfigurations.asList()
+      map["runConfigurations"] = runConfigurations.asList().collect { it.toMap() }
     }
 
     if (gradleSettings != null) {
-      map["gradleSettings"] = gradleSettings
+      map["gradleSettings"] = gradleSettings.toMap()
     }
 
     if (detectExclusions != null) {
@@ -173,7 +195,7 @@ class ProjectSettings {
 
 @CompileStatic
 class ModuleSettings {
-  PolymorphicDomainObjectContainer<Facet> facets
+  final PolymorphicDomainObjectContainer<Facet> facets
 
   ModuleSettings(Project project) {
     Instantiator instantiator = (project as ProjectInternal).services.get(Instantiator.class);
@@ -185,19 +207,19 @@ class ModuleSettings {
       }
     })
 
-    facets.registerFactory(SpringFacet) { String name -> new SpringFacet(name, project) }
+    facets.registerFactory(SpringFacet) { String name -> project.objects.newInstance(SpringFacet, name, project) }
     this.facets = facets
   }
 
-  def facets(final Closure configureClosure) {
-    facets.configure(configureClosure)
+  def facets(Action<PolymorphicDomainObjectContainer<Facet>> action) {
+    action.execute(facets)
   }
 
   @Override
   String toString() {
     def map = [:]
     if (!facets.isEmpty()) {
-      map["facets"] = facets.asList()
+      map["facets"] = facets.asList().collect { it.toMap() }
     }
     return JsonOutput.toJson(map)
   }
