@@ -38,7 +38,7 @@ rootProject.name = "ProjectName"
               resourcePatterns '!*.java;!*.class'
             }
             inspections {
-              name 'value'
+                "some" { enabled = true }
             }
             runConfigurations {
                 "Run my app"(Application) {
@@ -82,7 +82,7 @@ rootProject.name = "ProjectName"
     def projectDir = lines[0]
     def output = lines[1]
     output.contains('{"compiler":{"resourcePatterns":"!*.java;!*.class"}')
-    output.contains('"inspections":{"name":"value"}')
+    output.contains('"inspections":[{"enabled":true,"name":"some"}]')
 
     output.contains(
             '"runConfigurations":[{"type":"application","envs":null,' +
