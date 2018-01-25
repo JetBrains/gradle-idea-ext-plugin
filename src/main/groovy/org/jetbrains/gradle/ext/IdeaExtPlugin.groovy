@@ -46,8 +46,8 @@ class ProjectSettings {
   CodeStyleConfig codeStyle
   GradleIDESettings gradleSettings
   FrameworkDetectionExclusionSettings detectExclusions
+  NamedDomainObjectContainer<Inspection> inspections
 
-  NestedExpando inspections
   private Instantiator instantiator
 
   ProjectSettings(Project project) {
@@ -99,10 +99,9 @@ class ProjectSettings {
     ConfigureUtil.configure(configureClosure, codeStyle)
   }
 
-  // TODO:pm Problematic magic, this won't play nice with the Kotlin DSL
   def inspections(final Closure configureClosure) {
     if (inspections == null) {
-      inspections = new NestedExpando()
+      inspections = project.container(Inspection)
     }
     ConfigureUtil.configure(configureClosure, inspections)
   }
@@ -149,7 +148,7 @@ class ProjectSettings {
     }
 
     if (inspections != null) {
-      map["inspections"] = inspections
+      map["inspections"] = inspections.asList()
     }
 
     if (copyrightConfig != null) {
@@ -201,14 +200,5 @@ class ModuleSettings {
       map["facets"] = facets.asList()
     }
     return JsonOutput.toJson(map)
-  }
-}
-
-@CompileStatic
-class NamedSettings extends NestedExpando {
-  def name
-
-  NamedSettings(String name) {
-   this.name = name
   }
 }
