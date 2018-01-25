@@ -1,10 +1,14 @@
 package org.jetbrains.gradle.ext
 
 import groovy.json.JsonOutput
+import groovy.transform.CompileStatic
+import groovy.transform.TypeCheckingMode
 import org.gradle.api.*
 import org.gradle.api.internal.DefaultPolymorphicDomainObjectContainer
+import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.internal.reflect.Instantiator
+import org.gradle.plugins.ide.idea.model.IdeaModel
 import org.gradle.util.ConfigureUtil
 import org.jetbrains.gradle.ext.facets.Facet
 import org.jetbrains.gradle.ext.facets.SpringFacet
@@ -13,6 +17,7 @@ import org.jetbrains.gradle.ext.runConfigurations.JUnit
 import org.jetbrains.gradle.ext.runConfigurations.Remote
 import org.jetbrains.gradle.ext.runConfigurations.RunConfiguration
 
+@CompileStatic
 class IdeaExtPlugin implements Plugin<Project> {
   void apply(Project p) {
     p.apply plugin: 'idea'
@@ -20,7 +25,7 @@ class IdeaExtPlugin implements Plugin<Project> {
   }
 
   def extend(Project project) {
-    def ideaModel = project.extensions.findByName('idea') as ExtensionAware
+    def ideaModel = project.extensions.findByName('idea') as IdeaModel
     if (!ideaModel) { return }
 
     if (ideaModel.project) {
@@ -31,6 +36,7 @@ class IdeaExtPlugin implements Plugin<Project> {
   }
 }
 
+@CompileStatic
 class ProjectSettings {
   IdeaCompilerConfiguration compilerConfig
   GroovyCompilerConfiguration groovyCompilerConfig
@@ -45,24 +51,31 @@ class ProjectSettings {
   private Instantiator instantiator
 
   ProjectSettings(Project project) {
-    instantiator = project.getServices().get(Instantiator.class)
-    runConfigurations = this.instantiator.newInstance(DefaultPolymorphicDomainObjectContainer, RunConfiguration.class, this.instantiator,  new Namer<RunConfiguration>() {
+    this.instantiator = (project as ProjectInternal).services.get(Instantiator.class)
+    def runConfigurations = instantiator.newInstance(DefaultPolymorphicDomainObjectContainer, RunConfiguration.class, this.instantiator,  new Namer<RunConfiguration>() {
       @Override
       String determineName(RunConfiguration runConfiguration) {
         return runConfiguration.name
       }
     })
 
-    runConfigurations.registerFactory(Application) { new Application(it, project) }
-    runConfigurations.registerFactory(JUnit) { new JUnit(it) }
-    runConfigurations.registerFactory(Remote) { new Remote(it) }
+    runConfigurations.registerFactory(Application) { String name -> new Application(name, project) }
+    runConfigurations.registerFactory(JUnit) { String name -> new JUnit(name) }
+    runConfigurations.registerFactory(Remote) { String name -> new Remote(name) }
 
+    installDefaultsExtraProperty(runConfigurations)
+    this.runConfigurations = runConfigurations
+    this.project = project
+  }
+
+  @CompileStatic(TypeCheckingMode.SKIP)
+  private void installDefaultsExtraProperty(PolymorphicDomainObjectContainer<RunConfiguration> runConfigurations) {
+    // TODO:pm Problematic magic, this won't play nice with the Kotlin DSL
     runConfigurations.ext.defaults = { Class clazz, Closure configuration ->
       def aDefault = runConfigurations.maybeCreate("default_$clazz.name", clazz)
       aDefault.defaults = true
       ConfigureUtil.configure(configuration, aDefault)
     }
-    this.project = project
   }
 
   void compiler(Action<IdeaCompilerConfiguration> action) {
@@ -86,6 +99,7 @@ class ProjectSettings {
     ConfigureUtil.configure(configureClosure, codeStyle)
   }
 
+  // TODO:pm Problematic magic, this won't play nice with the Kotlin DSL
   def inspections(final Closure configureClosure) {
     if (inspections == null) {
       inspections = new NestedExpando()
@@ -158,20 +172,22 @@ class ProjectSettings {
   }
 }
 
+@CompileStatic
 class ModuleSettings {
   PolymorphicDomainObjectContainer<Facet> facets
 
   ModuleSettings(Project project) {
-    Instantiator instantiator = project.getServices().get(Instantiator.class);
+    Instantiator instantiator = (project as ProjectInternal).services.get(Instantiator.class);
 
-    facets = instantiator.newInstance(DefaultPolymorphicDomainObjectContainer, Facet.class, instantiator, new Namer<Facet>() {
+    def facets = instantiator.newInstance(DefaultPolymorphicDomainObjectContainer, Facet.class, instantiator, new Namer<Facet>() {
       @Override
       String determineName(Facet facet) {
         return facet.name
       }
     })
 
-    facets.registerFactory(SpringFacet) { new SpringFacet(it, project) }
+    facets.registerFactory(SpringFacet) { String name -> new SpringFacet(name, project) }
+    this.facets = facets
   }
 
   def facets(final Closure configureClosure) {
@@ -188,7 +204,7 @@ class ModuleSettings {
   }
 }
 
-
+@CompileStatic
 class NamedSettings extends NestedExpando {
   def name
 
