@@ -1,8 +1,8 @@
 import groovy.json.JsonOutput
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
-import org.jetbrains.gradle.ext.runConfigurations.Application
-import org.jetbrains.gradle.ext.runConfigurations.JUnit
+import org.jetbrains.gradle.ext.Application
+import org.jetbrains.gradle.ext.JUnit
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
@@ -25,7 +25,7 @@ rootProject.name = "ProjectName"
 """
     // language=groovy
     buildFile << """
-      import org.jetbrains.gradle.ext.runConfigurations.*
+      import org.jetbrains.gradle.ext.*
 
       plugins {
           id 'org.jetbrains.gradle.plugin.idea-ext'
@@ -34,9 +34,7 @@ rootProject.name = "ProjectName"
       idea {
         project {
           settings {
-            compiler {
-              resourcePatterns '!*.java;!*.class'
-            }
+            compiler.resourcePatterns '!*.java;!*.class'
             inspections {
                 "some" { enabled = true }
             }
@@ -184,6 +182,17 @@ task printSettings {
         "WRAP_COMMENTS": null,
         "ALIGN_NAMED_ARGS_IN_MAP": null,
         "CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND": null,
+        "JD_ALIGN_EXCEPTION_COMMENTS": null,
+        "FOR_BRACE_FORCE": null,
+        "JD_KEEP_EMPTY_EXCEPTION": null,
+        "JD_KEEP_EMPTY_PARAMETER": null,
+        "JD_P_AT_EMPTY_LINES": null,
+        "DOWHILE_BRACE_FORCE": null,
+        "USE_SAME_IDENTS": null,
+        "JD_ALIGN_PARAM_COMMENTS": false,
+        "KEEP_CONTROL_STATEMENT_IN_ONE_LINE": null,
+        "RIGHT_MARGIN": 200,
+        "IF_BRACE_FORCE": null,
         "languages": {
             "groovy": {
                 "WHILE_BRACE_FORCE": null,
@@ -203,18 +212,7 @@ task printSettings {
                 "RIGHT_MARGIN": null,
                 "IF_BRACE_FORCE": null
             }
-        },
-        "JD_ALIGN_EXCEPTION_COMMENTS": null,
-        "FOR_BRACE_FORCE": null,
-        "JD_KEEP_EMPTY_EXCEPTION": null,
-        "JD_KEEP_EMPTY_PARAMETER": null,
-        "JD_P_AT_EMPTY_LINES": null,
-        "DOWHILE_BRACE_FORCE": null,
-        "USE_SAME_IDENTS": null,
-        "JD_ALIGN_PARAM_COMMENTS": false,
-        "RIGHT_MARGIN": 200,
-        "KEEP_CONTROL_STATEMENT_IN_ONE_LINE": null,
-        "IF_BRACE_FORCE": null
+        }
     }
 }"""
 
@@ -250,7 +248,7 @@ task printSettings {
     def "test module settings"() {
         given:
         buildFile << """
-          import org.jetbrains.gradle.ext.facets.*
+          import org.jetbrains.gradle.ext.*
           
           plugins {
               id 'org.jetbrains.gradle.plugin.idea-ext'
