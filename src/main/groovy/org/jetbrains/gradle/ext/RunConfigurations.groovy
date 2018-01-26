@@ -1,8 +1,11 @@
 package org.jetbrains.gradle.ext
 
+import groovy.transform.CompileStatic
+import groovy.transform.TypeCheckingMode
 import org.gradle.api.Action
 import org.gradle.api.ExtensiblePolymorphicDomainObjectContainer
 import org.gradle.api.Named
+import org.gradle.api.NamedDomainObjectFactory
 import org.gradle.api.PolymorphicDomainObjectContainer
 import org.gradle.api.Project
 import org.gradle.api.internal.DefaultPolymorphicDomainObjectContainer
@@ -10,10 +13,12 @@ import org.gradle.internal.reflect.Instantiator
 
 import javax.inject.Inject
 
+@CompileStatic
 interface RunConfigurationContainer extends ExtensiblePolymorphicDomainObjectContainer<RunConfiguration> {
     public <T extends RunConfiguration> void defaults(Class<T> type, Action<T> action)
 }
 
+@CompileStatic
 class DefaultRunConfigurationContainer extends DefaultPolymorphicDomainObjectContainer<RunConfiguration> implements RunConfigurationContainer {
 
     @Inject
@@ -29,6 +34,7 @@ class DefaultRunConfigurationContainer extends DefaultPolymorphicDomainObjectCon
     }
 }
 
+@CompileStatic
 interface RunConfiguration extends Named {
 
     String getType()
@@ -40,6 +46,7 @@ interface RunConfiguration extends Named {
     Map<String, ?> toMap()
 }
 
+@CompileStatic
 class Application implements RunConfiguration {
 
     final String name
@@ -56,6 +63,7 @@ class Application implements RunConfiguration {
     final PolymorphicDomainObjectContainer<BeforeRunTask> beforeRun
 
     @Inject
+    @CompileStatic(TypeCheckingMode.SKIP)
     Application(String name, Project project) {
         this.name = name
         def beforeRun = GradleUtils.polymorphicContainer(project, BeforeRunTask)
@@ -84,6 +92,7 @@ class Application implements RunConfiguration {
     }
 }
 
+@CompileStatic
 class BeforeRunTask implements Named {
     final String id
     Boolean enabled = true
@@ -98,6 +107,7 @@ class BeforeRunTask implements Named {
     }
 }
 
+@CompileStatic
 class Make extends BeforeRunTask {
     public static final String ID = "Make"
 
@@ -106,6 +116,7 @@ class Make extends BeforeRunTask {
     }
 }
 
+@CompileStatic
 class JUnit implements RunConfiguration {
 
     final String name
@@ -155,6 +166,7 @@ class JUnit implements RunConfiguration {
     }
 }
 
+@CompileStatic
 class Remote implements RunConfiguration {
     static enum RemoteMode {
         ATTACH, LISTEN

@@ -1,5 +1,8 @@
 package org.jetbrains.gradle.ext
 
+import groovy.transform.CompileStatic
+
+@CompileStatic
 class IdeaCompilerConfiguration {
 
     String resourcePatterns

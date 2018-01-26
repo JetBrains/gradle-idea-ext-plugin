@@ -1,7 +1,9 @@
 package org.jetbrains.gradle.ext
 
+import groovy.transform.CompileStatic
 import org.gradle.api.Action
 
+@CompileStatic
 class GroovyCompilerConfiguration {
     Integer heapSize
     final ExcludesConfig excludes = new ExcludesConfig()
@@ -15,8 +17,9 @@ class GroovyCompilerConfiguration {
     }
 }
 
+@CompileStatic
 class ExcludesConfig {
-    final List<Map<String, Object>> data = []
+    final List<Map<String, ?>> data = []
 
     def file(String path) {
         data.add([

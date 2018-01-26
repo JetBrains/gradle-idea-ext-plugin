@@ -1,9 +1,11 @@
 package org.jetbrains.gradle.ext
 
+import groovy.transform.CompileStatic
 import org.gradle.api.Action
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
 
+@CompileStatic
 class CopyrightConfiguration {
 
     String useDefault
@@ -27,6 +29,7 @@ class CopyrightConfiguration {
     }
 }
 
+@CompileStatic
 class CopyrightProfile {
 
     final String name

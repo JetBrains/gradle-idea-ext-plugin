@@ -1,5 +1,6 @@
 package org.jetbrains.gradle.ext
 
+import groovy.transform.CompileStatic
 import org.gradle.api.Action
 import org.gradle.api.Named
 import org.gradle.api.NamedDomainObjectContainer
@@ -7,6 +8,7 @@ import org.gradle.api.Project
 
 import javax.inject.Inject
 
+@CompileStatic
 interface Facet extends Named {
 
     String getType()
@@ -14,6 +16,7 @@ interface Facet extends Named {
     Map<String, ?> toMap()
 }
 
+@CompileStatic
 class SpringFacet implements Facet {
 
     final String name
@@ -39,6 +42,7 @@ class SpringFacet implements Facet {
     }
 }
 
+@CompileStatic
 class SpringContext {
 
     final String name
