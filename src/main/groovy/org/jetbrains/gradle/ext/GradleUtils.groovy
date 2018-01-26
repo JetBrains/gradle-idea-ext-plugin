@@ -18,4 +18,9 @@ class GradleUtils {
         def instantiator = (project as ProjectInternal).services.get(Instantiator.class)
         return instantiator.newInstance(DefaultPolymorphicDomainObjectContainer, type, instantiator)
     }
+
+    static <T extends Named, C extends ExtensiblePolymorphicDomainObjectContainer<T>> C customPolymorphicContainer(Project project, Class<C> containerType) {
+        def instantiator = (project as ProjectInternal).services.get(Instantiator.class)
+        return instantiator.newInstance(containerType, instantiator)
+    }
 }
