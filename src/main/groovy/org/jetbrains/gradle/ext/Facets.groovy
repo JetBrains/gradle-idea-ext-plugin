@@ -1,14 +1,13 @@
 package org.jetbrains.gradle.ext
 
 import org.gradle.api.Action
+import org.gradle.api.Named
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
 
 import javax.inject.Inject
 
-interface Facet {
-
-    String getName()
+interface Facet extends Named {
 
     String getType()
 

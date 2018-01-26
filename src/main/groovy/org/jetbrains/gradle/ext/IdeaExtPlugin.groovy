@@ -4,10 +4,7 @@ import groovy.json.JsonOutput
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import org.gradle.api.*
-import org.gradle.api.internal.DefaultPolymorphicDomainObjectContainer
-import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.api.plugins.ExtensionAware
-import org.gradle.internal.reflect.Instantiator
 import org.gradle.plugins.ide.idea.model.IdeaModel
 import org.gradle.util.ConfigureUtil
 
@@ -42,16 +39,8 @@ class ProjectSettings {
   private FrameworkDetectionExclusionSettings detectExclusions
   private NamedDomainObjectContainer<Inspection> inspections
 
-  private Instantiator instantiator
-
   ProjectSettings(Project project) {
-    this.instantiator = (project as ProjectInternal).services.get(Instantiator.class)
-    def runConfigurations = instantiator.newInstance(DefaultPolymorphicDomainObjectContainer, RunConfiguration.class, this.instantiator,  new Namer<RunConfiguration>() {
-      @Override
-      String determineName(RunConfiguration runConfiguration) {
-        return runConfiguration.name
-      }
-    })
+    def runConfigurations = GradleUtils.polymorphicContainer(project, RunConfiguration)
 
     runConfigurations.registerFactory(Application) { String name -> project.objects.newInstance(Application, name, project) }
     runConfigurations.registerFactory(JUnit) { String name -> project.objects.newInstance(JUnit, name) }
@@ -198,14 +187,7 @@ class ModuleSettings {
   final PolymorphicDomainObjectContainer<Facet> facets
 
   ModuleSettings(Project project) {
-    Instantiator instantiator = (project as ProjectInternal).services.get(Instantiator.class);
-
-    def facets = instantiator.newInstance(DefaultPolymorphicDomainObjectContainer, Facet.class, instantiator, new Namer<Facet>() {
-      @Override
-      String determineName(Facet facet) {
-        return facet.name
-      }
-    })
+    def facets = GradleUtils.polymorphicContainer(project, Facet)
 
     facets.registerFactory(SpringFacet) { String name -> project.objects.newInstance(SpringFacet, name, project) }
     this.facets = facets

@@ -1,17 +1,13 @@
 package org.jetbrains.gradle.ext
 
 import org.gradle.api.Action
-import org.gradle.api.Namer
+import org.gradle.api.Named
 import org.gradle.api.PolymorphicDomainObjectContainer
 import org.gradle.api.Project
-import org.gradle.api.internal.DefaultPolymorphicDomainObjectContainer
-import org.gradle.api.internal.project.ProjectInternal
-import org.gradle.internal.reflect.Instantiator
 
 import javax.inject.Inject
 
-interface RunConfiguration {
-    String getName()
+interface RunConfiguration extends Named {
 
     String getType()
 
@@ -40,12 +36,7 @@ class Application implements RunConfiguration {
     @Inject
     Application(String name, Project project) {
         this.name = name
-        def instantiator = (project as ProjectInternal).services.get(Instantiator)
-        def beforeRun = instantiator.newInstance(
-                DefaultPolymorphicDomainObjectContainer,
-                BeforeRunTask,
-                instantiator,
-                { BeforeRunTask beforeRunTask -> beforeRunTask.id } as Namer<BeforeRunTask>)
+        def beforeRun = GradleUtils.polymorphicContainer(project, BeforeRunTask)
         beforeRun.registerFactory(Make, { project.objects.newInstance(Make) })
         this.beforeRun = beforeRun
     }
@@ -71,12 +62,17 @@ class Application implements RunConfiguration {
     }
 }
 
-class BeforeRunTask {
+class BeforeRunTask implements Named {
     final String id
     Boolean enabled = true
 
     BeforeRunTask(String id) {
         this.id = id
+    }
+
+    @Override
+    String getName() {
+        return id
     }
 }
 
