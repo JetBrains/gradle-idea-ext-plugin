@@ -1,11 +1,33 @@
 package org.jetbrains.gradle.ext
 
 import org.gradle.api.Action
+import org.gradle.api.ExtensiblePolymorphicDomainObjectContainer
 import org.gradle.api.Named
 import org.gradle.api.PolymorphicDomainObjectContainer
 import org.gradle.api.Project
+import org.gradle.api.internal.DefaultPolymorphicDomainObjectContainer
+import org.gradle.internal.reflect.Instantiator
 
 import javax.inject.Inject
+
+interface RunConfigurationContainer extends ExtensiblePolymorphicDomainObjectContainer<RunConfiguration> {
+    public <T extends RunConfiguration> void defaults(Class<T> type, Action<T> action)
+}
+
+class DefaultRunConfigurationContainer extends DefaultPolymorphicDomainObjectContainer<RunConfiguration> implements RunConfigurationContainer {
+
+    @Inject
+    DefaultRunConfigurationContainer(Instantiator instantiator) {
+        super(RunConfiguration, instantiator)
+    }
+
+    @Override
+    public <T extends RunConfiguration> void defaults(Class<T> type, Action<T> action) {
+        def defaults = maybeCreate("default_$type.name", type)
+        defaults.defaults = true
+        action.execute(defaults)
+    }
+}
 
 interface RunConfiguration extends Named {
 

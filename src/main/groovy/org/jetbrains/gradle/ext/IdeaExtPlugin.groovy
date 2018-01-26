@@ -2,11 +2,9 @@ package org.jetbrains.gradle.ext
 
 import groovy.json.JsonOutput
 import groovy.transform.CompileStatic
-import groovy.transform.TypeCheckingMode
 import org.gradle.api.*
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.plugins.ide.idea.model.IdeaModel
-import org.gradle.util.ConfigureUtil
 
 @CompileStatic
 class IdeaExtPlugin implements Plugin<Project> {
@@ -32,7 +30,7 @@ class ProjectSettings {
   private IdeaCompilerConfiguration compilerConfig
   private GroovyCompilerConfiguration groovyCompilerConfig
   private CopyrightConfiguration copyrightConfig
-  private PolymorphicDomainObjectContainer<RunConfiguration> runConfigurations
+  private RunConfigurationContainer runConfigurations
   private Project project
   private CodeStyleConfig codeStyle
   private GradleIDESettings gradleSettings
@@ -40,25 +38,14 @@ class ProjectSettings {
   private NamedDomainObjectContainer<Inspection> inspections
 
   ProjectSettings(Project project) {
-    def runConfigurations = GradleUtils.polymorphicContainer(project, RunConfiguration)
+    def runConfigurations = GradleUtils.customPolymorphicContainer(project, DefaultRunConfigurationContainer)
 
     runConfigurations.registerFactory(Application) { String name -> project.objects.newInstance(Application, name, project) }
     runConfigurations.registerFactory(JUnit) { String name -> project.objects.newInstance(JUnit, name) }
     runConfigurations.registerFactory(Remote) { String name -> project.objects.newInstance(Remote, name) }
 
-    installDefaultsExtraProperty(runConfigurations)
     this.runConfigurations = runConfigurations
     this.project = project
-  }
-
-  @CompileStatic(TypeCheckingMode.SKIP)
-  private void installDefaultsExtraProperty(PolymorphicDomainObjectContainer<RunConfiguration> runConfigurations) {
-    // TODO:pm Problematic magic, this won't play nice with the Kotlin DSL
-    runConfigurations.ext.defaults = { Class clazz, Closure configuration ->
-      def aDefault = runConfigurations.maybeCreate("default_$clazz.name", clazz)
-      aDefault.defaults = true
-      ConfigureUtil.configure(configuration, aDefault)
-    }
   }
 
   IdeaCompilerConfiguration getCompiler() {
