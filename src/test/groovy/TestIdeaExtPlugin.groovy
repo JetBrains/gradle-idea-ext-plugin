@@ -1,8 +1,6 @@
 import groovy.json.JsonOutput
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
-import org.jetbrains.gradle.ext.Application
-import org.jetbrains.gradle.ext.JUnit
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
@@ -44,16 +42,8 @@ rootProject.name = "ProjectName"
                     workingDirectory = "\$projectDir" 
                     moduleName = getProject().idea.module.name
                 }
-                "Run my test"(JUnit) {
-                    className = 'my.test.className'
-                }
-
                 defaults(Application) {
                     jvmArgs = '-DmyKey=myVal'
-                }
-
-                defaults(JUnit) {
-                    className = 'MyDefaultClass'
                 }
             }
           }
@@ -78,19 +68,43 @@ rootProject.name = "ProjectName"
 
     def lines = result.output.readLines()
     def projectDir = lines[0]
-    def output = lines[1]
-    output.contains('{"compiler":{"resourcePatterns":"!*.java;!*.class"}')
-    output.contains('"inspections":[{"enabled":true,"name":"some"}]')
+    def prettyOutput = JsonOutput.prettyPrint(lines[1])
+    prettyOutput.contains(
+""""compiler": {
+        "resourcePatterns": "!*.java;!*.class"
+    }""")
+    prettyOutput.contains(
+""""inspections": [
+        {
+            "enabled": true,
+            "name": "some"
+        }
+    ]""")
 
-    output.contains(
-            '"runConfigurations":[{"type":"application","envs":null,' +
-                    '"workingDirectory":' + JsonOutput.toJson(projectDir) + ',"mainClass":"foo.App","moduleName":"ProjectName","beforeRun":[],"jvmArgs":null,"defaults":false,"name":"Run my app","programParameters":null},' +
-                    '{"directory":null,"type":"junit","repeat":null,"envs":null,"vmParameters":null,"category":null,"workingDirectory":null,' +
-                        '"className":"my.test.className","moduleName":null,"passParentEnvs":null,"packageName":null,"defaults":false,"pattern":null,"name":"Run my test","method":null},' +
-                    '{"type":"application","envs":null,"workingDirectory":null,"mainClass":null,"moduleName":null,"beforeRun":[],"jvmArgs":"-DmyKey=myVal","defaults":true,"name":"default_'+ Application.name +'","programParameters":null},' +
-                    '{"directory":null,"type":"junit","repeat":null,"envs":null,"vmParameters":null,"category":null,"workingDirectory":null,' +
-                        '"className":"MyDefaultClass","moduleName":null,"passParentEnvs":null,"packageName":null,"defaults":true,"pattern":null,"name":"default_'+ JUnit.name +'","method":null}]'
-    )
+     prettyOutput.contains(
+""""runConfigurations": [
+        {
+            "type": "application",
+            "workingDirectory": ${JsonOutput.toJson(projectDir)},
+            "mainClass": "foo.App",
+            "moduleName": "ProjectName",
+            "beforeRun": [
+                
+            ],
+            "defaults": false,
+            "name": "Run my app"
+        },
+        {
+            "type": "application",
+            "beforeRun": [
+                
+            ],
+            "jvmArgs": "-DmyKey=myVal",
+            "defaults": true,
+            "name": "default_org.jetbrains.gradle.ext.Application"
+        }
+    ]
+""")
 
     result.task(":printSettings").outcome == TaskOutcome.SUCCESS
   }
@@ -175,42 +189,15 @@ task printSettings {
     then:
 
     def lines = result.output.readLines()
-    JsonOutput.prettyPrint(lines[0]) == """{
+    JsonOutput.prettyPrint(lines[0]) ==
+"""{
     "codeStyle": {
-        "WHILE_BRACE_FORCE": null,
-        "JD_KEEP_EMPTY_RETURN": null,
-        "WRAP_COMMENTS": null,
-        "ALIGN_NAMED_ARGS_IN_MAP": null,
-        "CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND": null,
-        "JD_ALIGN_EXCEPTION_COMMENTS": null,
-        "FOR_BRACE_FORCE": null,
-        "JD_KEEP_EMPTY_EXCEPTION": null,
-        "JD_KEEP_EMPTY_PARAMETER": null,
-        "JD_P_AT_EMPTY_LINES": null,
-        "DOWHILE_BRACE_FORCE": null,
-        "USE_SAME_IDENTS": null,
         "JD_ALIGN_PARAM_COMMENTS": false,
-        "KEEP_CONTROL_STATEMENT_IN_ONE_LINE": null,
         "RIGHT_MARGIN": 200,
-        "IF_BRACE_FORCE": null,
         "languages": {
             "groovy": {
-                "WHILE_BRACE_FORCE": null,
-                "JD_KEEP_EMPTY_RETURN": null,
-                "WRAP_COMMENTS": null,
                 "ALIGN_NAMED_ARGS_IN_MAP": false,
-                "CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND": 999,
-                "JD_ALIGN_EXCEPTION_COMMENTS": null,
-                "FOR_BRACE_FORCE": null,
-                "JD_KEEP_EMPTY_EXCEPTION": null,
-                "JD_KEEP_EMPTY_PARAMETER": null,
-                "JD_P_AT_EMPTY_LINES": null,
-                "DOWHILE_BRACE_FORCE": null,
-                "USE_SAME_IDENTS": null,
-                "JD_ALIGN_PARAM_COMMENTS": null,
-                "KEEP_CONTROL_STATEMENT_IN_ONE_LINE": null,
-                "RIGHT_MARGIN": null,
-                "IF_BRACE_FORCE": null
+                "CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND": 999
             }
         }
     }

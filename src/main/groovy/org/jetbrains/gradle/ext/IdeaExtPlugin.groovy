@@ -1,5 +1,6 @@
 package org.jetbrains.gradle.ext
 
+import com.google.gson.Gson
 import groovy.json.JsonOutput
 import groovy.transform.CompileStatic
 import org.gradle.api.*
@@ -36,6 +37,8 @@ class ProjectSettings {
   private GradleIDESettings gradleSettings
   private FrameworkDetectionExclusionSettings detectExclusions
   private NamedDomainObjectContainer<Inspection> inspections
+
+  private Gson gson = new Gson()
 
   ProjectSettings(Project project) {
     def runConfigurations = GradleUtils.customPolymorphicContainer(project, DefaultRunConfigurationContainer)
@@ -165,7 +168,7 @@ class ProjectSettings {
       map["frameworkDetectionExcludes"] = detectExclusions.excludes
     }
 
-    return JsonOutput.toJson(map)
+    return gson.toJson(map)
   }
 }
 
