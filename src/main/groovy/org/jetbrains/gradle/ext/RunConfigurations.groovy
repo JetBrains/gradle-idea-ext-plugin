@@ -5,7 +5,6 @@ import groovy.transform.TypeCheckingMode
 import org.gradle.api.Action
 import org.gradle.api.ExtensiblePolymorphicDomainObjectContainer
 import org.gradle.api.Named
-import org.gradle.api.NamedDomainObjectFactory
 import org.gradle.api.PolymorphicDomainObjectContainer
 import org.gradle.api.Project
 import org.gradle.api.internal.DefaultPolymorphicDomainObjectContainer
@@ -35,15 +34,10 @@ class DefaultRunConfigurationContainer extends DefaultPolymorphicDomainObjectCon
 }
 
 @CompileStatic
-interface RunConfiguration extends Named {
-
+interface RunConfiguration extends Named, MapConvertible {
     String getType()
-
     boolean isDefaults()
-
     void setDefaults(boolean defaults)
-
-    Map<String, ?> toMap()
 }
 
 @CompileStatic

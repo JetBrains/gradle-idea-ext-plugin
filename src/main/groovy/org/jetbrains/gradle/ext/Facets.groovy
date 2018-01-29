@@ -9,11 +9,8 @@ import org.gradle.api.Project
 import javax.inject.Inject
 
 @CompileStatic
-interface Facet extends Named {
-
+interface Facet extends Named, MapConvertible {
     String getType()
-
-    Map<String, ?> toMap()
 }
 
 @CompileStatic

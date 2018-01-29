@@ -4,8 +4,10 @@ import com.google.gson.Gson
 import groovy.json.JsonOutput
 import groovy.transform.CompileStatic
 import org.gradle.api.*
+import org.gradle.api.internal.plugins.ExtensionContainerInternal
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.plugins.ide.idea.model.IdeaModel
+import org.gradle.util.GradleVersion
 
 @CompileStatic
 class IdeaExtPlugin implements Plugin<Project> {
@@ -27,7 +29,34 @@ class IdeaExtPlugin implements Plugin<Project> {
 }
 
 @CompileStatic
-class ProjectSettings {
+abstract class AbstractExtensibleSettings {
+  Map<String, ?> collectExtensionsMap() {
+    def result = [:]
+    if (this instanceof ExtensionAware) {
+      def extContainer = ((this as ExtensionAware).extensions as ExtensionContainerInternal)
+      if (GradleVersion.current() >= GradleVersion.version("1.6")) {
+        extContainer.asMap.each { name, ext ->
+          if (ext instanceof MapConvertible) {
+            result.put(name, (ext as MapConvertible).toMap())
+          }
+
+          if (ext instanceof Iterable) {
+            def converted =  (ext as Iterable)
+                    .findAll { it instanceof MapConvertible }
+                    .collect { (it as MapConvertible).toMap() }
+            if (converted.size() > 0) {
+              result.put(name, converted)
+            }
+          }
+        }
+      }
+    }
+    return result
+  }
+}
+
+@CompileStatic
+class ProjectSettings extends AbstractExtensibleSettings {
   private IdeaCompilerConfiguration compilerConfig
   private GroovyCompilerConfiguration groovyCompilerConfig
   private CopyrightConfiguration copyrightConfig
@@ -133,12 +162,11 @@ class ProjectSettings {
   }
 
   String toString() {
-    def map  = [:]
+    def map = collectExtensionsMap()
 
     if (compilerConfig != null) {
       map["compiler"] = compilerConfig.toMap()
     }
-
 
     if (groovyCompilerConfig != null) {
       map["groovyCompiler"] = groovyCompilerConfig.toMap()
@@ -149,7 +177,7 @@ class ProjectSettings {
     }
 
     if (inspections != null) {
-      map["inspections"] = inspections.asList().collect { it.toMap() }
+      map["inspections"] = inspections.collect { it.toMap() }
     }
 
     if (copyrightConfig != null) {
@@ -157,7 +185,7 @@ class ProjectSettings {
     }
 
     if (!runConfigurations.isEmpty()) {
-      map["runConfigurations"] = runConfigurations.asList().collect { it.toMap() }
+      map["runConfigurations"] = runConfigurations.collect { (it as RunConfiguration).toMap() }
     }
 
     if (gradleSettings != null) {
@@ -173,7 +201,7 @@ class ProjectSettings {
 }
 
 @CompileStatic
-class ModuleSettings {
+class ModuleSettings extends AbstractExtensibleSettings {
   final PolymorphicDomainObjectContainer<Facet> facets
 
   ModuleSettings(Project project) {
@@ -189,7 +217,7 @@ class ModuleSettings {
 
   @Override
   String toString() {
-    def map = [:]
+    def map = collectExtensionsMap()
     if (!facets.isEmpty()) {
       map["facets"] = facets.asList().collect { it.toMap() }
     }
