@@ -4,10 +4,9 @@ import com.google.gson.Gson
 import groovy.json.JsonOutput
 import groovy.transform.CompileStatic
 import org.gradle.api.*
-import org.gradle.api.internal.plugins.ExtensionContainerInternal
 import org.gradle.api.plugins.ExtensionAware
+import org.gradle.api.reflect.TypeOf
 import org.gradle.plugins.ide.idea.model.IdeaModel
-import org.gradle.util.GradleVersion
 
 @CompileStatic
 class IdeaExtPlugin implements Plugin<Project> {
@@ -30,28 +29,45 @@ class IdeaExtPlugin implements Plugin<Project> {
 
 @CompileStatic
 abstract class AbstractExtensibleSettings {
+  TypeOf mapConvertibleType = TypeOf.typeOf(MapConvertible)
+  TypeOf iterableType = TypeOf.typeOf(Iterable)
+
   Map<String, ?> collectExtensionsMap() {
     def result = [:]
     if (this instanceof ExtensionAware) {
-      def extContainer = ((this as ExtensionAware).extensions as ExtensionContainerInternal)
-      if (GradleVersion.current() >= GradleVersion.version("1.6")) {
-        extContainer.asMap.each { name, ext ->
-          if (ext instanceof MapConvertible) {
-            result.put(name, (ext as MapConvertible).toMap())
-          }
+      def extContainer = (this as ExtensionAware).extensions
+      extContainer.extensionsSchema.each { schema ->
+        def name = schema.name
+        def typeOfExt = schema.publicType
 
-          if (ext instanceof Iterable) {
-            def converted =  (ext as Iterable)
-                    .findAll { it instanceof MapConvertible }
-                    .collect { (it as MapConvertible).toMap() }
-            if (converted.size() > 0) {
-              result.put(name, converted)
-            }
-          }
+        def converted = convertToMapOrList(typeOfExt, extContainer.findByName(name))
+        if (converted != null) {
+          result.put(name, converted)
         }
       }
     }
     return result
+  }
+
+  def convertToMapOrList(TypeOf<?> typeOfExt, def extension) {
+    if (extension == null) {
+      return null
+    }
+
+    if (mapConvertibleType.isAssignableFrom(typeOfExt)) {
+      return (extension as MapConvertible).toMap()
+    }
+
+    if (iterableType.isAssignableFrom(typeOfExt)) {
+      def converted = (extension as Iterable)
+              .findAll { it instanceof MapConvertible }
+              .collect { (it as MapConvertible).toMap() }
+      if (converted.size() > 0) {
+        return converted
+      } else {
+        return null
+      }
+    }
   }
 }
 
