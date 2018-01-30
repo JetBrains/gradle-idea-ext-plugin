@@ -63,7 +63,6 @@ class ProjectSettings extends AbstractExtensibleSettings {
   private RunConfigurationContainer runConfigurations
   private Project project
   private CodeStyleConfig codeStyle
-  private GradleIDESettings gradleSettings
   private FrameworkDetectionExclusionSettings detectExclusions
   private NamedDomainObjectContainer<Inspection> inspections
 
@@ -143,17 +142,6 @@ class ProjectSettings extends AbstractExtensibleSettings {
     action.execute(runConfigurations)
   }
 
-  GradleIDESettings getGradleSettings() {
-    if (gradleSettings == null) {
-      gradleSettings = project.objects.newInstance(GradleIDESettings)
-    }
-    return gradleSettings
-  }
-
-  def gradleSettings(Action<GradleIDESettings> action) {
-    action.execute(getGradleSettings())
-  }
-
   def doNotDetectFrameworks(String... ids) {
     if (detectExclusions == null) {
       detectExclusions = project.objects.newInstance(FrameworkDetectionExclusionSettings)
@@ -186,10 +174,6 @@ class ProjectSettings extends AbstractExtensibleSettings {
 
     if (!runConfigurations.isEmpty()) {
       map["runConfigurations"] = runConfigurations.collect { (it as RunConfiguration).toMap() }
-    }
-
-    if (gradleSettings != null) {
-      map["gradleSettings"] = gradleSettings.toMap()
     }
 
     if (detectExclusions != null) {
