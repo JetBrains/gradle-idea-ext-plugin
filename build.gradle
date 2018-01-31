@@ -3,13 +3,14 @@ plugins {
   id 'java-gradle-plugin'
   id 'maven'
   id "org.jetbrains.kotlin.jvm" version "1.1.50"
+  id "com.gradle.plugin-publish" version "0.9.9"
 }
 
 group = 'org.jetbrains.gradle.plugin.idea-ext'
 version = '0.1-SNAPSHOT'
 
 repositories {
-  mavenCentral()
+  jcenter()
 }
 
 dependencies {
@@ -25,6 +26,21 @@ gradlePlugin {
     ideaExtPlugin {
       id = "org.jetbrains.gradle.plugin.idea-ext"
       implementationClass = "org.jetbrains.gradle.ext.IdeaExtPlugin"
+    }
+  }
+}
+
+pluginBundle {
+  website = 'https://github.com/jetbrains/gradle-idea-ext-plugin'
+  vcsUrl  = 'https://github.com/jetbrains/gradle-idea-ext-plugin'
+
+  description = 'Extends the Gradle\'s "idea" DSL with specific settings: code style, facets, run configurations etc.'
+  tags = ['intellij', 'idea', 'settings']
+
+  plugins {
+    ideaExtPlugin {
+      id = 'org.jetbrains.gradle.plugin.idea-ext'
+      displayName = 'Gradle Idea Extension plugin'
     }
   }
 }
