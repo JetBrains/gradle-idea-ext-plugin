@@ -286,6 +286,96 @@ task printSettings {
         result.task(":printSettings").outcome == TaskOutcome.SUCCESS
     }
 
+  def "test extending the DSL with custom run configurations and facets"() {
+    given:
+    buildFile << """
+import org.jetbrains.gradle.ext.*
+import org.gradle.plugins.ide.idea.model.IdeaModel
+import org.gradle.api.plugins.ExtensionAware
+import org.gradle.api.*
+import javax.inject.Inject
+
+class MyRC extends BaseRunConfiguration {
+  def name = "value"
+  def aKey = "a value"
+  def type = "myRunConfiguration"
+  @Inject
+  MyRC(String param) { name = param }
+  String getName() { return name }
+  String getType() { return type }
+  Map<String, Object> toMap() { return [ "name": name, "type":type, "aKey": aKey ] } 
+}
+
+class MyFacet implements Facet {
+  def type = "MyFacetType"
+  def name = "facet_name"
+  def facetKey = "facet_value"
+  @Inject
+  MyFacet(param) { name = param }
+  String getName() { return name }
+  String getType() { return type }
+  Map<String, Object> toMap() { return [ "type": type, "facetKey": facetKey ] }
+}
+
+class TestPlugin implements Plugin<Project> {
+    void apply(Project project) {
+        project.apply plugin: 'org.jetbrains.gradle.plugin.idea-ext'
+        def ideaModel = project.extensions.findByName('idea') as IdeaModel
+    
+        def projectSettings = (ideaModel.project as ExtensionAware).extensions.findByName("settings") as ProjectSettings
+        projectSettings.runConfigurations.registerFactory(MyRC) { String name -> project.objects.newInstance(MyRC, name) }
+        
+        def moduleSettings = (ideaModel.module as ExtensionAware).extensions.findByName("settings") as ModuleSettings
+        moduleSettings.facets.registerFactory(MyFacet) { String name -> project.objects.newInstance(MyFacet, name) }
+    }
+}
+
+plugins {
+  id 'org.jetbrains.gradle.plugin.idea-ext'
+}
+
+// Apply the plugin
+apply plugin: TestPlugin
+
+idea {
+  project {
+    settings {
+      runConfigurations {
+        "testRunConfig"(MyRC) {
+          aKey = "project_test_value"
+        }
+      }
+    }
+  }
+  module.settings.facets {
+    testFacet(MyFacet) {
+      facetKey = "module_facet_value"
+    }
+  }
+}
+
+task printSettings {
+  doLast {
+    println(project.idea.project.settings)
+    println(project.idea.module.settings)
+  }
+}
+"""
+
+    when:
+    def result = GradleRunner.create()
+            .withProjectDir(testProjectDir.root)
+            .withArguments("printSettings", "-q")
+            .withPluginClasspath()
+            .build()
+    then:
+
+    def lines = result.output.readLines()
+    lines[0] == '{"runConfigurations":[{"name":"testRunConfig","type":"myRunConfiguration","aKey":"project_test_value"}]}'
+    lines[1] == '{"facets":[{"type":"MyFacetType","facetKey":"module_facet_value"}]}'
+
+  }
+
 
   def "test extending the DSL with simple class"() {
     given:

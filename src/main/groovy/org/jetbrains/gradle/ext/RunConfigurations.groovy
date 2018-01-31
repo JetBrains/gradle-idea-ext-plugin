@@ -41,7 +41,12 @@ interface RunConfiguration extends Named, MapConvertible {
 }
 
 @CompileStatic
-class Application implements RunConfiguration {
+abstract class BaseRunConfiguration implements RunConfiguration {
+    boolean defaults
+}
+
+@CompileStatic
+class Application extends BaseRunConfiguration {
 
     final String name
     final String type = "application"
@@ -111,7 +116,7 @@ class Make extends BeforeRunTask {
 }
 
 @CompileStatic
-class JUnit implements RunConfiguration {
+class JUnit extends BaseRunConfiguration {
 
     final String name
     final String type = "junit"
@@ -161,7 +166,7 @@ class JUnit implements RunConfiguration {
 }
 
 @CompileStatic
-class Remote implements RunConfiguration {
+class Remote extends BaseRunConfiguration {
     static enum RemoteMode {
         ATTACH, LISTEN
     }
