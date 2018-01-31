@@ -13,8 +13,8 @@ repositories {
 }
 
 dependencies {
-  compile 'org.jetbrains.kotlin:kotlin-stdlib'
   compile 'com.google.code.gson:gson:2.8.2'
+  testCompile 'org.jetbrains.kotlin:kotlin-stdlib'
   testCompile('org.spockframework:spock-core:1.1-groovy-2.4') {
     exclude module: 'groovy-all'
   }
@@ -26,28 +26,5 @@ gradlePlugin {
       id = "org.jetbrains.gradle.plugin.idea-ext"
       implementationClass = "org.jetbrains.gradle.ext.IdeaExtPlugin"
     }
-  }
-}
-
-
-tasks.compileGroovy {
-  options.encoding = 'UTF-8'
-  doFirst {
-    classpath = classpath + project.files(tasks.compileKotlin.destinationDir)
-  }
-
-  doLast {
-    classpath = classpath - project.files(tasks.compileKotlin.destinationDir)
-  }
-}
-
-tasks.compileTestGroovy {
-  options.encoding = 'UTF-8'
-  doFirst {
-    classpath = classpath + project.files(tasks.compileTestKotlin.destinationDir)
-  }
-
-  doLast {
-    classpath = classpath - project.files(tasks.compileTestKotlin.destinationDir)
   }
 }
