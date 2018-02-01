@@ -7,6 +7,7 @@ import org.gradle.api.ExtensiblePolymorphicDomainObjectContainer
 import org.gradle.api.Named
 import org.gradle.api.PolymorphicDomainObjectContainer
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.internal.DefaultPolymorphicDomainObjectContainer
 import org.gradle.internal.reflect.Instantiator
 
@@ -67,6 +68,7 @@ class Application extends BaseRunConfiguration {
         this.name = name
         def beforeRun = GradleUtils.polymorphicContainer(project, BeforeRunTask)
         beforeRun.registerFactory(Make, { project.objects.newInstance(Make) })
+        beforeRun.registerFactory(GradleTask, { project.objects.newInstance(GradleTask) })
         this.beforeRun = beforeRun
     }
 
@@ -82,7 +84,7 @@ class Application extends BaseRunConfiguration {
                 "workingDirectory" : workingDirectory,
                 "mainClass"        : mainClass,
                 "moduleName"       : moduleName,
-                "beforeRun"        : beforeRun.toList().collect { ["id": it.id, "enabled": it.enabled] },
+                "beforeRun"        : beforeRun.toList().collect { it.toMap() },
                 "jvmArgs"          : jvmArgs,
                 "defaults"         : defaults,
                 "name"             : name,
@@ -92,26 +94,47 @@ class Application extends BaseRunConfiguration {
 }
 
 @CompileStatic
-class BeforeRunTask implements Named {
-    final String id
-    Boolean enabled = true
-
-    BeforeRunTask(String id) {
-        this.id = id
-    }
-
+abstract class BeforeRunTask implements Named, MapConvertible {
     @Override
     String getName() {
-        return id
+        return getType()
     }
+
+    abstract String getType()
 }
 
 @CompileStatic
 class Make extends BeforeRunTask {
-    public static final String ID = "Make"
+    String type = "make"
+    Boolean enabled = true
 
-    Make() {
-        super(ID)
+    @Inject
+    Make() { }
+
+    @Override
+    Map<String, ?> toMap() {
+        return [
+                "type"    : getType(),
+                "enabled" : enabled
+        ]
+    }
+}
+
+@CompileStatic
+class GradleTask extends BeforeRunTask {
+    String type = "gradleTask"
+    Task task
+
+    @Inject
+    GradleTask() {}
+
+    @Override
+    Map<String, ?> toMap() {
+        return [
+                "type": getType(),
+                "projectPath": task.project.path,
+                "taskName": task.name
+        ]
     }
 }
 

@@ -18,7 +18,7 @@ class SerializationTests {
 
   @Test fun `test application json output`() {
     val application = Application("test", myProject)
-    val make = application.beforeRun.create(Make.ID, Make::class.java)
+    val make = application.beforeRun.create("make", Make::class.java)
     make.enabled = false
 
     assertEquals("""
@@ -30,7 +30,7 @@ class SerializationTests {
     |    "moduleName": null,
     |    "beforeRun": [
     |        {
-    |            "id": "Make",
+    |            "type": "make",
     |            "enabled": false
     |        }
     |    ],
