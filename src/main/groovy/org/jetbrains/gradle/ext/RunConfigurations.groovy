@@ -207,6 +207,7 @@ class Remote extends BaseRunConfiguration {
     Integer port
     String sharedMemoryAddress
 
+    @Inject
     Remote(String name) {
         this.name = name
     }

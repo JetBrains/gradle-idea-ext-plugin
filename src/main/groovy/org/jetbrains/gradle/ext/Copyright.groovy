@@ -5,6 +5,8 @@ import org.gradle.api.Action
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
 
+import javax.inject.Inject
+
 @CompileStatic
 class CopyrightConfiguration {
 
@@ -12,6 +14,7 @@ class CopyrightConfiguration {
     Map<String, String> scopes = [:]
     final NamedDomainObjectContainer<CopyrightProfile> profiles
 
+    @Inject
     CopyrightConfiguration(Project project) {
         profiles = project.container(CopyrightProfile)
     }
