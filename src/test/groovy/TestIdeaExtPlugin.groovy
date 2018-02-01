@@ -162,11 +162,13 @@ idea {
   project {
     settings {
       codeStyle {
-        RIGHT_MARGIN = 200
-        JD_ALIGN_PARAM_COMMENTS = false
+        hardWrapAt = 200
+        java {
+          alignParameterDescriptions = false
+        }
         groovy {
-          ALIGN_NAMED_ARGS_IN_MAP = false
-          CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND = 999
+          alignMultilineNamedArguments = false
+          classCountToUseImportOnDemand = 999
         }
       }
     }
@@ -192,12 +194,14 @@ task printSettings {
     JsonOutput.prettyPrint(lines[0]) ==
 """{
     "codeStyle": {
-        "JD_ALIGN_PARAM_COMMENTS": false,
         "RIGHT_MARGIN": 200,
         "languages": {
+            "java": {
+                "JD_ALIGN_PARAM_COMMENTS": false
+            },
             "groovy": {
-                "ALIGN_NAMED_ARGS_IN_MAP": false,
-                "CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND": 999
+                "CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND": 999,
+                "ALIGN_NAMED_ARGS_IN_MAP": false
             }
         }
     }

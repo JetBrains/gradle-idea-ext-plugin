@@ -102,75 +102,52 @@ class SerializationTests {
   @Test fun `test code style output`() {
     val config = CodeStyleConfig()
 
-    config.IF_BRACE_FORCE = ForceBraces.FORCE_BRACES_IF_MULTILINE
-
     config.java {
-      it.CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND = 42
-      it.FOR_BRACE_FORCE = ForceBraces.FORCE_BRACES_ALWAYS
+      it.ifForceBraces = ForceBraces.FORCE_BRACES_IF_MULTILINE
+      it.classCountToUseImportOnDemand = 42
+      it.forForceBraces = ForceBraces.FORCE_BRACES_ALWAYS
     }
 
     config.groovy {
-      it.ALIGN_NAMED_ARGS_IN_MAP = true
-      it.RIGHT_MARGIN = 99
+      it.alignMultilineNamedArguments = true
+      it.hardWrapAt = 99
     }
 
     assertEquals("""
-      |{
-      |    "WHILE_BRACE_FORCE": null,
-      |    "JD_KEEP_EMPTY_RETURN": null,
-      |    "WRAP_COMMENTS": null,
-      |    "ALIGN_NAMED_ARGS_IN_MAP": null,
-      |    "CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND": null,
-      |    "JD_ALIGN_EXCEPTION_COMMENTS": null,
-      |    "FOR_BRACE_FORCE": null,
-      |    "JD_KEEP_EMPTY_EXCEPTION": null,
-      |    "JD_KEEP_EMPTY_PARAMETER": null,
-      |    "JD_P_AT_EMPTY_LINES": null,
-      |    "DOWHILE_BRACE_FORCE": null,
-      |    "USE_SAME_IDENTS": null,
-      |    "JD_ALIGN_PARAM_COMMENTS": null,
-      |    "KEEP_CONTROL_STATEMENT_IN_ONE_LINE": null,
-      |    "RIGHT_MARGIN": null,
-      |    "IF_BRACE_FORCE": "FORCE_BRACES_IF_MULTILINE",
-      |    "languages": {
-      |        "java": {
-      |            "WHILE_BRACE_FORCE": null,
-      |            "JD_KEEP_EMPTY_RETURN": null,
-      |            "WRAP_COMMENTS": null,
-      |            "ALIGN_NAMED_ARGS_IN_MAP": null,
-      |            "CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND": 42,
-      |            "JD_ALIGN_EXCEPTION_COMMENTS": null,
-      |            "FOR_BRACE_FORCE": "FORCE_BRACES_ALWAYS",
-      |            "JD_KEEP_EMPTY_EXCEPTION": null,
-      |            "JD_KEEP_EMPTY_PARAMETER": null,
-      |            "JD_P_AT_EMPTY_LINES": null,
-      |            "DOWHILE_BRACE_FORCE": null,
-      |            "USE_SAME_IDENTS": null,
-      |            "JD_ALIGN_PARAM_COMMENTS": null,
-      |            "KEEP_CONTROL_STATEMENT_IN_ONE_LINE": null,
-      |            "RIGHT_MARGIN": null,
-      |            "IF_BRACE_FORCE": null
-      |        },
-      |        "groovy": {
-      |            "WHILE_BRACE_FORCE": null,
-      |            "JD_KEEP_EMPTY_RETURN": null,
-      |            "WRAP_COMMENTS": null,
-      |            "ALIGN_NAMED_ARGS_IN_MAP": true,
-      |            "CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND": null,
-      |            "JD_ALIGN_EXCEPTION_COMMENTS": null,
-      |            "FOR_BRACE_FORCE": null,
-      |            "JD_KEEP_EMPTY_EXCEPTION": null,
-      |            "JD_KEEP_EMPTY_PARAMETER": null,
-      |            "JD_P_AT_EMPTY_LINES": null,
-      |            "DOWHILE_BRACE_FORCE": null,
-      |            "USE_SAME_IDENTS": null,
-      |            "JD_ALIGN_PARAM_COMMENTS": null,
-      |            "KEEP_CONTROL_STATEMENT_IN_ONE_LINE": null,
-      |            "RIGHT_MARGIN": 99,
-      |            "IF_BRACE_FORCE": null
-      |        }
-      |    }
-      |}
+    |{
+    |    "USE_SAME_INDENTS": null,
+    |    "RIGHT_MARGIN": null,
+    |    "KEEP_CONTROL_STATEMENT_IN_ONE_LINE": null,
+    |    "languages": {
+    |        "java": {
+    |            "RIGHT_MARGIN": null,
+    |            "WRAP_COMMENTS": null,
+    |            "IF_BRACE_FORCE": "FORCE_BRACES_IF_MULTILINE",
+    |            "DOWHILE_BRACE_FORCE": null,
+    |            "WHILE_BRACE_FORCE": null,
+    |            "FOR_BRACE_FORCE": "FORCE_BRACES_ALWAYS",
+    |            "KEEP_CONTROL_STATEMENT_IN_ONE_LINE": null,
+    |            "CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND": 42,
+    |            "JD_ALIGN_PARAM_COMMENTS": null,
+    |            "JD_ALIGN_EXCEPTION_COMMENTS": null,
+    |            "JD_P_AT_EMPTY_LINES": null,
+    |            "JD_KEEP_EMPTY_PARAMETER": null,
+    |            "JD_KEEP_EMPTY_EXCEPTION": null,
+    |            "JD_KEEP_EMPTY_RETURN": null
+    |        },
+    |        "groovy": {
+    |            "RIGHT_MARGIN": 99,
+    |            "WRAP_COMMENTS": null,
+    |            "IF_BRACE_FORCE": null,
+    |            "DOWHILE_BRACE_FORCE": null,
+    |            "WHILE_BRACE_FORCE": null,
+    |            "FOR_BRACE_FORCE": null,
+    |            "KEEP_CONTROL_STATEMENT_IN_ONE_LINE": null,
+    |            "CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND": null,
+    |            "ALIGN_NAMED_ARGS_IN_MAP": true
+    |        }
+    |    }
+    |}
     """.trimMargin(),
             JsonOutput.prettyPrint(JsonOutput.toJson(config.toMap())))
 

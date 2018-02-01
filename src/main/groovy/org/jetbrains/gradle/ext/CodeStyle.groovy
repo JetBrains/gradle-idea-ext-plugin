@@ -9,71 +9,98 @@ enum ForceBraces {
 }
 
 @CompileStatic
-class LanguageCodeStyleConfig {
+class CommonCodeStyleConfig implements MapConvertible {
 
-    public Boolean USE_SAME_IDENTS
-    public Integer CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND
-    public Integer RIGHT_MARGIN
-    public Boolean JD_ALIGN_PARAM_COMMENTS
-    public Boolean JD_ALIGN_EXCEPTION_COMMENTS
-    public Boolean JD_P_AT_EMPTY_LINES
-    public Boolean JD_KEEP_EMPTY_PARAMETER
-    public Boolean JD_KEEP_EMPTY_EXCEPTION
-    public Boolean JD_KEEP_EMPTY_RETURN
-    public Boolean WRAP_COMMENTS
+    public Integer hardWrapAt
+    public Boolean wrapCommentsAtRightMargin
+    public ForceBraces ifForceBraces
+    public ForceBraces doWhileForceBraces
+    public ForceBraces whileForceBraces
+    public ForceBraces forForceBraces
+    public Boolean keepControlStatementInOneLine
 
-    public ForceBraces IF_BRACE_FORCE
-    public ForceBraces DOWHILE_BRACE_FORCE
-    public ForceBraces WHILE_BRACE_FORCE
-    public ForceBraces FOR_BRACE_FORCE
-
-    public Boolean KEEP_CONTROL_STATEMENT_IN_ONE_LINE
-    public Boolean ALIGN_NAMED_ARGS_IN_MAP
-
-    protected Map<String, ?> asMap() {
+    Map<String, ?> toMap() {
         return [
-                "WHILE_BRACE_FORCE"                  : WHILE_BRACE_FORCE,
-                "JD_KEEP_EMPTY_RETURN"               : JD_KEEP_EMPTY_RETURN,
-                "WRAP_COMMENTS"                      : WRAP_COMMENTS,
-                "ALIGN_NAMED_ARGS_IN_MAP"            : ALIGN_NAMED_ARGS_IN_MAP,
-                "CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND": CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND,
-                "JD_ALIGN_EXCEPTION_COMMENTS"        : JD_ALIGN_EXCEPTION_COMMENTS,
-                "FOR_BRACE_FORCE"                    : FOR_BRACE_FORCE,
-                "JD_KEEP_EMPTY_EXCEPTION"            : JD_KEEP_EMPTY_EXCEPTION,
-                "JD_KEEP_EMPTY_PARAMETER"            : JD_KEEP_EMPTY_PARAMETER,
-                "JD_P_AT_EMPTY_LINES"                : JD_P_AT_EMPTY_LINES,
-                "DOWHILE_BRACE_FORCE"                : DOWHILE_BRACE_FORCE,
-                "USE_SAME_IDENTS"                    : USE_SAME_IDENTS,
-                "JD_ALIGN_PARAM_COMMENTS"            : JD_ALIGN_PARAM_COMMENTS,
-                "KEEP_CONTROL_STATEMENT_IN_ONE_LINE" : KEEP_CONTROL_STATEMENT_IN_ONE_LINE,
-                "RIGHT_MARGIN"                       : RIGHT_MARGIN,
-                "IF_BRACE_FORCE"                     : IF_BRACE_FORCE
+                "RIGHT_MARGIN"                       : hardWrapAt,
+                "WRAP_COMMENTS"                      : wrapCommentsAtRightMargin,
+                "IF_BRACE_FORCE"                     : ifForceBraces,
+                "DOWHILE_BRACE_FORCE"                : doWhileForceBraces,
+                "WHILE_BRACE_FORCE"                  : whileForceBraces,
+                "FOR_BRACE_FORCE"                    : forForceBraces,
+                "KEEP_CONTROL_STATEMENT_IN_ONE_LINE" : keepControlStatementInOneLine
         ]
     }
 }
 
+class JavaCodeStyleConfig extends CommonCodeStyleConfig {
+    public Integer classCountToUseImportOnDemand
+    public Boolean alignParameterDescriptions
+    public Boolean alignThrownExceptionDescriptions
+    public Boolean generatePTagOnEmptyLines
+    public Boolean keepEmptyParamTags
+    public Boolean keepEmptyThrowsTags
+    public Boolean keepEmptyReturnTags
+
+    @Override
+    Map<String, ?> toMap() {
+        def result = super.toMap()
+        return result << ([
+                "CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND" : classCountToUseImportOnDemand,
+                "JD_ALIGN_PARAM_COMMENTS"             : alignParameterDescriptions,
+                "JD_ALIGN_EXCEPTION_COMMENTS"         : alignThrownExceptionDescriptions,
+                "JD_P_AT_EMPTY_LINES"                 : generatePTagOnEmptyLines,
+                "JD_KEEP_EMPTY_PARAMETER"             : keepEmptyParamTags,
+                "JD_KEEP_EMPTY_EXCEPTION"             : keepEmptyThrowsTags,
+                "JD_KEEP_EMPTY_RETURN"                : keepEmptyReturnTags
+        ] as Map<String, ?>)
+    }
+}
+class GroovyCodeStyleConfig extends CommonCodeStyleConfig {
+    public Integer classCountToUseImportOnDemand
+    public Boolean alignMultilineNamedArguments
+
+    @Override
+    Map<String, ?> toMap() {
+        def result = super.toMap()
+        return result << ([
+                "CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND" : classCountToUseImportOnDemand,
+                "ALIGN_NAMED_ARGS_IN_MAP"             : alignMultilineNamedArguments
+        ] as Map<String, ?>)
+    }
+}
+
 @CompileStatic
-class CodeStyleConfig extends LanguageCodeStyleConfig {
+class CodeStyleConfig implements MapConvertible {
 
-    Map<String, LanguageCodeStyleConfig> languages = [:]
+    @Deprecated
+    public Boolean USE_SAME_INDENTS
+    public Integer hardWrapAt
+    public Boolean keepControlStatementInOneLine
 
-    def java(Action<LanguageCodeStyleConfig> action) {
+    Map<String, CommonCodeStyleConfig> languages = [:]
+
+    def java(Action<JavaCodeStyleConfig> action) {
         if (!languages["java"]) {
-            languages["java"] = new LanguageCodeStyleConfig()
+            languages["java"] = new JavaCodeStyleConfig()
         }
-        action.execute(languages["java"])
+        action.execute(languages["java"] as JavaCodeStyleConfig)
     }
 
-    def groovy(Action<LanguageCodeStyleConfig> action) {
+    def groovy(Action<GroovyCodeStyleConfig> action) {
         if (!languages["groovy"]) {
-            languages["groovy"] = new LanguageCodeStyleConfig()
+            languages["groovy"] = new GroovyCodeStyleConfig()
         }
-        action.execute(languages["groovy"])
+        action.execute(languages["groovy"] as GroovyCodeStyleConfig)
     }
 
     Map<String, ?> toMap() {
-        def map = asMap()
-        map["languages"] = languages.collectEntries { key, value -> [(key): value.asMap()] }
+        def map = [
+                "USE_SAME_INDENTS"                   : USE_SAME_INDENTS,
+                "RIGHT_MARGIN"                       : hardWrapAt,
+                "KEEP_CONTROL_STATEMENT_IN_ONE_LINE" : keepControlStatementInOneLine
+        ] as Map<String, Object>
+
+        map["languages"] = languages.collectEntries { key, value -> [(key): value.toMap()] }
         return map
     }
 }
