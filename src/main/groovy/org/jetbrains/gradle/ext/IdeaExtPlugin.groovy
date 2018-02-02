@@ -7,6 +7,7 @@ import org.gradle.api.*
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.reflect.TypeOf
 import org.gradle.plugins.ide.idea.model.IdeaModel
+import org.gradle.util.GradleVersion
 
 @CompileStatic
 class IdeaExtPlugin implements Plugin<Project> {
@@ -36,13 +37,29 @@ abstract class AbstractExtensibleSettings {
     def result = [:]
     if (this instanceof ExtensionAware) {
       def extContainer = (this as ExtensionAware).extensions
-      extContainer.extensionsSchema.each { schema ->
-        def name = schema.name
-        def typeOfExt = schema.publicType
+      if (GradleVersion.current() >= GradleVersion.version("4.5")) {
+        extContainer.extensionsSchema.each { schema ->
+          def name = schema.name
+          def typeOfExt = schema.publicType
 
-        def converted = convertToMapOrList(typeOfExt, extContainer.findByName(name))
-        if (converted != null) {
-          result.put(name, converted)
+          def converted = convertToMapOrList(typeOfExt, extContainer.findByName(name))
+          if (converted != null) {
+            result.put(name, converted)
+          }
+        }
+      } else {
+        try {
+          def schemaMethod = extContainer.class.getMethod("getSchema")
+          Map<String, TypeOf> schema = schemaMethod.invoke(extContainer) as Map<String, TypeOf>
+          schema.each { name, typeOfExt ->
+            def converted = convertToMapOrList(typeOfExt, extContainer.findByName(name))
+            if (converted != null) {
+              result.put(name, converted)
+            }
+          }
+        } catch (NoSuchMethodException e) {
+          throw new GradleException("Can not collect extensions information in IDEA settings." +
+                  " Please, use Gradle 4.2 or later.", e)
         }
       }
     }
