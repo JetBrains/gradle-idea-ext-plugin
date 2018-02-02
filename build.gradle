@@ -44,3 +44,8 @@ pluginBundle {
     }
   }
 }
+
+wrapper {
+  gradleVersion = "4.5"
+  distributionType = Wrapper.DistributionType.BIN
+}
