@@ -12,7 +12,13 @@ as simple as
 
 ### How to apply
 
-Drop resulting jar into root directory of a project and add following snippet to `build.grade`
+Apply from Gradle plugin repository
+
+    plugins {
+      id "org.jetbrains.gradle.plugin.idea-ext" version "0.1"
+    }
+
+Or build and drop resulting jar into root directory of a project and add following snippet to `build.grade`
 
     buildscript {
       dependencies {
