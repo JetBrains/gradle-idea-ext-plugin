@@ -46,6 +46,6 @@ pluginBundle {
 }
 
 wrapper {
-  gradleVersion = "4.5"
+  gradleVersion = "4.7"
   distributionType = Wrapper.DistributionType.BIN
 }
