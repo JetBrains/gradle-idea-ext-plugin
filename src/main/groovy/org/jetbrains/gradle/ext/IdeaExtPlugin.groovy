@@ -114,7 +114,7 @@ class ProjectSettings extends AbstractExtensibleSettings {
 
   IdeaCompilerConfiguration getCompiler() {
     if (compilerConfig == null) {
-      compilerConfig = project.objects.newInstance(IdeaCompilerConfiguration)
+      compilerConfig = project.objects.newInstance(IdeaCompilerConfiguration, project)
     }
     return compilerConfig
   }

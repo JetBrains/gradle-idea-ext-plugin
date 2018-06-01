@@ -153,5 +153,31 @@ class SerializationTests {
 
   }
 
+  @Test fun `test compiler options output`() {
+    val config = IdeaCompilerConfiguration(myProject)
+
+    config.apply {
+      processHeapSize = 234
+      addNotNullAssertions = true
+      javac {
+        it.preferTargetJDKCompiler = false
+        it.javacAdditionalOptions = "-Xmaxwarns 999"
+      }
+    }
+
+    assertEquals("""
+      |{
+      |    "processHeapSize": 234,
+      |    "addNotNullAssertions": true,
+      |    "javacOptions": {
+      |        "preferTargetJDKCompiler": false,
+      |        "javacAdditionalOptions": "-Xmaxwarns 999"
+      |    }
+      |}
+      """.trimMargin(),
+            JsonOutput.prettyPrint(JsonOutput.toJson(config.toMap()))
+    )
+  }
+
 }
 

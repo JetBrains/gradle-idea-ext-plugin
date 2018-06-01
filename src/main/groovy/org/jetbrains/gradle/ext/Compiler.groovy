@@ -1,10 +1,14 @@
 package org.jetbrains.gradle.ext
 
 import groovy.transform.CompileStatic
+import org.gradle.api.Action
+import org.gradle.api.Project
+
+import javax.inject.Inject
 
 @CompileStatic
 class IdeaCompilerConfiguration {
-
+    private final Project project
     String resourcePatterns
     Integer processHeapSize
     Boolean autoShowFirstErrorInEditor
@@ -15,6 +19,23 @@ class IdeaCompilerConfiguration {
     Boolean parallelCompilation
     Boolean rebuildModuleOnDependencyChange
     Boolean additionalVmOptions
+    JavacConfiguration javacConfig
+
+    @Inject
+    IdeaCompilerConfiguration(Project project) {
+        this.project = project
+    }
+
+    JavacConfiguration getJavac() {
+        if (javacConfig == null) {
+            javacConfig = project.objects.newInstance(JavacConfiguration)
+        }
+        return javacConfig
+    }
+
+    void javac(Action<JavacConfiguration> action) {
+        action.execute(getJavac())
+    }
 
     def toMap() {
         def map = [:]
@@ -28,6 +49,26 @@ class IdeaCompilerConfiguration {
         if (parallelCompilation != null) map.put("parallelCompilation", parallelCompilation)
         if (rebuildModuleOnDependencyChange != null) map.put("rebuildModuleOnDependencyChange", rebuildModuleOnDependencyChange)
         if (additionalVmOptions != null) map.put("additionalVmOptions", additionalVmOptions)
+        if (javacConfig != null) map.put("javacOptions", javacConfig.toMap())
+        return map
+    }
+}
+
+@CompileStatic
+class JavacConfiguration {
+    Boolean preferTargetJDKCompiler
+    String javacAdditionalOptions
+    Boolean generateDebugInfo
+    Boolean generateDeprecationWarnings
+    Boolean generateNoWarnings
+
+    def toMap() {
+        def map = [:]
+        if (preferTargetJDKCompiler != null) map.put("preferTargetJDKCompiler", preferTargetJDKCompiler)
+        if (javacAdditionalOptions != null) map.put("javacAdditionalOptions", javacAdditionalOptions)
+        if (generateDebugInfo != null) map.put("generateDebugInfo", generateDebugInfo)
+        if (generateDeprecationWarnings != null) map.put("generateDeprecationWarnings", generateDeprecationWarnings)
+        if (generateNoWarnings != null) map.put("generateNoWarnings", generateNoWarnings)
         return map
     }
 }
