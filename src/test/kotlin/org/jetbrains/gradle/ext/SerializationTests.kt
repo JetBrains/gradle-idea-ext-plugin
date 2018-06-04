@@ -179,5 +179,52 @@ class SerializationTests {
     )
   }
 
+  @Test fun `test task triggers output`() {
+    val config = TaskTriggersConfig()
+
+    myProject.tasks.create("task1")
+    myProject.tasks.create("task2")
+    myProject.tasks.create("task3")
+
+    config.apply {
+      beforeBuild(myProject.tasks.getByName("task1"), myProject.tasks.getByName("task2"))
+      afterSync(myProject.tasks.getByName("task3"))
+      beforeRebuild(myProject.tasks.getByName("task1"))
+    }
+
+    val escapedRootProjectPath = myProject.rootProject.projectDir.path.replace("\\", "/")
+
+    assertEquals("""
+      |{
+      |    "beforeRebuild": [
+      |        {
+      |            "taskPath": ":task1",
+      |            "projectPath": "$escapedRootProjectPath"
+      |        }
+      |    ],
+      |    "beforeBuild": [
+      |        {
+      |            "taskPath": ":task1",
+      |            "projectPath": "$escapedRootProjectPath"
+      |        },
+      |        {
+      |            "taskPath": ":task2",
+      |            "projectPath": "$escapedRootProjectPath"
+      |        }
+      |    ],
+      |    "afterSync": [
+      |        {
+      |            "taskPath": ":task3",
+      |            "projectPath": "$escapedRootProjectPath"
+      |        }
+      |    ]
+      |}
+    """.trimMargin(),
+            JsonOutput.prettyPrint(JsonOutput.toJson(config.toMap()))
+      )
+  }
+
+
+
 }
 

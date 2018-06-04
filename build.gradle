@@ -15,6 +15,7 @@ repositories {
 
 dependencies {
   compile 'com.google.code.gson:gson:2.8.2'
+  compile 'com.google.guava:guava:25.1-jre'
   testCompile 'org.jetbrains.kotlin:kotlin-stdlib'
   testCompile('org.spockframework:spock-core:1.1-groovy-2.4') {
     exclude module: 'groovy-all'
