@@ -181,11 +181,11 @@ class ProjectSettings extends AbstractExtensibleSettings {
     action.execute(getCopyright())
   }
 
-  PolymorphicDomainObjectContainer<RunConfiguration> getRunConfigurations() {
+  RunConfigurationContainer getRunConfigurations() {
     return runConfigurations
   }
 
-  def runConfigurations(Action<PolymorphicDomainObjectContainer<RunConfiguration>> action) {
+  def runConfigurations(Action<RunConfigurationContainer> action) {
     action.execute(runConfigurations)
   }
 
