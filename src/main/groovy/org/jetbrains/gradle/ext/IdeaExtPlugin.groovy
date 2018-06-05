@@ -101,6 +101,7 @@ class ProjectSettings extends AbstractExtensibleSettings {
   private FrameworkDetectionExclusionSettings detectExclusions
   private NamedDomainObjectContainer<Inspection> inspections
   private TaskTriggersConfig taskTriggersConfig
+  private ActionDelegationConfig actionDelegationConfig
 
   private Gson gson = new Gson()
 
@@ -113,6 +114,17 @@ class ProjectSettings extends AbstractExtensibleSettings {
 
     this.runConfigurations = runConfigurations
     this.project = project
+  }
+
+  ActionDelegationConfig getDelegateActions() {
+    if (actionDelegationConfig == null) {
+      actionDelegationConfig = project.objects.newInstance(ActionDelegationConfig)
+    }
+    return actionDelegationConfig
+  }
+
+  void delegateActions(Action<ActionDelegationConfig> action) {
+    action.execute(getDelegateActions())
   }
 
   TaskTriggersConfig getTaskTriggers() {
@@ -231,7 +243,23 @@ class ProjectSettings extends AbstractExtensibleSettings {
       map["taskTriggersConfig"] = taskTriggersConfig.toMap()
     }
 
+    if (actionDelegationConfig != null) {
+      map["actionDelegationConfig"] = actionDelegationConfig.toMap()
+    }
+
     return gson.toJson(map)
+  }
+}
+
+
+@CompileStatic
+class ActionDelegationConfig implements MapConvertible {
+  enum TestRunner { PLATFORM, GRADLE, CHOOSE_PER_TEST }
+  boolean delegateBuildRunToGradle = false
+  TestRunner testRunner = TestRunner.PLATFORM
+
+  Map<String, ?> toMap() {
+    return ["delegateBuildRunToGradle": delegateBuildRunToGradle,  "testRunner": testRunner]
   }
 }
 
