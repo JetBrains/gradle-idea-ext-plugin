@@ -139,11 +139,66 @@ class GradleTask extends BeforeRunTask {
 }
 
 @CompileStatic
+class TestNG extends BaseRunConfiguration {
+    final String name
+    final String type = "testng"
+
+    // only one type will be used
+    String packageName
+    String className
+    String method
+    String group
+    String suite
+    String pattern
+    //
+
+    String workingDirectory
+    String vmParameters
+    Boolean passParentEnvs
+    String moduleName
+    Map<String, String> envs
+
+    @Inject
+    TestNG(String name) {
+        this.name = name
+    }
+
+    @Override
+    String getType() {
+        return type
+    }
+
+    @Override
+    String getName() {
+        return name
+    }
+
+    @Override
+    Map<String, ?> toMap() {
+        return [
+                "type": type,
+                "name": name,
+
+                "package": packageName,
+                "class": className,
+                "method": method,
+                "group": group,
+                "suite": suite,
+                "pattern": pattern,
+                "workingDirectory": workingDirectory,
+                "vmParameters": vmParameters,
+                "passParentEnvs": passParentEnvs,
+                "moduleName": moduleName,
+                "envs": envs
+        ]
+    }
+}
+
+@CompileStatic
 class JUnit extends BaseRunConfiguration {
 
     final String name
     final String type = "junit"
-    boolean defaults
 
     // only one (first not null) type will be used
     String packageName

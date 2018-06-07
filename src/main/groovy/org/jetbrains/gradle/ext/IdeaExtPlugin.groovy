@@ -111,6 +111,7 @@ class ProjectSettings extends AbstractExtensibleSettings {
     runConfigurations.registerFactory(Application) { String name -> project.objects.newInstance(Application, name, project) }
     runConfigurations.registerFactory(JUnit) { String name -> project.objects.newInstance(JUnit, name) }
     runConfigurations.registerFactory(Remote) { String name -> project.objects.newInstance(Remote, name) }
+    runConfigurations.registerFactory(TestNG) { String name -> project.objects.newInstance(TestNG, name) }
 
     this.runConfigurations = runConfigurations
     this.project = project
