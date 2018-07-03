@@ -18,7 +18,8 @@ class IdeaCompilerConfiguration {
     Boolean enableAutomake
     Boolean parallelCompilation
     Boolean rebuildModuleOnDependencyChange
-    Boolean additionalVmOptions
+    String additionalVmOptions
+    Boolean useReleaseOption
     JavacConfiguration javacConfig
 
     @Inject
@@ -49,6 +50,7 @@ class IdeaCompilerConfiguration {
         if (parallelCompilation != null) map.put("parallelCompilation", parallelCompilation)
         if (rebuildModuleOnDependencyChange != null) map.put("rebuildModuleOnDependencyChange", rebuildModuleOnDependencyChange)
         if (additionalVmOptions != null) map.put("additionalVmOptions", additionalVmOptions)
+        if (useReleaseOption != null) map.put("useReleaseOption", useReleaseOption)
         if (javacConfig != null) map.put("javacOptions", javacConfig.toMap())
         return map
     }

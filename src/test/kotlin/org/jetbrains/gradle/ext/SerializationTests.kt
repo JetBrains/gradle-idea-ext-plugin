@@ -163,12 +163,16 @@ class SerializationTests {
         it.preferTargetJDKCompiler = false
         it.javacAdditionalOptions = "-Xmaxwarns 999"
       }
+      additionalVmOptions = "-Xms120"
+      useReleaseOption = false
     }
 
     assertEquals("""
       |{
       |    "processHeapSize": 234,
       |    "addNotNullAssertions": true,
+      |    "additionalVmOptions": "-Xms120",
+      |    "useReleaseOption": false,
       |    "javacOptions": {
       |        "preferTargetJDKCompiler": false,
       |        "javacAdditionalOptions": "-Xmaxwarns 999"
