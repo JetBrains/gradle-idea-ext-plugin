@@ -151,6 +151,59 @@ task printSettings {
     
   }
 
+  def "test artifacts settings"() {
+    given:
+    buildFile << """
+plugins {
+  id 'org.jetbrains.gradle.plugin.idea-ext'
+}
+
+idea {
+  project {
+    settings {
+      ideArtifacts {
+        ideArtifact("myArt") {
+          file("build.gradle")
+        }
+      }
+    }
+  }
+}
+
+task printSettings {
+  doLast {
+    println(project.idea.project.settings)
+  }
+}
+"""
+
+    when:
+    def result = GradleRunner.create()
+            .withProjectDir(testProjectDir.root)
+            .withArguments("printSettings", "-q")
+            .withPluginClasspath()
+            .build()
+    then:
+
+    def lines = result.output.readLines()
+    JsonOutput.prettyPrint(lines[0]) == """{
+    "artifacts": [
+        {
+            "type": "ARTIFACT",
+            "name": "myArt",
+            "children": [
+                {
+                    "type": "FILE",
+                    "sourceFiles": [
+                        "${buildFile.canonicalPath.replace('\\' as char, '/' as char)}"
+                    ]
+                }
+            ]
+        }
+    ]
+}"""
+  }
+
   def "test code style settings"() {
     given:
     buildFile << """

@@ -7,16 +7,19 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 import org.gradle.api.file.ConfigurableFileCollection
 
-class Artifacts implements MapConvertible {
+import javax.inject.Inject
+
+class IdeArtifacts implements MapConvertible {
 
   Project project
   List<RecursiveArtifact> artifacts = new ArrayList<>()
 
-  Artifacts(Project project) {
+  @Inject
+  IdeArtifacts(Project project) {
     this.project = project
   }
 
-  void artifact(String name, Action<RecursiveArtifact> action) {
+  void ideArtifact(String name, Action<RecursiveArtifact> action) {
     def newArtifact = new RecursiveArtifact(name, ArtifactType.ARTIFACT)
     action.execute(newArtifact)
     artifacts.add(newArtifact)

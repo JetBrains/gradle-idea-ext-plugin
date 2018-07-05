@@ -5,7 +5,13 @@ import com.google.common.collect.ListMultimap
 import com.google.gson.Gson
 import groovy.json.JsonOutput
 import groovy.transform.CompileStatic
-import org.gradle.api.*
+import org.gradle.api.Action
+import org.gradle.api.GradleException
+import org.gradle.api.NamedDomainObjectContainer
+import org.gradle.api.Plugin
+import org.gradle.api.PolymorphicDomainObjectContainer
+import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.reflect.TypeOf
 import org.gradle.plugins.ide.idea.model.IdeaModel
@@ -102,6 +108,7 @@ class ProjectSettings extends AbstractExtensibleSettings {
   private NamedDomainObjectContainer<Inspection> inspections
   private TaskTriggersConfig taskTriggersConfig
   private ActionDelegationConfig actionDelegationConfig
+  private IdeArtifacts artifacts
 
   private Gson gson = new Gson()
 
@@ -209,6 +216,17 @@ class ProjectSettings extends AbstractExtensibleSettings {
     detectExclusions.excludes.addAll(ids)
   }
 
+  IdeArtifacts getIdeArtifacts() {
+    if (artifacts == null) {
+      artifacts = project.objects.newInstance(IdeArtifacts, project)
+    }
+    return artifacts
+  }
+
+  def ideArtifacts(Action<IdeArtifacts> action) {
+    action.execute(getIdeArtifacts())
+  }
+
   String toString() {
     def map = collectExtensionsMap()
 
@@ -246,6 +264,10 @@ class ProjectSettings extends AbstractExtensibleSettings {
 
     if (actionDelegationConfig != null) {
       map["actionDelegationConfig"] = actionDelegationConfig.toMap()
+    }
+
+    if (artifacts != null) {
+      map << artifacts.toMap()
     }
 
     return gson.toJson(map)

@@ -230,7 +230,7 @@ class SerializationTests {
   }
 
   @Test fun `test artifacts tree`() {
-    val artifacts = Artifacts(myProject)
+    val artifacts = IdeArtifacts(myProject)
 
     val rootDir = myProject.rootDir
 
@@ -260,7 +260,7 @@ class SerializationTests {
 
 
     artifacts.apply {
-      artifact("art1") {
+      ideArtifact("art1") {
         it.directory("dir1") {
           it.file(File("file.txt"))
           it.archive("arch1") {
@@ -269,7 +269,7 @@ class SerializationTests {
           }
         }
       }
-      artifact("art2") {
+      ideArtifact("art2") {
         it.artifact("art1")
         it.extractedDirectory("my.zip")
       }
