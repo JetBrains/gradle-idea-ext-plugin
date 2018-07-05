@@ -7,6 +7,7 @@ import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
+import java.io.File
 
 class SerializationTests {
 
@@ -228,6 +229,123 @@ class SerializationTests {
       )
   }
 
+  @Test fun `test artifacts tree`() {
+    val artifacts = Artifacts(myProject)
+
+    val rootDir = myProject.rootDir
+
+    val filePath = File(rootDir, "file.txt").apply {
+      createNewFile()
+      writeText("Some text")
+    }.path.replace('\\', '/')
+
+    val dirPath = File(rootDir, "dir").apply {
+      mkdirs()
+      File(this, "dir_file.txt").apply {
+        createNewFile()
+        writeText("Some text in subdirectory")
+      }
+    }.path.replace('\\', '/')
+
+    val archivePath = File(rootDir, "my.zip")
+            .apply { createNewFile() }
+            .path.replace('\\', '/')
+
+    val configurationName = "testCfg"
+    val testCfg = myProject.configurations.create(configurationName)
+
+    // as long as this junit is used for build itself, it can be used safely
+    myProject.repositories.mavenLocal()
+    myProject.dependencies.add(configurationName, "junit:junit:4.12")
+
+
+    artifacts.apply {
+      artifact("art1") {
+        it.directory("dir1") {
+          it.file(File("file.txt"))
+          it.archive("arch1") {
+            it.directoryContent("dir")
+            it.libraryFiles(testCfg)
+          }
+        }
+      }
+      artifact("art2") {
+        it.artifact("art1")
+        it.extractedDirectory("my.zip")
+      }
+    }
+
+    assertEquals("""
+      |{
+      |    "artifacts": [
+      |        {
+      |            "type": "ARTIFACT",
+      |            "name": "art1",
+      |            "children": [
+      |                {
+      |                    "type": "DIR",
+      |                    "name": "dir1",
+      |                    "children": [
+      |                        {
+      |                            "type": "FILE",
+      |                            "sourceFiles": [
+      |                                "$filePath"
+      |                            ]
+      |                        },
+      |                        {
+      |                            "type": "ARCHIVE",
+      |                            "name": "arch1",
+      |                            "children": [
+      |                                {
+      |                                    "type": "DIR_CONTENT",
+      |                                    "sourceFiles": [
+      |                                        "$dirPath"
+      |                                    ]
+      |                                },
+      |                                {
+      |                                    "type": "LIBRARY_FILES",
+      |                                    "libraries": [
+      |                                        {
+      |                                            "group": "junit",
+      |                                            "artifact": "junit",
+      |                                            "version": "4.12"
+      |                                        },
+      |                                        {
+      |                                            "group": "org.hamcrest",
+      |                                            "artifact": "hamcrest-core",
+      |                                            "version": "1.3"
+      |                                        }
+      |                                    ]
+      |                                }
+      |                            ]
+      |                        }
+      |                    ]
+      |                }
+      |            ]
+      |        },
+      |        {
+      |            "type": "ARTIFACT",
+      |            "name": "art2",
+      |            "children": [
+      |                {
+      |                    "type": "ARTIFACT_REF",
+      |                    "artifactName": "art1"
+      |                },
+      |                {
+      |                    "type": "EXTRACTED_DIR",
+      |                    "sourceFiles": [
+      |                        "$archivePath"
+      |                    ]
+      |                }
+      |            ]
+      |        }
+      |    ]
+      |}
+    """.trimMargin(),
+            JsonOutput.prettyPrint(JsonOutput.toJson(artifacts.toMap()))
+    )
+
+  }
 
 
 }
