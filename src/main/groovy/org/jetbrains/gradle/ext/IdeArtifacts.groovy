@@ -20,7 +20,7 @@ class IdeArtifacts implements MapConvertible {
   }
 
   void ideArtifact(String name, Action<RecursiveArtifact> action) {
-    def newArtifact = new RecursiveArtifact(name, ArtifactType.ARTIFACT)
+    def newArtifact = project.objects.newInstance(RecursiveArtifact, project, name, ArtifactType.ARTIFACT)
     action.execute(newArtifact)
     artifacts.add(newArtifact)
   }
@@ -29,30 +29,28 @@ class IdeArtifacts implements MapConvertible {
   Map<String, ?> toMap() {
     return ["artifacts": artifacts*.toMap()]
   }
-
-  class Artifact extends RecursiveArtifact {
-    Artifact(String name) {
-      super(name, ArtifactType.ARTIFACT)
-    }
-  }
+}
 
   class RecursiveArtifact extends TypedArtifact {
+    Project project
     String name
-    List<TypedArtifact> children = new ArrayList<>()
+    private final List<TypedArtifact> children = new ArrayList<>()
 
-    RecursiveArtifact(String name, ArtifactType type) {
+    @Inject
+    RecursiveArtifact(Project project, String name, ArtifactType type) {
       super(type)
       this.name = name
+      this.project = project
     }
 
     void directory(String name, Action<RecursiveArtifact> action) {
-      RecursiveArtifact newDir = new RecursiveArtifact(name, ArtifactType.DIR)
+      RecursiveArtifact newDir = project.objects.newInstance(RecursiveArtifact, project, name, ArtifactType.DIR);
       action.execute(newDir)
       children.add(newDir)
     }
 
     void archive(String name, Action<RecursiveArtifact> action) {
-      RecursiveArtifact newArchive = new RecursiveArtifact(name, ArtifactType.ARCHIVE)
+      RecursiveArtifact newArchive = project.objects.newInstance(RecursiveArtifact, project, name, ArtifactType.ARCHIVE)
       action.execute(newArchive)
       children.add(newArchive)
     }
@@ -94,7 +92,6 @@ class IdeArtifacts implements MapConvertible {
       return super.toMap() << ["name": name, "children": children*.toMap()]
     }
   }
-}
 
 abstract class TypedArtifact implements MapConvertible {
   ArtifactType type

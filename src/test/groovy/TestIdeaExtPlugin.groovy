@@ -163,7 +163,11 @@ idea {
     settings {
       ideArtifacts {
         ideArtifact("myArt") {
-          file("build.gradle")
+          directory("dir1") {
+            archive("my.zip") {
+              file("build.gradle")
+            }
+          }
         }
       }
     }
@@ -193,9 +197,21 @@ task printSettings {
             "name": "myArt",
             "children": [
                 {
-                    "type": "FILE",
-                    "sourceFiles": [
-                        "${buildFile.canonicalPath.replace('\\' as char, '/' as char)}"
+                    "type": "DIR",
+                    "name": "dir1",
+                    "children": [
+                        {
+                            "type": "ARCHIVE",
+                            "name": "my.zip",
+                            "children": [
+                                {
+                                    "type": "FILE",
+                                    "sourceFiles": [
+                                        "${buildFile.canonicalPath.replace('\\\\' as char, '/' as char)}"
+                                    ]
+                                }
+                            ]
+                        }
                     ]
                 }
             ]
