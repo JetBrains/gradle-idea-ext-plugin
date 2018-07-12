@@ -21,6 +21,8 @@ class SerializationTests {
     val application = Application("test", myProject)
     val make = application.beforeRun.create("make", Make::class.java)
     make.enabled = false
+    val buildArtifact = application.beforeRun.create("myArtifact", BuildArtifact::class.java)
+    buildArtifact.artifactName = "myName"
 
     assertEquals("""
     |{
@@ -30,6 +32,10 @@ class SerializationTests {
     |    "mainClass": null,
     |    "moduleName": null,
     |    "beforeRun": [
+    |        {
+    |            "type": "buildArtifact",
+    |            "artifactName": "myName"
+    |        },
     |        {
     |            "type": "make",
     |            "enabled": false

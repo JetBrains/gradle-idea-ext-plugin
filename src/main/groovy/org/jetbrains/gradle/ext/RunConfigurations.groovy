@@ -69,6 +69,7 @@ class Application extends BaseRunConfiguration {
         def beforeRun = GradleUtils.polymorphicContainer(project, BeforeRunTask)
         beforeRun.registerFactory(Make, { project.objects.newInstance(Make) })
         beforeRun.registerFactory(GradleTask, { project.objects.newInstance(GradleTask) })
+        beforeRun.registerFactory(BuildArtifact, { project.objects.newInstance(BuildArtifact) })
         this.beforeRun = beforeRun
     }
 
@@ -134,6 +135,23 @@ class GradleTask extends BeforeRunTask {
                 "type": getType(),
                 "projectPath": task.project.path,
                 "taskName": task.name
+        ]
+    }
+}
+
+@CompileStatic
+class BuildArtifact extends BeforeRunTask {
+    String type = "buildArtifact"
+    String artifactName
+
+    @Inject
+    BuildArtifact() {}
+
+    @Override
+    Map<String, ?> toMap() {
+        return [
+                "type"    : getType(),
+                "artifactName" : artifactName
         ]
     }
 }
