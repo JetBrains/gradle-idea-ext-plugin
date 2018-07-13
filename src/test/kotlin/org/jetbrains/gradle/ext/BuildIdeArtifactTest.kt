@@ -1,6 +1,7 @@
 package org.jetbrains.gradle.ext
 
-import junit.framework.Assert.*
+import junit.framework.Assert.assertEquals
+import junit.framework.Assert.assertFalse
 import org.assertj.core.api.Assertions.assertThat
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
@@ -31,8 +32,10 @@ class BuildIdeArtifactTest {
     ideArtifact.createArtifact()
 
     val target = myProject.layout.buildDirectory.dir(DEFAULT_DESTINATION).get().dir(name).asFile
-    assertTrue(target.exists())
-    assertTrue(target.isDirectory)
+
+    assertThat(target)
+            .exists()
+            .isDirectory()
   }
 
   @Test fun `test single file copy`() {
@@ -54,8 +57,9 @@ class BuildIdeArtifactTest {
             .dir(fileName)
             .asFile
 
-    assertTrue(target.exists())
-    assertEquals(payload, target.readText())
+    assertThat(target)
+            .exists()
+            .hasContent(payload)
   }
 
   @Test fun `test subdirectories copy`() {
@@ -86,8 +90,9 @@ class BuildIdeArtifactTest {
             .dir(fileName)
             .asFile
 
-    assertTrue(target.exists())
-    assertEquals(payload, target.readText())
+    assertThat(target)
+            .exists()
+            .hasContent(payload)
   }
 
   @Test fun `test archives copy`() {
@@ -126,23 +131,30 @@ class BuildIdeArtifactTest {
             .file(topArchName)
             .asFile
 
-    assertTrue(arch.exists())
-    assertEquals(topArchName, arch.name)
+    assertThat(arch)
+            .exists()
+            .hasName(topArchName)
 
     val topContent = myProject.zipTree(arch).files
     assertEquals(1, topContent.size)
+
     val extracted = topContent.iterator().next()
-    assertEquals(d1, extracted.parentFile.name)
-    assertEquals(archName, extracted.name)
+    assertThat(extracted)
+            .hasName(archName)
+    assertThat(extracted.parentFile).hasName(d1)
+
     val innerContent = ArrayList(myProject.zipTree(extracted).files)
     innerContent.sortBy { it.name }
     assertEquals(2, innerContent.size)
 
-    assertEquals(fileName1, innerContent[0].name)
-    assertEquals(fileName2, innerContent[1].name)
-    assertEquals(d2, innerContent[1].parentFile.name)
-    assertEquals(payload, innerContent[0].readText())
-    assertEquals(payload, innerContent[1].readText())
+    assertThat(innerContent[0])
+            .hasName(fileName1)
+            .hasContent(payload)
+
+    assertThat(innerContent[1])
+            .hasName(fileName2)
+            .hasContent(payload)
+    assertThat(innerContent[1].parentFile).hasName(d2)
   }
 
   @Test fun `test libraries are copied`() {
