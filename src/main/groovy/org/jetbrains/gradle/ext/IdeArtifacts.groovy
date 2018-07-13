@@ -165,6 +165,23 @@ class LibraryFiles extends TypedArtifact {
             .collect { ["group":it.group, "artifact": it.module, "version": it.version] }
     return super.toMap() << [ "libraries": libraries ]
   }
+
+  @Override
+  void buildTo(File destination) {
+    ArtifactCollection artifacts = configuration.getIncoming().artifactView({
+      it.lenient(true)
+      //it.componentFilter(Specs.SATISFIES_ALL)
+    }).getArtifacts()
+
+    def libraries = artifacts.artifacts
+            .findAll { it.id.componentIdentifier instanceof ModuleComponentIdentifier }
+            .collect { it.file }
+
+    project.copy {
+      from libraries
+      into destination
+    }
+  }
 }
 
 abstract class ModuleBasedArtifact extends TypedArtifact {

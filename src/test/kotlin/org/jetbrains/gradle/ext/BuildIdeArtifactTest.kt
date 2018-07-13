@@ -1,6 +1,7 @@
 package org.jetbrains.gradle.ext
 
 import junit.framework.Assert.*
+import org.assertj.core.api.Assertions.assertThat
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 import org.jetbrains.gradle.ext.BuildIdeArtifact.DEFAULT_DESTINATION
@@ -142,5 +143,25 @@ class BuildIdeArtifactTest {
     assertEquals(d2, innerContent[1].parentFile.name)
     assertEquals(payload, innerContent[0].readText())
     assertEquals(payload, innerContent[1].readText())
+  }
+
+  @Test fun `test libraries are copied`() {
+    myProject.repositories.mavenLocal()
+    val myCfg = myProject.configurations.create("myCfg")
+    myProject.dependencies.add(myCfg.name, "junit:junit:4.12")
+    val artifactName = "myArt"
+
+    val root = myProject.objects.newInstance(RecursiveArtifact::class.java, myProject, artifactName, ArtifactType.ARTIFACT)
+    root.libraryFiles(myCfg)
+    ideArtifact.artifact = root
+
+    ideArtifact.createArtifact()
+
+    val target = myProject.layout.buildDirectory
+            .dir(DEFAULT_DESTINATION).get()
+            .dir(artifactName).asFile
+
+    val fileNames = target.listFiles().map { it.name }
+    assertThat(fileNames).containsExactlyInAnyOrder("hamcrest-core-1.3.jar", "junit-4.12.jar")
   }
 }
