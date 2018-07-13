@@ -88,4 +88,59 @@ class BuildIdeArtifactTest {
     assertTrue(target.exists())
     assertEquals(payload, target.readText())
   }
+
+  @Test fun `test archives copy`() {
+    val name = "myArt"
+    val fileName1 = "some1.txt"
+    val fileName2 = "some2.txt"
+    val topArchName = "arch.jar"
+    val d1 = "dir1"
+    val archName = "my.zip"
+    val d2 = "dir2"
+    val root = myProject.objects.newInstance(RecursiveArtifact::class.java, myProject, name, ArtifactType.ARTIFACT)
+
+    root.archive(topArchName) { topArch ->
+      topArch.directory(d1) { sub ->
+        sub.archive(archName) { arch ->
+          arch.file(fileName1)
+          arch.directory(d2) { sub1 ->
+            sub1.file(fileName2)
+          }
+        }
+      }
+    }
+
+    ideArtifact.artifact = root
+
+    val payload = "Payload1"
+    listOf(fileName1, fileName2).forEach {
+      myProject.layout.projectDirectory.file(it).asFile.writeText(payload)
+    }
+
+    ideArtifact.createArtifact()
+
+    val arch = myProject.layout.buildDirectory
+            .dir(DEFAULT_DESTINATION).get()
+            .dir(name)
+            .file(topArchName)
+            .asFile
+
+    assertTrue(arch.exists())
+    assertEquals(topArchName, arch.name)
+
+    val topContent = myProject.zipTree(arch).files
+    assertEquals(1, topContent.size)
+    val extracted = topContent.iterator().next()
+    assertEquals(d1, extracted.parentFile.name)
+    assertEquals(archName, extracted.name)
+    val innerContent = ArrayList(myProject.zipTree(extracted).files)
+    innerContent.sortBy { it.name }
+    assertEquals(2, innerContent.size)
+
+    assertEquals(fileName1, innerContent[0].name)
+    assertEquals(fileName2, innerContent[1].name)
+    assertEquals(d2, innerContent[1].parentFile.name)
+    assertEquals(payload, innerContent[0].readText())
+    assertEquals(payload, innerContent[1].readText())
+  }
 }

@@ -8,6 +8,7 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.bundling.Zip
 
 import javax.inject.Inject
 
@@ -104,6 +105,23 @@ class IdeArtifacts implements MapConvertible {
         children.forEach {
           it.buildTo(newDir)
         }
+      }
+
+      if (type == ArtifactType.ARCHIVE) {
+        def randomName = "archive_" + (new Random().nextInt())
+        def temp = project.layout.buildDirectory.dir("tmp").get().dir(randomName).asFile
+        temp.mkdirs()
+
+        children.forEach {
+          it.buildTo(temp)
+        }
+
+        def customArchName = name
+        project.tasks.create(randomName, Zip) {
+          from temp
+          destinationDir destination
+          archiveName customArchName
+        }.execute()
       }
     }
   }
