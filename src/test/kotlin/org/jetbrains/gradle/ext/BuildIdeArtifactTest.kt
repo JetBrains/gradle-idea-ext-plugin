@@ -4,10 +4,12 @@ import junit.framework.Assert.assertEquals
 import junit.framework.Assert.assertFalse
 import org.assertj.core.api.Assertions.assertThat
 import org.gradle.api.Project
+import org.gradle.api.tasks.bundling.Zip
 import org.gradle.testfixtures.ProjectBuilder
 import org.jetbrains.gradle.ext.BuildIdeArtifact.DEFAULT_DESTINATION
 import org.junit.Before
 import org.junit.Test
+import java.io.File
 
 const val artifactName = "myArt"
 
@@ -153,7 +155,6 @@ class BuildIdeArtifactTest {
     myProject.dependencies.add(myCfg.name, "junit:junit:4.12")
 
     ideArtifact.artifact.libraryFiles(myCfg)
-
     ideArtifact.createArtifact()
 
     val target = myProject.layout.buildDirectory
@@ -162,5 +163,64 @@ class BuildIdeArtifactTest {
 
     val fileNames = target.listFiles().map { it.name }
     assertThat(fileNames).containsExactlyInAnyOrder("hamcrest-core-1.3.jar", "junit-4.12.jar")
+  }
+
+  @Test fun `test directory content copy`() {
+    val dirName = "myDir"
+    val fileName = "some.txt"
+    val payload = "payload"
+
+    val srcFile = myProject.layout.projectDirectory
+            .dir(dirName)
+            .file(fileName).asFile
+
+    srcFile.parentFile.mkdir()
+    srcFile.writeText(payload)
+
+    ideArtifact.artifact.directoryContent(dirName)
+    ideArtifact.createArtifact()
+
+    val target = myProject.layout.buildDirectory
+            .dir(DEFAULT_DESTINATION).get()
+            .dir(artifactName)
+            .file(fileName).asFile
+
+    assertThat(target).exists()
+            .hasContent(payload)
+  }
+
+  @Test fun `test archive unpacking`() {
+    val payload = "Payload ;)"
+    val temp = createTempDir()
+    val fileName = "some.text"
+
+    try {
+      val testFile = File(temp, fileName)
+      testFile.writeText(payload)
+      val testArchive = myProject.layout.projectDirectory.file("archive.zip").asFile
+      createTestArchive(temp, testArchive)
+
+      ideArtifact.artifact.extractedDirectory(testArchive)
+      ideArtifact.createArtifact()
+
+      val target = myProject.layout.buildDirectory
+              .dir(DEFAULT_DESTINATION).get()
+              .dir(artifactName)
+              .file(fileName).asFile
+
+      assertThat(target).exists()
+              .hasContent(payload)
+
+    } finally {
+      temp.deleteRecursively()
+    }
+  }
+
+  fun createTestArchive(sourceDir: File, destinationFile: File) {
+    myProject.tasks.create("testArchive", Zip::class.java) {
+      it.from(sourceDir)
+      it.destinationDir = destinationFile.parentFile
+      it.archiveName = destinationFile.name
+    }.execute()
   }
 }

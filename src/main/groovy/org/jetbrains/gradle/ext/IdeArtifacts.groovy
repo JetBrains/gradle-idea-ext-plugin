@@ -275,6 +275,19 @@ class DirCopy extends FileBasedArtifact {
   Set<File> filter(Set<File> sources) {
     return sources.findAll { it.isDirectory() }
   }
+
+  @Override
+  void buildTo(File destination) {
+    if (!destination.isDirectory()) {
+      return
+    }
+
+    def filtered = filter(sources.files)
+    project.copy {
+      from filtered
+      into destination
+    }
+  }
 }
 
 class ExtractedArchive extends FileBasedArtifact {
@@ -285,6 +298,19 @@ class ExtractedArchive extends FileBasedArtifact {
   @Override
   Set<File> filter(Set<File> sources) {
     return sources.findAll { it.isFile() }
+  }
+
+  @Override
+  void buildTo(File destination) {
+    if (!destination.isDirectory()) {
+      return
+    }
+
+    def filtered = filter(sources.files)
+    project.copy {
+      from filtered.collect { project.zipTree(it) }
+      into destination
+    }
   }
 }
 
