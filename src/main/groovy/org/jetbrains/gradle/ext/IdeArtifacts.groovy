@@ -195,10 +195,32 @@ abstract class ModuleBasedArtifact extends TypedArtifact {
   Map<String, ?> toMap() {
     return super.toMap() << ["moduleName" : moduleName]
   }
+
+  protected Project findProject() {
+    def find = project.rootProject.allprojects.find { it.idea.module.name == moduleName }
+    if (find == null) {
+      project.logger.warn("Failed to find gradle project for with idea module name ${moduleName}")
+    }
+    return find
+  }
 }
+
 class ModuleOutput extends ModuleBasedArtifact {
   ModuleOutput(Project project, String name) {
     super(project, name, ArtifactType.MODULE_OUTPUT)
+  }
+
+  @Override
+  void buildTo(File destination) {
+    def project = findProject()
+    if (project == null) {
+      return
+    }
+    def mainOutput = project.sourceSets["main"].output
+    project.copy {
+      from mainOutput.classesDirs + mainOutput.resourcesDir + mainOutput.dirs
+      into destination
+    }
   }
 }
 
@@ -206,11 +228,36 @@ class ModuleTestOutput extends ModuleBasedArtifact {
   ModuleTestOutput(Project project, String name) {
     super(project, name, ArtifactType.MODULE_TEST_OUTPUT)
   }
+
+  @Override
+  void buildTo(File destination) {
+    def project = findProject()
+    if (project == null) {
+      return
+    }
+    def testOutput = project.sourceSets["test"].output
+    project.copy {
+      from testOutput.classesDirs + testOutput.resourcesDir + testOutput.dirs
+      into destination
+    }
+  }
 }
 
 class ModuleSrc extends ModuleBasedArtifact {
   ModuleSrc(Project project, String name) {
     super(project, name, ArtifactType.MODULE_SRC)
+  }
+
+  @Override
+  void buildTo(File destination) {
+    def project = findProject()
+    if (project == null) {
+      return
+    }
+    project.copy {
+      from { project.sourceSets.collect { it.allSource } }
+      into destination
+    }
   }
 }
 
