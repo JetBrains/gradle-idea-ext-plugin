@@ -9,8 +9,9 @@ import org.jetbrains.gradle.ext.BuildIdeArtifact.DEFAULT_DESTINATION
 import org.junit.Before
 import org.junit.Test
 
-class BuildIdeArtifactTest {
+const val artifactName = "myArt"
 
+class BuildIdeArtifactTest {
   lateinit var myProject: Project
   lateinit var ideArtifact: BuildIdeArtifact
 
@@ -18,20 +19,19 @@ class BuildIdeArtifactTest {
   fun setup() {
     myProject = ProjectBuilder.builder().build()
     ideArtifact = myProject.tasks.create("testBuild", BuildIdeArtifact::class.java)
+    ideArtifact.artifact = myProject.objects.newInstance(RecursiveArtifact::class.java, myProject, artifactName, ArtifactType.ARTIFACT)
   }
 
   @Test fun `test empty task does nothing`() {
+    ideArtifact.artifact = null // artifact was already set in setup
     ideArtifact.createArtifact()
     assertFalse(myProject.layout.buildDirectory.dir(DEFAULT_DESTINATION).get().asFile.exists())
   }
 
   @Test fun `test empty artifact creates destination dir`() {
-    val name = "myArt"
-    ideArtifact.artifact = myProject.objects.newInstance(RecursiveArtifact::class.java, myProject, name, ArtifactType.ARTIFACT)
-
     ideArtifact.createArtifact()
 
-    val target = myProject.layout.buildDirectory.dir(DEFAULT_DESTINATION).get().dir(name).asFile
+    val target = myProject.layout.buildDirectory.dir(DEFAULT_DESTINATION).get().dir(artifactName).asFile
 
     assertThat(target)
             .exists()
@@ -39,11 +39,9 @@ class BuildIdeArtifactTest {
   }
 
   @Test fun `test single file copy`() {
-    val name = "myArt"
     val fileName = "some.txt"
-    val root = myProject.objects.newInstance(RecursiveArtifact::class.java, myProject, name, ArtifactType.ARTIFACT)
-    root.file(fileName)
-    ideArtifact.artifact = root
+
+    ideArtifact.artifact.file(fileName)
 
     val file = myProject.layout.projectDirectory.file(fileName).asFile
     val payload = "Payload"
@@ -53,7 +51,7 @@ class BuildIdeArtifactTest {
 
     val target = myProject.layout.buildDirectory
             .dir(DEFAULT_DESTINATION).get()
-            .dir(name)
+            .dir(artifactName)
             .dir(fileName)
             .asFile
 
@@ -63,18 +61,14 @@ class BuildIdeArtifactTest {
   }
 
   @Test fun `test subdirectories copy`() {
-    val name = "myArt"
     val fileName = "some.txt"
     val d1 = "dir1"
     val d2 = "dir2"
-    val root = myProject.objects.newInstance(RecursiveArtifact::class.java, myProject, name, ArtifactType.ARTIFACT)
-    root.directory(d1) {
+    ideArtifact.artifact.directory(d1) {
       it.directory(d2) { sub ->
         sub.file(fileName)
       }
     }
-
-    ideArtifact.artifact = root
 
     val file = myProject.layout.projectDirectory.file(fileName).asFile
     val payload = "Payload"
@@ -84,7 +78,7 @@ class BuildIdeArtifactTest {
 
     val target = myProject.layout.buildDirectory
             .dir(DEFAULT_DESTINATION).get()
-            .dir(name)
+            .dir(artifactName)
             .dir(d1)
             .dir(d2)
             .dir(fileName)
@@ -96,16 +90,14 @@ class BuildIdeArtifactTest {
   }
 
   @Test fun `test archives copy`() {
-    val name = "myArt"
     val fileName1 = "some1.txt"
     val fileName2 = "some2.txt"
     val topArchName = "arch.jar"
     val d1 = "dir1"
     val archName = "my.zip"
     val d2 = "dir2"
-    val root = myProject.objects.newInstance(RecursiveArtifact::class.java, myProject, name, ArtifactType.ARTIFACT)
 
-    root.archive(topArchName) { topArch ->
+    ideArtifact.artifact.archive(topArchName) { topArch ->
       topArch.directory(d1) { sub ->
         sub.archive(archName) { arch ->
           arch.file(fileName1)
@@ -116,8 +108,6 @@ class BuildIdeArtifactTest {
       }
     }
 
-    ideArtifact.artifact = root
-
     val payload = "Payload1"
     listOf(fileName1, fileName2).forEach {
       myProject.layout.projectDirectory.file(it).asFile.writeText(payload)
@@ -127,7 +117,7 @@ class BuildIdeArtifactTest {
 
     val arch = myProject.layout.buildDirectory
             .dir(DEFAULT_DESTINATION).get()
-            .dir(name)
+            .dir(artifactName)
             .file(topArchName)
             .asFile
 
@@ -161,11 +151,8 @@ class BuildIdeArtifactTest {
     myProject.repositories.mavenLocal()
     val myCfg = myProject.configurations.create("myCfg")
     myProject.dependencies.add(myCfg.name, "junit:junit:4.12")
-    val artifactName = "myArt"
 
-    val root = myProject.objects.newInstance(RecursiveArtifact::class.java, myProject, artifactName, ArtifactType.ARTIFACT)
-    root.libraryFiles(myCfg)
-    ideArtifact.artifact = root
+    ideArtifact.artifact.libraryFiles(myCfg)
 
     ideArtifact.createArtifact()
 
