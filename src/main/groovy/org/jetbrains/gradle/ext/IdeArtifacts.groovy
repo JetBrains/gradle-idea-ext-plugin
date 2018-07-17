@@ -53,7 +53,7 @@ abstract class TypedArtifact implements MapConvertible {
     return ["type":type]
   }
 
-  void buildTo(File destination) {}
+  abstract void buildTo(File destination)
 }
 
 class RecursiveArtifact extends TypedArtifact {
@@ -117,6 +117,12 @@ class RecursiveArtifact extends TypedArtifact {
 
   @Override
   void buildTo(File destination) {
+    if (type == ArtifactType.ARTIFACT) {
+      children.forEach {
+        it.buildTo(destination)
+      }
+    }
+
     if (type == ArtifactType.DIR) {
       def newDir = new File(destination, name)
       newDir.mkdirs()
@@ -271,6 +277,14 @@ class ArtifactRef extends TypedArtifact {
   Map<String, ?> toMap() {
     return super.toMap() << ["artifactName" : artifactName]
   }
+
+  @Override
+  void buildTo(File destination) {
+    def referredArtifact = project.idea.project.settings.ideArtifacts[artifactName]
+    if (referredArtifact != null) {
+      referredArtifact.buildTo(destination)
+    }
+  }
 }
 
 abstract class FileBasedArtifact extends TypedArtifact {
@@ -381,10 +395,7 @@ class BuildIdeArtifact extends DefaultTask {
     }
 
     File destination = createDestinationDir()
-
-    artifact.children.forEach { child ->
-      child.buildTo(destination)
-    }
+    artifact.buildTo(destination)
   }
 
   private File createDestinationDir() {

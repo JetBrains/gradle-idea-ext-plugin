@@ -60,7 +60,7 @@ class BuildIdeArtifactTest {
     val target = myProject.layout.buildDirectory
             .dir(DEFAULT_DESTINATION).get()
             .dir(artifactName)
-            .dir(fileName)
+            .file(fileName)
             .asFile
 
     assertThat(target)

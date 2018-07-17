@@ -220,6 +220,46 @@ task printSettings {
 }"""
   }
 
+  def "test build ide artifact reference"() {
+    given:
+    buildFile << """
+plugins {
+  id 'org.jetbrains.gradle.plugin.idea-ext'
+}
+
+idea {
+  project {
+    settings {
+      ideArtifacts {
+        ideArtifact("ref") {
+          directory("dir1") {
+            file("build.gradle")
+          }
+        }
+        ideArtifact("root") {
+          artifact("ref")
+        }
+      }
+    }
+  }
+}
+
+task buildIdeArtifact(type: org.jetbrains.gradle.ext.BuildIdeArtifact) {
+  artifact = idea.project.settings.ideArtifacts["root"]
+}
+"""
+
+    when:
+      GradleRunner.create()
+            .withProjectDir(testProjectDir.root)
+            .withArguments("buildIdeArtifact")
+            .withPluginClasspath()
+            .build()
+    then:
+    new File(testProjectDir.root, "build/idea-artifacts/root/dir1/build.gradle").exists()
+  }
+
+
   def "test code style settings"() {
     given:
     buildFile << """
