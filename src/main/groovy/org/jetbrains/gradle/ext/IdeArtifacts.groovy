@@ -385,7 +385,7 @@ enum ArtifactType {
 class BuildIdeArtifact extends DefaultTask {
   public static final String DEFAULT_DESTINATION = "idea-artifacts"
   RecursiveArtifact artifact
-  String outputDirectory
+  File outputDirectory = null
 
   @TaskAction
   void createArtifact() {
@@ -399,12 +399,16 @@ class BuildIdeArtifact extends DefaultTask {
   }
 
   private File createDestinationDir() {
-    def destination = project.layout.buildDirectory
-            .dir(DEFAULT_DESTINATION).get()
-            .dir(artifact.name)
-            .asFile
-    destination
-            .mkdirs()
-    destination
+    File destination
+    if (outputDirectory == null) {
+      destination = project.layout.buildDirectory
+              .dir(DEFAULT_DESTINATION).get()
+              .dir(artifact.name)
+              .asFile
+    } else {
+      destination = outputDirectory
+    }
+    destination.mkdirs()
+    return destination
   }
 }

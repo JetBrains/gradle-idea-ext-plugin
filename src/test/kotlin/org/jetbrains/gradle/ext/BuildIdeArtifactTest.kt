@@ -36,7 +36,7 @@ class BuildIdeArtifactTest {
     assertFalse(myProject.layout.buildDirectory.dir(DEFAULT_DESTINATION).get().asFile.exists())
   }
 
-  @Test fun `test empty artifact creates destination dir`() {
+  @Test fun `test empty artifact creates default destination dir`() {
     ideArtifact.createArtifact()
 
     val target = myProject.layout.buildDirectory.dir(DEFAULT_DESTINATION).get().dir(artifactName).asFile
@@ -66,6 +66,27 @@ class BuildIdeArtifactTest {
     assertThat(target)
             .exists()
             .hasContent(payload)
+  }
+
+  @Test fun `test custom destination directory`() {
+    val fileName = "some.txt"
+    val file = myProject.layout.projectDirectory.file(fileName).asFile
+    val payload = "Payload"
+    file.writeText(payload)
+
+    val customOutput = createTempDir()
+    try {
+      ideArtifact.artifact.file(fileName)
+      ideArtifact.outputDirectory = customOutput
+
+      ideArtifact.createArtifact()
+
+      assertThat(File(customOutput, fileName))
+              .exists()
+              .hasContent(payload)
+    } finally {
+      customOutput.deleteRecursively()
+    }
   }
 
   @Test fun `test subdirectories copy`() {
