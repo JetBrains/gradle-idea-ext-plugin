@@ -273,6 +273,7 @@ class SerializationTests {
             it.directoryContent("dir")
             it.libraryFiles(testCfg)
           }
+          it.moduleOutput("moduleName")
         }
       }
       ideArtifact("art2") {
@@ -324,6 +325,10 @@ class SerializationTests {
       |                                    ]
       |                                }
       |                            ]
+      |                        },
+      |                        {
+      |                            "type": "MODULE_OUTPUT",
+      |                            "moduleName": "moduleName"
       |                        }
       |                    ]
       |                }
