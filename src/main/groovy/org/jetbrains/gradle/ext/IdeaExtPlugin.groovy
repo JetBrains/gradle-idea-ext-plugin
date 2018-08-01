@@ -108,7 +108,7 @@ class ProjectSettings extends AbstractExtensibleSettings {
   private NamedDomainObjectContainer<Inspection> inspections
   private TaskTriggersConfig taskTriggersConfig
   private ActionDelegationConfig actionDelegationConfig
-  private IdeArtifacts artifacts
+  private NamedDomainObjectContainer<TopLevelArtifact> artifacts
 
   private Gson gson = new Gson()
 
@@ -216,14 +216,14 @@ class ProjectSettings extends AbstractExtensibleSettings {
     detectExclusions.excludes.addAll(ids)
   }
 
-  IdeArtifacts getIdeArtifacts() {
+  NamedDomainObjectContainer<TopLevelArtifact> getIdeArtifacts() {
     if (artifacts == null) {
-      artifacts = project.objects.newInstance(IdeArtifacts, project)
+      artifacts = project.container(TopLevelArtifact, new TopLevelArtifactFactory(project))
     }
     return artifacts
   }
 
-  def ideArtifacts(Action<IdeArtifacts> action) {
+  def ideArtifacts(Action<NamedDomainObjectContainer<TopLevelArtifact>> action) {
     action.execute(getIdeArtifacts())
   }
 
@@ -267,7 +267,7 @@ class ProjectSettings extends AbstractExtensibleSettings {
     }
 
     if (artifacts != null) {
-      map << artifacts.toMap()
+      map["artifacts"] = artifacts.collect { it.toMap() }
     }
 
     return gson.toJson(map)

@@ -307,7 +307,7 @@ class SerializationTests {
   }
 
   @Test fun `test artifacts tree`() {
-    val artifacts = IdeArtifacts(myProject)
+    val artifacts = myProject.container(TopLevelArtifact::class.java, TopLevelArtifactFactory(myProject))
 
     val rootDir = myProject.rootDir
 
@@ -337,7 +337,7 @@ class SerializationTests {
 
 
     artifacts.apply {
-      ideArtifact("art1") {
+      create("art1") {
         it.directory("dir1") {
           it.file(File("file.txt"))
           it.archive("arch1") {
@@ -347,7 +347,7 @@ class SerializationTests {
           it.moduleOutput("moduleName")
         }
       }
-      ideArtifact("art2") {
+      create("art2") {
         it.artifact("art1")
         it.extractedDirectory("my.zip")
       }
@@ -424,7 +424,7 @@ class SerializationTests {
       |    ]
       |}
     """.trimMargin(),
-            JsonOutput.prettyPrint(JsonOutput.toJson(artifacts.toMap()))
+            JsonOutput.prettyPrint(JsonOutput.toJson(mapOf("artifacts" to artifacts.map { it.toMap() })))
     )
 
   }

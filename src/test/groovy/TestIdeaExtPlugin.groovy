@@ -162,7 +162,7 @@ idea {
   project {
     settings {
       ideArtifacts {
-        ideArtifact("myArt") {
+        myArt {
           directory("dir1") {
             archive("my.zip") {
               file("build.gradle")
@@ -231,12 +231,12 @@ idea {
   project {
     settings {
       ideArtifacts {
-        ideArtifact("ref") {
+        ref {
           directory("dir1") {
             file("build.gradle")
           }
         }
-        ideArtifact("root") {
+        root {
           artifact("ref")
         }
       }

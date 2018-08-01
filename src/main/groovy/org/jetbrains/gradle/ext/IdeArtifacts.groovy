@@ -2,6 +2,7 @@ package org.jetbrains.gradle.ext
 
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
+import org.gradle.api.NamedDomainObjectFactory
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ArtifactCollection
 import org.gradle.api.artifacts.Configuration
@@ -11,32 +12,6 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.bundling.Zip
 
 import javax.inject.Inject
-
-class IdeArtifacts implements MapConvertible {
-
-  Project project
-  List<RecursiveArtifact> artifacts = new ArrayList<>()
-
-  @Inject
-  IdeArtifacts(Project project) {
-    this.project = project
-  }
-
-  void ideArtifact(String name, Action<RecursiveArtifact> action) {
-    def newArtifact = project.objects.newInstance(TopLevelArtifact, project, name)
-    action.execute(newArtifact)
-    artifacts.add(newArtifact)
-  }
-
-  RecursiveArtifact getAt(String name) {
-    return artifacts.find { it.name == name }
-  }
-
-  @Override
-  Map<String, ?> toMap() {
-    return ["artifacts": artifacts*.toMap()]
-  }
-}
 
 abstract class TypedArtifact implements MapConvertible {
   Project project
@@ -116,7 +91,6 @@ abstract class RecursiveArtifact extends TypedArtifact {
 }
 
 class TopLevelArtifact extends RecursiveArtifact {
-
   @Inject
   TopLevelArtifact(Project project, String name) {
     super(project, name, ArtifactType.ARTIFACT)
@@ -129,8 +103,21 @@ class TopLevelArtifact extends RecursiveArtifact {
     }
   }
 }
-class DirectoryArtifact extends RecursiveArtifact {
 
+class TopLevelArtifactFactory implements NamedDomainObjectFactory<TopLevelArtifact> {
+  Project myProject
+
+  TopLevelArtifactFactory(Project project) {
+    myProject = project
+  }
+
+  @Override
+  TopLevelArtifact create(String name) {
+    return myProject.objects.newInstance(TopLevelArtifact, myProject, name)
+  }
+}
+
+class DirectoryArtifact extends RecursiveArtifact {
   @Inject
   DirectoryArtifact(Project project, String name) {
     super(project, name, ArtifactType.DIR)
@@ -143,11 +130,10 @@ class DirectoryArtifact extends RecursiveArtifact {
     children.forEach {
       it.buildTo(newDir)
     }
-
   }
 }
-class ArchiveArtifact extends RecursiveArtifact {
 
+class ArchiveArtifact extends RecursiveArtifact {
   @Inject
   ArchiveArtifact(Project project, String name) {
     super(project, name, ArtifactType.ARCHIVE)
