@@ -196,6 +196,7 @@ class TestNG extends BaseRunConfiguration {
         return [
                 "type": type,
                 "name": name,
+                "defaults": defaults,
 
                 "package": packageName,
                 "class": className,

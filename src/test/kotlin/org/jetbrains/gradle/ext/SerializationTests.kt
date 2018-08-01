@@ -72,6 +72,77 @@ class SerializationTests {
 
   }
 
+  @Test fun `test JUnit config output`() {
+    val config = JUnit("myName").apply {
+      className = "my.TestClass"
+      repeat = "untilFailure"
+      workingDirectory = "myWorkDir"
+      vmParameters = "-Dkey=Value"
+      passParentEnvs = true
+      moduleName = "myModule"
+      envs = mapOf("env1" to "envVal1", "env2" to "envVal2")
+      defaults = true
+    }
+
+    assertEquals("""
+      |{
+      |    "directory": null,
+      |    "type": "junit",
+      |    "repeat": "untilFailure",
+      |    "envs": {
+      |        "env1": "envVal1",
+      |        "env2": "envVal2"
+      |    },
+      |    "vmParameters": "-Dkey=Value",
+      |    "category": null,
+      |    "workingDirectory": "myWorkDir",
+      |    "className": "my.TestClass",
+      |    "moduleName": "myModule",
+      |    "passParentEnvs": true,
+      |    "packageName": null,
+      |    "defaults": true,
+      |    "pattern": null,
+      |    "name": "myName",
+      |    "method": null
+      |}
+    """.trimMargin(), JsonOutput.prettyPrint(JsonOutput.toJson(config.toMap())))
+  }
+
+  @Test fun `test TestNG config output`() {
+    val config = TestNG("myName").apply {
+      className = "my.TestClass"
+
+      workingDirectory = "myWorkDir"
+      vmParameters = "-Dkey=Value"
+      passParentEnvs = true
+      moduleName = "myModule"
+      envs = mapOf("env1" to "envVal1", "env2" to "envVal2")
+      defaults = true
+    }
+
+    assertEquals("""
+      |{
+      |    "type": "testng",
+      |    "name": "myName",
+      |    "defaults": true,
+      |    "package": null,
+      |    "class": "my.TestClass",
+      |    "method": null,
+      |    "group": null,
+      |    "suite": null,
+      |    "pattern": null,
+      |    "workingDirectory": "myWorkDir",
+      |    "vmParameters": "-Dkey=Value",
+      |    "passParentEnvs": true,
+      |    "moduleName": "myModule",
+      |    "envs": {
+      |        "env1": "envVal1",
+      |        "env2": "envVal2"
+      |    }
+      |}
+    """.trimMargin(), JsonOutput.prettyPrint(JsonOutput.toJson(config.toMap())))
+  }
+
   @Test fun `test Groovy config output`() {
     val config = GroovyCompilerConfiguration()
     config.heapSize = 2049
