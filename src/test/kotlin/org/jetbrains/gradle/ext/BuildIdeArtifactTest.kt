@@ -27,7 +27,7 @@ class BuildIdeArtifactTest {
   fun setup() {
     myProject = ProjectBuilder.builder().build()
     ideArtifact = myProject.tasks.create("testBuild", BuildIdeArtifact::class.java)
-    ideArtifact.artifact = myProject.objects.newInstance(RecursiveArtifact::class.java, myProject, artifactName, ArtifactType.ARTIFACT)
+    ideArtifact.artifact = myProject.objects.newInstance(TopLevelArtifact::class.java, myProject, artifactName)
   }
 
   @Test fun `test empty task does nothing`() {

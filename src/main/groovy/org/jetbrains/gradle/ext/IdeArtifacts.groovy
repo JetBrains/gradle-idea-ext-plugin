@@ -23,7 +23,7 @@ class IdeArtifacts implements MapConvertible {
   }
 
   void ideArtifact(String name, Action<RecursiveArtifact> action) {
-    def newArtifact = project.objects.newInstance(RecursiveArtifact, project, name, ArtifactType.ARTIFACT)
+    def newArtifact = project.objects.newInstance(TopLevelArtifact, project, name)
     action.execute(newArtifact)
     artifacts.add(newArtifact)
   }
@@ -39,7 +39,6 @@ class IdeArtifacts implements MapConvertible {
 }
 
 abstract class TypedArtifact implements MapConvertible {
-
   Project project
   ArtifactType type
 
@@ -56,7 +55,7 @@ abstract class TypedArtifact implements MapConvertible {
   abstract void buildTo(File destination)
 }
 
-class RecursiveArtifact extends TypedArtifact {
+abstract class RecursiveArtifact extends TypedArtifact {
   String name
   public final List<TypedArtifact> children = new ArrayList<>()
 
@@ -67,13 +66,13 @@ class RecursiveArtifact extends TypedArtifact {
   }
 
   void directory(String name, Action<RecursiveArtifact> action) {
-    RecursiveArtifact newDir = project.objects.newInstance(RecursiveArtifact, project, name, ArtifactType.DIR)
+    RecursiveArtifact newDir = project.objects.newInstance(DirectoryArtifact, project, name)
     action.execute(newDir)
     children.add(newDir)
   }
 
   void archive(String name, Action<RecursiveArtifact> action) {
-    RecursiveArtifact newArchive = project.objects.newInstance(RecursiveArtifact, project, name, ArtifactType.ARCHIVE)
+    RecursiveArtifact newArchive = project.objects.newInstance(ArchiveArtifact, project, name)
     action.execute(newArchive)
     children.add(newArchive)
   }
@@ -112,43 +111,67 @@ class RecursiveArtifact extends TypedArtifact {
 
   @Override
   Map<String, ?> toMap() {
-    return super.toMap() << ["name": name, "children": children*.toMap()]
+    return super.toMap() << ["name": name, "children": children*.toMap() ]
+  }
+}
+
+class TopLevelArtifact extends RecursiveArtifact {
+
+  @Inject
+  TopLevelArtifact(Project project, String name) {
+    super(project, name, ArtifactType.ARTIFACT)
   }
 
   @Override
   void buildTo(File destination) {
-    if (type == ArtifactType.ARTIFACT) {
-      children.forEach {
-        it.buildTo(destination)
-      }
-    }
-
-    if (type == ArtifactType.DIR) {
-      def newDir = new File(destination, name)
-      newDir.mkdirs()
-      children.forEach {
-        it.buildTo(newDir)
-      }
-    }
-
-    if (type == ArtifactType.ARCHIVE) {
-      def randomName = "archive_" + (new Random().nextInt())
-      def temp = project.layout.buildDirectory.dir("tmp").get().dir(randomName).asFile
-      temp.mkdirs()
-
-      children.forEach {
-        it.buildTo(temp)
-      }
-
-      def customArchName = name
-      project.tasks.create(randomName, Zip) {
-        from temp
-        destinationDir destination
-        archiveName customArchName
-      }.execute()
+    children.forEach {
+      it.buildTo(destination)
     }
   }
 }
+class DirectoryArtifact extends RecursiveArtifact {
+
+  @Inject
+  DirectoryArtifact(Project project, String name) {
+    super(project, name, ArtifactType.DIR)
+  }
+
+  @Override
+  void buildTo(File destination) {
+    def newDir = new File(destination, name)
+    newDir.mkdirs()
+    children.forEach {
+      it.buildTo(newDir)
+    }
+
+  }
+}
+class ArchiveArtifact extends RecursiveArtifact {
+
+  @Inject
+  ArchiveArtifact(Project project, String name) {
+    super(project, name, ArtifactType.ARCHIVE)
+  }
+
+  @Override
+  void buildTo(File destination) {
+    def randomName = "archive_" + (new Random().nextInt())
+    def temp = project.layout.buildDirectory.dir("tmp").get().dir(randomName).asFile
+    temp.mkdirs()
+
+    children.forEach {
+      it.buildTo(temp)
+    }
+
+    def customArchName = name
+    project.tasks.create(randomName, Zip) {
+      from temp
+      destinationDir destination
+      archiveName customArchName
+    }.execute()
+  }
+}
+
 
 class LibraryFiles extends TypedArtifact {
   Configuration configuration
