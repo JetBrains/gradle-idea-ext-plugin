@@ -5,7 +5,6 @@ import org.gradle.api.Action
 
 @CompileStatic
 class GroovyCompilerConfiguration implements MapConvertible {
-    Integer heapSize
     ExcludesConfig excludes
 
     def excludes(Action<ExcludesConfig> action) {
@@ -17,7 +16,7 @@ class GroovyCompilerConfiguration implements MapConvertible {
 
     @Override
     Map<String, ?> toMap() {
-        return ["heapSize": heapSize, "excludes": excludes?.data]
+        return ["excludes": excludes?.data]
     }
 }
 

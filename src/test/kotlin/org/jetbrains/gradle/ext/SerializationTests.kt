@@ -145,7 +145,6 @@ class SerializationTests {
 
   @Test fun `test Groovy config output`() {
     val config = GroovyCompilerConfiguration()
-    config.heapSize = 2049
     config.excludes(Action {
         it.file("C:/myFile.ext")
         it.dir("C:/myDir")
@@ -154,7 +153,6 @@ class SerializationTests {
 
     assertEquals("""
       |{
-      |    "heapSize": 2049,
       |    "excludes": [
       |        {
       |            "url": "C:/myFile.ext",
