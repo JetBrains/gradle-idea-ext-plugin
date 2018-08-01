@@ -7,7 +7,7 @@ import org.gradle.api.Project
 import javax.inject.Inject
 
 @CompileStatic
-class IdeaCompilerConfiguration {
+class IdeaCompilerConfiguration implements MapConvertible {
     private final Project project
     String resourcePatterns
     Integer processHeapSize
@@ -38,8 +38,9 @@ class IdeaCompilerConfiguration {
         action.execute(getJavac())
     }
 
-    def toMap() {
-        def map = [:]
+    @Override
+    Map<String, ?> toMap() {
+        Map<String, ?> map = [:]
         if (resourcePatterns) map.put("resourcePatterns", resourcePatterns)
         if (processHeapSize != null) map.put("processHeapSize", processHeapSize)
         if (autoShowFirstErrorInEditor != null) map.put("autoShowFirstErrorInEditor", autoShowFirstErrorInEditor)

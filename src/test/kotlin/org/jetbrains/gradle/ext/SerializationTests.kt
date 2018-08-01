@@ -154,7 +154,7 @@ class SerializationTests {
 
     assertEquals("""
       |{
-      |    "heapSize": "2049",
+      |    "heapSize": 2049,
       |    "excludes": [
       |        {
       |            "url": "C:/myFile.ext",

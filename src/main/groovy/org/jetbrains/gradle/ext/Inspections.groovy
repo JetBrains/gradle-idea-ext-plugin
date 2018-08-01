@@ -5,16 +5,17 @@ import groovy.transform.CompileStatic
 import javax.inject.Inject
 
 @CompileStatic
-class Inspection {
+class Inspection implements MapConvertible {
     final String name
-    boolean enabled = false
+    Boolean enabled
 
     @Inject
     Inspection(String name) {
         this.name = name
     }
 
-    def toMap() {
+    @Override
+    Map<String, ?> toMap() {
         return [
                 "enabled": enabled,
                 "name"   : name

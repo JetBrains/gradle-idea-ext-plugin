@@ -103,8 +103,7 @@ rootProject.name = "ProjectName"
             ],
             "jvmArgs": "-DmyKey=myVal"
         }
-    ]
-""")
+    ]""")
 
     result.task(":printSettings").outcome == TaskOutcome.SUCCESS
   }
@@ -146,7 +145,7 @@ task printSettings {
     then:
 
     def lines = result.output.readLines()
-    lines[0] == '{"groovyCompiler":{"heapSize":"2000","excludes":[{"url":"/some/myFile","includeSubdirectories":false,"isFile":true},' +
+    lines[0] == '{"groovyCompiler":{"heapSize":2000,"excludes":[{"url":"/some/myFile","includeSubdirectories":false,"isFile":true},' +
             '{"url":"/a/dir","includeSubdirectories":true,"isFile":false}]}}'
     
   }
@@ -191,7 +190,7 @@ task printSettings {
 
     def lines = result.output.readLines()
     JsonOutput.prettyPrint(lines[0]) == """{
-    "artifacts": [
+    "ideArtifacts": [
         {
             "type": "ARTIFACT",
             "name": "myArt",

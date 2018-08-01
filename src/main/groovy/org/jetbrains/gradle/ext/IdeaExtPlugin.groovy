@@ -7,12 +7,12 @@ import groovy.json.JsonOutput
 import groovy.transform.CompileStatic
 import org.gradle.api.Action
 import org.gradle.api.GradleException
-import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Plugin
 import org.gradle.api.PolymorphicDomainObjectContainer
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.plugins.ExtensionAware
+import org.gradle.api.plugins.ExtensionContainer
 import org.gradle.api.reflect.TypeOf
 import org.gradle.plugins.ide.idea.model.IdeaModel
 import org.gradle.util.GradleVersion
@@ -29,10 +29,41 @@ class IdeaExtPlugin implements Plugin<Project> {
     if (!ideaModel) { return }
 
     if (ideaModel.project) {
-      (ideaModel.project as ExtensionAware).extensions.create("settings", ProjectSettings, project)
+      def projectSettings = (ideaModel.project as ExtensionAware).extensions.create("settings", ProjectSettings, project)
+
+      def settingsExt = (projectSettings as ExtensionAware).extensions
+
+      settingsExt.create("delegateActions", ActionDelegationConfig)
+      settingsExt.create("taskTriggers", TaskTriggersConfig)
+      settingsExt.create("compiler", IdeaCompilerConfiguration, project)
+      settingsExt.create("groovyCompiler", GroovyCompilerConfiguration)
+      settingsExt.create("codeStyle", CodeStyleConfig)
+      settingsExt.create("copyright", CopyrightConfiguration, project)
+      addRunConfigurations(settingsExt, project)
+      addInspections(settingsExt, project)
+      addArtifacts(settingsExt, project)
     }
 
     (ideaModel.module as ExtensionAware).extensions.create("settings", ModuleSettings, project)
+  }
+
+  static void addRunConfigurations(ExtensionContainer container, Project project) {
+    def runConfigurations = GradleUtils.customPolymorphicContainer(project, DefaultRunConfigurationContainer)
+    runConfigurations.registerFactory(Application) { String name -> project.objects.newInstance(Application, name, project) }
+    runConfigurations.registerFactory(JUnit) { String name -> project.objects.newInstance(JUnit, name) }
+    runConfigurations.registerFactory(Remote) { String name -> project.objects.newInstance(Remote, name) }
+    runConfigurations.registerFactory(TestNG) { String name -> project.objects.newInstance(TestNG, name) }
+
+    container.add("runConfigurations", runConfigurations)
+  }
+  static void addInspections(ExtensionContainer container, Project project) {
+    def inspections = project.container(Inspection)
+    container.add("inspections", inspections)
+  }
+
+  static void addArtifacts(ExtensionContainer container, Project project) {
+    def artifacts = project.container(TopLevelArtifact, new TopLevelArtifactFactory(project))
+    container.add("ideArtifacts", artifacts)
   }
 }
 
@@ -80,13 +111,16 @@ abstract class AbstractExtensibleSettings {
     }
 
     if (mapConvertibleType.isAssignableFrom(typeOfExt)) {
-      return (extension as MapConvertible).toMap()
+      def map = (extension as MapConvertible).toMap().findAll { it.value != null }
+      return map.isEmpty() ? null : map
     }
 
     if (iterableType.isAssignableFrom(typeOfExt)) {
       def converted = (extension as Iterable)
               .findAll { it instanceof MapConvertible }
-              .collect { (it as MapConvertible).toMap() }
+              .collect { (it as MapConvertible).toMap().findAll { it.value != null }}
+              .findAll { !it.isEmpty() }
+
       if (converted.size() > 0) {
         return converted
       } else {
@@ -98,115 +132,13 @@ abstract class AbstractExtensibleSettings {
 
 @CompileStatic
 class ProjectSettings extends AbstractExtensibleSettings {
-  private IdeaCompilerConfiguration compilerConfig
-  private GroovyCompilerConfiguration groovyCompilerConfig
-  private CopyrightConfiguration copyrightConfig
-  private RunConfigurationContainer runConfigurations
   private Project project
-  private CodeStyleConfig codeStyle
   private FrameworkDetectionExclusionSettings detectExclusions
-  private NamedDomainObjectContainer<Inspection> inspections
-  private TaskTriggersConfig taskTriggersConfig
-  private ActionDelegationConfig actionDelegationConfig
-  private NamedDomainObjectContainer<TopLevelArtifact> artifacts
 
   private Gson gson = new Gson()
 
   ProjectSettings(Project project) {
-    def runConfigurations = GradleUtils.customPolymorphicContainer(project, DefaultRunConfigurationContainer)
-
-    runConfigurations.registerFactory(Application) { String name -> project.objects.newInstance(Application, name, project) }
-    runConfigurations.registerFactory(JUnit) { String name -> project.objects.newInstance(JUnit, name) }
-    runConfigurations.registerFactory(Remote) { String name -> project.objects.newInstance(Remote, name) }
-    runConfigurations.registerFactory(TestNG) { String name -> project.objects.newInstance(TestNG, name) }
-
-    this.runConfigurations = runConfigurations
     this.project = project
-  }
-
-  ActionDelegationConfig getDelegateActions() {
-    if (actionDelegationConfig == null) {
-      actionDelegationConfig = project.objects.newInstance(ActionDelegationConfig)
-    }
-    return actionDelegationConfig
-  }
-
-  void delegateActions(Action<ActionDelegationConfig> action) {
-    action.execute(getDelegateActions())
-  }
-
-  TaskTriggersConfig getTaskTriggers() {
-    if (taskTriggersConfig == null) {
-      taskTriggersConfig = project.objects.newInstance(TaskTriggersConfig)
-    }
-    return taskTriggersConfig
-  }
-
-  void taskTriggers(Action<TaskTriggersConfig> action) {
-    action.execute(getTaskTriggers())
-  }
-
-  IdeaCompilerConfiguration getCompiler() {
-    if (compilerConfig == null) {
-      compilerConfig = project.objects.newInstance(IdeaCompilerConfiguration, project)
-    }
-    return compilerConfig
-  }
-
-  void compiler(Action<IdeaCompilerConfiguration> action) {
-    action.execute(getCompiler())
-  }
-
-  GroovyCompilerConfiguration getGroovyCompiler() {
-    if (groovyCompilerConfig == null) {
-      groovyCompilerConfig = project.objects.newInstance(GroovyCompilerConfiguration);
-    }
-    return groovyCompilerConfig
-  }
-
-  void groovyCompiler(Action<GroovyCompilerConfiguration> action) {
-    action.execute(getGroovyCompiler())
-  }
-
-  CodeStyleConfig getCodeStyle() {
-    if (codeStyle == null) {
-      codeStyle = project.objects.newInstance(CodeStyleConfig)
-    }
-    return codeStyle
-  }
-
-  def codeStyle(Action<CodeStyleConfig> action) {
-    action.execute(getCodeStyle())
-  }
-
-  NamedDomainObjectContainer<Inspection> getInspections() {
-    if (inspections == null) {
-      inspections = project.container(Inspection)
-    }
-    return inspections
-  }
-
-  def inspections(Action<NamedDomainObjectContainer<Inspection>> action) {
-    action.execute(getInspections())
-  }
-
-  CopyrightConfiguration getCopyright() {
-    if (copyrightConfig == null) {
-      copyrightConfig = project.objects.newInstance(CopyrightConfiguration, project)
-    }
-    return copyrightConfig
-  }
-
-  def copyright(Action<CopyrightConfiguration> action) {
-    action.execute(getCopyright())
-  }
-
-  RunConfigurationContainer getRunConfigurations() {
-    return runConfigurations
-  }
-
-  def runConfigurations(Action<RunConfigurationContainer> action) {
-    action.execute(runConfigurations)
   }
 
   def doNotDetectFrameworks(String... ids) {
@@ -216,58 +148,11 @@ class ProjectSettings extends AbstractExtensibleSettings {
     detectExclusions.excludes.addAll(ids)
   }
 
-  NamedDomainObjectContainer<TopLevelArtifact> getIdeArtifacts() {
-    if (artifacts == null) {
-      artifacts = project.container(TopLevelArtifact, new TopLevelArtifactFactory(project))
-    }
-    return artifacts
-  }
-
-  def ideArtifacts(Action<NamedDomainObjectContainer<TopLevelArtifact>> action) {
-    action.execute(getIdeArtifacts())
-  }
-
   String toString() {
     def map = collectExtensionsMap()
 
-    if (compilerConfig != null) {
-      map["compiler"] = compilerConfig.toMap()
-    }
-
-    if (groovyCompilerConfig != null) {
-      map["groovyCompiler"] = groovyCompilerConfig.toMap()
-    }
-
-    if (codeStyle != null) {
-      map["codeStyle"] = codeStyle.toMap()
-    }
-
-    if (inspections != null) {
-      map["inspections"] = inspections.collect { it.toMap() }
-    }
-
-    if (copyrightConfig != null) {
-      map["copyright"] = copyrightConfig.toMap()
-    }
-
-    if (!runConfigurations.isEmpty()) {
-      map["runConfigurations"] = runConfigurations.collect { (it as RunConfiguration).toMap() }
-    }
-
     if (detectExclusions != null) {
       map["frameworkDetectionExcludes"] = detectExclusions.excludes
-    }
-
-    if (taskTriggersConfig != null) {
-      map["taskTriggersConfig"] = taskTriggersConfig.toMap()
-    }
-
-    if (actionDelegationConfig != null) {
-      map["actionDelegationConfig"] = actionDelegationConfig.toMap()
-    }
-
-    if (artifacts != null) {
-      map["artifacts"] = artifacts.collect { it.toMap() }
     }
 
     return gson.toJson(map)
@@ -278,8 +163,8 @@ class ProjectSettings extends AbstractExtensibleSettings {
 @CompileStatic
 class ActionDelegationConfig implements MapConvertible {
   enum TestRunner { PLATFORM, GRADLE, CHOOSE_PER_TEST }
-  boolean delegateBuildRunToGradle = false
-  TestRunner testRunner = TestRunner.PLATFORM
+  Boolean delegateBuildRunToGradle
+  TestRunner testRunner
 
   Map<String, ?> toMap() {
     return ["delegateBuildRunToGradle": delegateBuildRunToGradle,  "testRunner": testRunner]

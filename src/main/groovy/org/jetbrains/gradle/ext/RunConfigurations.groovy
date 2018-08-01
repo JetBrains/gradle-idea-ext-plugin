@@ -19,7 +19,9 @@ interface RunConfigurationContainer extends ExtensiblePolymorphicDomainObjectCon
 }
 
 @CompileStatic
-class DefaultRunConfigurationContainer extends DefaultPolymorphicDomainObjectContainer<RunConfiguration> implements RunConfigurationContainer {
+class DefaultRunConfigurationContainer
+        extends DefaultPolymorphicDomainObjectContainer<RunConfiguration>
+        implements RunConfigurationContainer {
 
     @Inject
     DefaultRunConfigurationContainer(Instantiator instantiator) {

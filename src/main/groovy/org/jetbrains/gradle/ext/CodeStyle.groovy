@@ -100,7 +100,12 @@ class CodeStyleConfig implements MapConvertible {
                 "KEEP_CONTROL_STATEMENT_IN_ONE_LINE" : keepControlStatementInOneLine
         ] as Map<String, Object>
 
-        map["languages"] = languages.collectEntries { key, value -> [(key): value.toMap()] }
+        def languages = this.languages.collectEntries { key, value ->
+            [(key): value.toMap()].findAll { !it.value.isEmpty() }
+        }
+        if (!languages.isEmpty()) {
+            map["languages"] = languages
+        }
         return map
     }
 }
