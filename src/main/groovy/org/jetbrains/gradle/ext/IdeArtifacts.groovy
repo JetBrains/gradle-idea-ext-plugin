@@ -40,48 +40,66 @@ abstract class RecursiveArtifact extends TypedArtifact {
     this.name = name
   }
 
-  void directory(String name, Action<RecursiveArtifact> action) {
+  DirectoryArtifact directory(String name, Action<RecursiveArtifact> action = {}) {
     RecursiveArtifact newDir = project.objects.newInstance(DirectoryArtifact, project, name)
     action.execute(newDir)
     children.add(newDir)
+    return newDir
   }
 
-  void archive(String name, Action<RecursiveArtifact> action) {
+  ArchiveArtifact archive(String name, Action<RecursiveArtifact> action = {}) {
     RecursiveArtifact newArchive = project.objects.newInstance(ArchiveArtifact, project, name)
     action.execute(newArchive)
     children.add(newArchive)
+    return newArchive
   }
 
-  void libraryFiles(Configuration configuration) {
-    children.add(new LibraryFiles(project, configuration))
+  LibraryFiles libraryFiles(Configuration configuration) {
+    def child = new LibraryFiles(project, configuration)
+    children.add(child)
+    return child
   }
 
-  void moduleOutput(String moduleName) {
-    children.add(new ModuleOutput(project, moduleName))
+  ModuleOutput moduleOutput(String moduleName) {
+    def child = new ModuleOutput(project, moduleName)
+    children.add(child)
+    return child
   }
 
-  void moduleTestOutput(String moduleName) {
-    children.add(new ModuleTestOutput(project, moduleName))
+  ModuleTestOutput moduleTestOutput(String moduleName) {
+    def child = new ModuleTestOutput(project, moduleName)
+    children.add(child)
+    return child
   }
 
-  void moduleSrc(String moduleName) {
-    children.add(new ModuleSrc(project, moduleName))
+  ModuleSrc moduleSrc(String moduleName) {
+    def child = new ModuleSrc(project, moduleName)
+    children.add(child)
+    return child
   }
 
-  void artifact(String artifactName) {
-    children.add(new ArtifactRef(project, artifactName))
+  ArtifactRef artifact(String artifactName) {
+    def child = new ArtifactRef(project, artifactName)
+    children.add(child)
+    return child
   }
 
-  void file(Object... files) {
-    children.add(new FileCopy(project, project.files(files)))
+  FileCopy file(Object... files) {
+    def child = new FileCopy(project, project.files(files))
+    children.add(child)
+    return child
   }
 
-  void directoryContent(Object... dirs) {
-    children.add(new DirCopy(project, project.files(dirs)))
+  DirCopy directoryContent(Object... dirs) {
+    def child = new DirCopy(project, project.files(dirs))
+    children.add(child)
+    return child
   }
 
-  void extractedDirectory(Object... archivePaths) {
-    children.add(new ExtractedArchive(project, project.files(archivePaths)))
+  ExtractedArchive extractedDirectory(Object... archivePaths) {
+    def child = new ExtractedArchive(project, project.files(archivePaths))
+    children.add(child)
+    return child
   }
 
   @Override
