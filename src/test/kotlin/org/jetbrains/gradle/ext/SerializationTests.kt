@@ -26,7 +26,9 @@ class SerializationTests {
 
     assertEquals("""
     |{
+    |    "defaults": false,
     |    "type": "application",
+    |    "name": "test",
     |    "envs": null,
     |    "workingDirectory": null,
     |    "mainClass": null,
@@ -42,8 +44,6 @@ class SerializationTests {
     |        }
     |    ],
     |    "jvmArgs": null,
-    |    "defaults": false,
-    |    "name": "test",
     |    "programParameters": null
     |}
     """.trimMargin(),
@@ -58,13 +58,13 @@ class SerializationTests {
 
     assertEquals("""
     |{
+    |    "defaults": false,
     |    "type": "remote",
+    |    "name": "remote debug",
     |    "mode": "ATTACH",
     |    "port": 1234,
     |    "transport": "SOCKET",
     |    "host": "hostname",
-    |    "defaults": false,
-    |    "name": "remote debug",
     |    "sharedMemoryAddress": "jvmdebug"
     |}
     """.trimMargin(),
@@ -86,8 +86,10 @@ class SerializationTests {
 
     assertEquals("""
       |{
-      |    "directory": null,
+      |    "defaults": true,
       |    "type": "junit",
+      |    "name": "myName",
+      |    "directory": null,
       |    "repeat": "untilFailure",
       |    "envs": {
       |        "env1": "envVal1",
@@ -100,9 +102,7 @@ class SerializationTests {
       |    "moduleName": "myModule",
       |    "passParentEnvs": true,
       |    "packageName": null,
-      |    "defaults": true,
       |    "pattern": null,
-      |    "name": "myName",
       |    "method": null
       |}
     """.trimMargin(), JsonOutput.prettyPrint(JsonOutput.toJson(config.toMap())))
@@ -122,9 +122,9 @@ class SerializationTests {
 
     assertEquals("""
       |{
+      |    "defaults": true,
       |    "type": "testng",
       |    "name": "myName",
-      |    "defaults": true,
       |    "package": null,
       |    "class": "my.TestClass",
       |    "method": null,

@@ -44,14 +44,31 @@ interface RunConfiguration extends Named, MapConvertible {
 @CompileStatic
 abstract class BaseRunConfiguration implements RunConfiguration {
     boolean defaults
+    protected String name
+    protected String type
+
+    @Override
+    String getType() {
+        return type
+    }
+
+    @Override
+    String getName() {
+        return name
+    }
+
+    @Override
+    Map<String, ?> toMap() {
+        return [
+                "defaults" : defaults,
+                "type": type,
+                "name": name
+        ]
+    }
 }
 
 @CompileStatic
 class Application extends BaseRunConfiguration {
-
-    final String name
-    final String type = "application"
-    boolean defaults
 
     String mainClass
     String workingDirectory
@@ -65,7 +82,8 @@ class Application extends BaseRunConfiguration {
     @Inject
     @CompileStatic(TypeCheckingMode.SKIP)
     Application(String name, Project project) {
-        this.name = name
+        this.@name = name
+        this.@type = "application"
         def beforeRun = GradleUtils.polymorphicContainer(project, BeforeRunTask)
         beforeRun.registerFactory(Make, { project.objects.newInstance(Make) })
         beforeRun.registerFactory(GradleTask, { project.objects.newInstance(GradleTask) })
@@ -79,16 +97,13 @@ class Application extends BaseRunConfiguration {
 
     @Override
     Map<String, ?> toMap() {
-        return [
-                "type"             : type,
+        return super.toMap() << [
                 "envs"             : envs,
                 "workingDirectory" : workingDirectory,
                 "mainClass"        : mainClass,
                 "moduleName"       : moduleName,
                 "beforeRun"        : beforeRun.toList().collect { it.toMap() },
                 "jvmArgs"          : jvmArgs,
-                "defaults"         : defaults,
-                "name"             : name,
                 "programParameters": programParameters
         ]
     }
@@ -96,43 +111,42 @@ class Application extends BaseRunConfiguration {
 
 @CompileStatic
 abstract class BeforeRunTask implements Named, MapConvertible {
+    protected String type
+
     @Override
     String getName() {
-        return getType()
+        return type
     }
 
-    abstract String getType()
+    @Override
+    Map<String, ?> toMap() {
+        return ["type" : type]
+    }
 }
 
 @CompileStatic
 class Make extends BeforeRunTask {
-    String type = "make"
     Boolean enabled = true
 
     @Inject
-    Make() { }
+    Make() { this.@type = "make" }
 
     @Override
     Map<String, ?> toMap() {
-        return [
-                "type"    : getType(),
-                "enabled" : enabled
-        ]
+        return super.toMap() << ["enabled" : enabled]
     }
 }
 
 @CompileStatic
 class GradleTask extends BeforeRunTask {
-    String type = "gradleTask"
     Task task
 
     @Inject
-    GradleTask() {}
+    GradleTask() { this.@type = "gradleTask" }
 
     @Override
     Map<String, ?> toMap() {
-        return [
-                "type": getType(),
+        return super.toMap() << [
                 "projectPath": task.project.path,
                 "taskName": task.name
         ]
@@ -141,25 +155,19 @@ class GradleTask extends BeforeRunTask {
 
 @CompileStatic
 class BuildArtifact extends BeforeRunTask {
-    String type = "buildArtifact"
     String artifactName
 
     @Inject
-    BuildArtifact() {}
+    BuildArtifact() { this.@type = "buildArtifact" }
 
     @Override
     Map<String, ?> toMap() {
-        return [
-                "type"    : getType(),
-                "artifactName" : artifactName
-        ]
+        return super.toMap() << ["artifactName" : artifactName]
     }
 }
 
 @CompileStatic
 class TestNG extends BaseRunConfiguration {
-    final String name
-    final String type = "testng"
 
     // only one type will be used
     String packageName
@@ -178,25 +186,15 @@ class TestNG extends BaseRunConfiguration {
 
     @Inject
     TestNG(String name) {
-        this.name = name
-    }
-
-    @Override
-    String getType() {
-        return type
-    }
-
-    @Override
-    String getName() {
-        return name
+        this.@name = name
+        this.@type = "testng"
     }
 
     @Override
     Map<String, ?> toMap() {
-        return [
+        return super.toMap() << [
                 "type": type,
                 "name": name,
-                "defaults": defaults,
 
                 "package": packageName,
                 "class": className,
@@ -216,9 +214,6 @@ class TestNG extends BaseRunConfiguration {
 @CompileStatic
 class JUnit extends BaseRunConfiguration {
 
-    final String name
-    final String type = "junit"
-
     // only one (first not null) type will be used
     String packageName
     String directory
@@ -237,14 +232,14 @@ class JUnit extends BaseRunConfiguration {
 
     @Inject
     JUnit(String name) {
-        this.name = name
+        this.@name = name
+        this.@type = "junit"
     }
 
     @Override
     Map<String, ?> toMap() {
-        return [
+        return super.toMap() << [
                 "directory"       : directory,
-                "type"            : type,
                 "repeat"          : repeat,
                 "envs"            : envs,
                 "vmParameters"    : vmParameters,
@@ -256,7 +251,6 @@ class JUnit extends BaseRunConfiguration {
                 "packageName"     : packageName,
                 "defaults"        : defaults,
                 "pattern"         : pattern,
-                "name"            : name,
                 "method"          : method
         ]
     }
@@ -272,9 +266,6 @@ class Remote extends BaseRunConfiguration {
         SOCKET, SHARED_MEM
     }
 
-    final String name
-    final String type = "remote"
-    boolean defaults
     RemoteTransport transport = RemoteTransport.SOCKET
     RemoteMode mode = RemoteMode.ATTACH
     String host
@@ -283,19 +274,17 @@ class Remote extends BaseRunConfiguration {
 
     @Inject
     Remote(String name) {
-        this.name = name
+        this.@name = name
+        this.@type = "remote"
     }
 
     @Override
     Map<String, ?> toMap() {
-        return [
-                "type"               : type,
+        return super.toMap() << [
                 "mode"               : mode,
                 "port"               : port,
                 "transport"          : transport,
                 "host"               : host,
-                "defaults"           : defaults,
-                "name"               : name,
                 "sharedMemoryAddress": sharedMemoryAddress
         ]
     }

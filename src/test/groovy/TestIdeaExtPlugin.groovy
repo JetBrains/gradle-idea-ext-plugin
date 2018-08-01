@@ -84,24 +84,24 @@ rootProject.name = "ProjectName"
      prettyOutput.contains(
 """"runConfigurations": [
         {
+            "defaults": false,
             "type": "application",
+            "name": "Run my app",
             "workingDirectory": ${JsonOutput.toJson(projectDir)},
             "mainClass": "foo.App",
             "moduleName": "ProjectName",
             "beforeRun": [
                 
-            ],
-            "defaults": false,
-            "name": "Run my app"
+            ]
         },
         {
+            "defaults": true,
             "type": "application",
+            "name": "default_org.jetbrains.gradle.ext.Application",
             "beforeRun": [
                 
             ],
-            "jvmArgs": "-DmyKey=myVal",
-            "defaults": true,
-            "name": "default_org.jetbrains.gradle.ext.Application"
+            "jvmArgs": "-DmyKey=myVal"
         }
     ]
 """)
