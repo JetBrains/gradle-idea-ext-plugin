@@ -149,7 +149,7 @@ class GradleTask extends BeforeRunTask {
     @Override
     Map<String, ?> toMap() {
         return super.toMap() << [
-                "projectPath": task.project.path,
+                "projectPath": task.project.rootDir.absolutePath,
                 "taskName": task.name
         ]
     }
