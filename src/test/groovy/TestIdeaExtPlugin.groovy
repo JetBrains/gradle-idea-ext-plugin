@@ -32,6 +32,14 @@ rootProject.name = "ProjectName"
       idea {
         project {
           settings {
+            copyright {
+               profiles {
+                 myProfile {
+                   notice = "My private license text placeholder"
+                 }
+               }
+               useDefault = "myProfile"
+            }
             compiler.resourcePatterns '!*.java;!*.class'
             inspections {
                 "some" { enabled = true }
@@ -104,6 +112,20 @@ rootProject.name = "ProjectName"
             "jvmArgs": "-DmyKey=myVal"
         }
     ]""")
+    prettyOutput.contains(
+""""copyright": {
+        "useDefault": "myProfile",
+        "scopes": {
+            
+        },
+        "profiles": {
+            "myProfile": {
+                "name": "myProfile",
+                "notice": "My private license text placeholder"
+            }
+        }
+    }"""
+    )
 
     result.task(":printSettings").outcome == TaskOutcome.SUCCESS
   }

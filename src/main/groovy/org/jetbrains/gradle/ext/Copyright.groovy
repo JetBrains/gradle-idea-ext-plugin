@@ -8,7 +8,7 @@ import org.gradle.api.Project
 import javax.inject.Inject
 
 @CompileStatic
-class CopyrightConfiguration {
+class CopyrightConfiguration implements MapConvertible {
 
     String useDefault
     Map<String, String> scopes = [:]
@@ -23,7 +23,8 @@ class CopyrightConfiguration {
         action.execute(profiles)
     }
 
-    def toMap() {
+    @Override
+    Map<String, ?> toMap() {
         def map = [:]
         if (useDefault) map.put("useDefault", useDefault)
         map.put("scopes", scopes)
