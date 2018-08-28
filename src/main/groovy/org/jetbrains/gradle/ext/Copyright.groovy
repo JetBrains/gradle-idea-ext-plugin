@@ -27,8 +27,12 @@ class CopyrightConfiguration implements MapConvertible {
     Map<String, ?> toMap() {
         def map = [:]
         if (useDefault) map.put("useDefault", useDefault)
-        map.put("scopes", scopes)
-        map.put("profiles", profiles.asMap.collectEntries { k, v -> [k, v.toMap()] })
+        if (!scopes.isEmpty()) {
+            map.put("scopes", scopes)
+        }
+        if (!profiles.isEmpty()) {
+            map.put("profiles", profiles.asMap.collectEntries { k, v -> [k, v.toMap()] })
+        }
         return map
     }
 }

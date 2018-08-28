@@ -115,9 +115,6 @@ rootProject.name = "ProjectName"
     prettyOutput.contains(
 """"copyright": {
         "useDefault": "myProfile",
-        "scopes": {
-            
-        },
         "profiles": {
             "myProfile": {
                 "name": "myProfile",
