@@ -23,6 +23,7 @@ class SerializationTests {
     make.enabled = false
     val buildArtifact = application.beforeRun.create("myArtifact", BuildArtifact::class.java)
     buildArtifact.artifactName = "myName"
+    application.shortenCommandLine = ShortenCommandLine.MANIFEST
 
     assertEquals("""
     |{
@@ -44,7 +45,8 @@ class SerializationTests {
     |        }
     |    ],
     |    "jvmArgs": null,
-    |    "programParameters": null
+    |    "programParameters": null,
+    |    "shortenCommandLine": "MANIFEST"
     |}
     """.trimMargin(),
             JsonOutput.prettyPrint(JsonOutput.toJson(application.toMap())))
@@ -82,6 +84,7 @@ class SerializationTests {
       moduleName = "myModule"
       envs = mapOf("env1" to "envVal1", "env2" to "envVal2")
       defaults = true
+      shortenCommandLine = ShortenCommandLine.CLASSPATH_FILE
     }
 
     assertEquals("""
@@ -103,7 +106,8 @@ class SerializationTests {
       |    "passParentEnvs": true,
       |    "packageName": null,
       |    "pattern": null,
-      |    "method": null
+      |    "method": null,
+      |    "shortenCommandLine": "CLASSPATH_FILE"
       |}
     """.trimMargin(), JsonOutput.prettyPrint(JsonOutput.toJson(config.toMap())))
   }
@@ -118,6 +122,7 @@ class SerializationTests {
       moduleName = "myModule"
       envs = mapOf("env1" to "envVal1", "env2" to "envVal2")
       defaults = true
+      shortenCommandLine = ShortenCommandLine.ARGS_FILE
     }
 
     assertEquals("""
@@ -138,7 +143,8 @@ class SerializationTests {
       |    "envs": {
       |        "env1": "envVal1",
       |        "env2": "envVal2"
-      |    }
+      |    },
+      |    "shortenCommandLine": "ARGS_FILE"
       |}
     """.trimMargin(), JsonOutput.prettyPrint(JsonOutput.toJson(config.toMap())))
   }

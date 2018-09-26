@@ -78,6 +78,7 @@ class Application extends BaseRunConfiguration {
     String moduleName
     String programParameters
     Map<String, String> envs
+    ShortenCommandLine shortenCommandLine
 
     final PolymorphicDomainObjectContainer<BeforeRunTask> beforeRun
 
@@ -106,7 +107,8 @@ class Application extends BaseRunConfiguration {
                 "moduleName"       : moduleName,
                 "beforeRun"        : beforeRun.toList().collect { it.toMap() },
                 "jvmArgs"          : jvmArgs,
-                "programParameters": programParameters
+                "programParameters": programParameters,
+                "shortenCommandLine": shortenCommandLine
         ]
     }
 }
@@ -185,6 +187,7 @@ class TestNG extends BaseRunConfiguration {
     Boolean passParentEnvs
     String moduleName
     Map<String, String> envs
+    ShortenCommandLine shortenCommandLine
 
     @Inject
     TestNG(String name) {
@@ -208,7 +211,8 @@ class TestNG extends BaseRunConfiguration {
                 "vmParameters": vmParameters,
                 "passParentEnvs": passParentEnvs,
                 "moduleName": moduleName,
-                "envs": envs
+                "envs": envs,
+                "shortenCommandLine": shortenCommandLine
         ]
     }
 }
@@ -231,6 +235,7 @@ class JUnit extends BaseRunConfiguration {
     Boolean passParentEnvs
     String moduleName
     Map<String, String> envs
+    ShortenCommandLine shortenCommandLine
 
     @Inject
     JUnit(String name) {
@@ -253,7 +258,8 @@ class JUnit extends BaseRunConfiguration {
                 "packageName"     : packageName,
                 "defaults"        : defaults,
                 "pattern"         : pattern,
-                "method"          : method
+                "method"          : method,
+                "shortenCommandLine" : shortenCommandLine
         ]
     }
 }
@@ -290,4 +296,12 @@ class Remote extends BaseRunConfiguration {
                 "sharedMemoryAddress": sharedMemoryAddress
         ]
     }
+}
+
+@CompileStatic
+enum ShortenCommandLine {
+  NONE,
+  MANIFEST,
+  CLASSPATH_FILE,
+  ARGS_FILE
 }
