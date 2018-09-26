@@ -1,7 +1,6 @@
 package org.jetbrains.gradle.ext
 
 import groovy.json.JsonOutput
-import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Assert.assertEquals
@@ -18,12 +17,15 @@ class SerializationTests {
   }
 
   @Test fun `test application json output`() {
-    val application = Application("test", myProject)
-    val make = application.beforeRun.create("make", Make::class.java)
-    make.enabled = false
-    val buildArtifact = application.beforeRun.create("myArtifact", BuildArtifact::class.java)
-    buildArtifact.artifactName = "myName"
-    application.shortenCommandLine = ShortenCommandLine.MANIFEST
+    val application = Application("test", myProject).apply {
+      beforeRun.create("make", Make::class.java).apply {
+        enabled = false
+      }
+      beforeRun.create("myArtifact", BuildArtifact::class.java).apply {
+        artifactName = "myName"
+      }
+      shortenCommandLine = ShortenCommandLine.MANIFEST
+    }
 
     assertEquals("""
     |{
@@ -53,10 +55,11 @@ class SerializationTests {
   }
 
   @Test fun `test remote json output`() {
-    val remote = Remote("remote debug")
-    remote.host = "hostname"
-    remote.port = 1234
-    remote.sharedMemoryAddress = "jvmdebug"
+    val remote = Remote("remote debug").apply {
+      host = "hostname"
+      port = 1234
+      sharedMemoryAddress = "jvmdebug"
+    }
 
     assertEquals("""
     |{
@@ -151,11 +154,11 @@ class SerializationTests {
 
   @Test fun `test Groovy config output`() {
     val config = GroovyCompilerConfiguration()
-    config.excludes(Action {
-        it.file("C:/myFile.ext")
-        it.dir("C:/myDir")
-        it.dir("C:/recursiveDir", true)
-    })
+    config.excludes {
+      it.file("C:/myFile.ext")
+      it.dir("C:/myDir")
+      it.dir("C:/recursiveDir", true)
+    }
 
     assertEquals("""
       |{
@@ -268,14 +271,17 @@ class SerializationTests {
   @Test fun `test task triggers output`() {
     val config = TaskTriggersConfig()
 
-    myProject.tasks.create("task1")
-    myProject.tasks.create("task2")
-    myProject.tasks.create("task3")
+    val tasks = myProject.tasks
+    tasks.apply {
+      create("task1")
+      create("task2")
+      create("task3")
+    }
 
     config.apply {
-      beforeBuild(myProject.tasks.getByName("task1"), myProject.tasks.getByName("task2"))
-      afterSync(myProject.tasks.getByName("task3"))
-      beforeRebuild(myProject.tasks.getByName("task1"))
+      beforeBuild(tasks.getByName("task1"), tasks.getByName("task2"))
+      afterSync(tasks.getByName("task3"))
+      beforeRebuild(tasks.getByName("task1"))
     }
 
     val escapedRootProjectPath = myProject.rootProject.projectDir.path.replace("\\", "/")
