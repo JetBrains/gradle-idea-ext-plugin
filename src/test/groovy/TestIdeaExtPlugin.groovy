@@ -548,6 +548,114 @@ task printSettings {
     result.task(":printSettings").outcome == TaskOutcome.SUCCESS
   }
 
+  def "test complex project encoding settings"() {
+    given:
+    buildFile << """
+      import org.jetbrains.gradle.ext.*
+      import org.jetbrains.gradle.ext.EncodingConfiguration.BomPolicy
+      
+      plugins {
+          id 'org.jetbrains.gradle.plugin.idea-ext'
+      }
+      
+      idea {
+        project {
+          settings {
+            encodings {
+              encoding = 'windows-1251'
+              bomPolicy = BomPolicy.WITH_NO_BOM
+              properties {
+                encoding = 'windows-1251'
+                transparentNativeToAsciiConversion = false
+              }
+              mapping['path/to/dir1'] = 'UTF-8'
+              mapping['path/to/dir2'] = 'windows-1251'
+              mapping['path/to/dir3'] = 'ISO-8859-1'
+              mapping['../path/to/dir4'] = 'US-ASCII'
+            }
+          }
+        }
+      }
+      
+      task printSettings {
+        doLast {
+          println project.idea.project.settings
+        }
+      }
+    """
+    when:
+    def result = GradleRunner.create()
+            .withProjectDir(testProjectDir.root)
+            .withArguments("printSettings", "-q")
+            .withPluginClasspath()
+            .build()
+    then:
+    def lines = result.output.readLines()
+    def moduleContentRoot = testProjectDir.root.canonicalPath.replace(File.separator, '/')
+    lines[0] == '{"encodings":{' +
+            '"encoding":"windows-1251",' +
+            '"bomPolicy":"WITH_NO_BOM",' +
+            '"properties":{' +
+            '"encoding":"windows-1251",' +
+            '"transparentNativeToAsciiConversion":false' +
+            '},' +
+            '"mapping":{' +
+            '"' + moduleContentRoot + '/path/to/dir1":"UTF-8",' +
+            '"' + moduleContentRoot + '/path/to/dir2":"windows-1251",' +
+            '"' + moduleContentRoot + '/path/to/dir3":"ISO-8859-1",' +
+            '"' + moduleContentRoot + '/../path/to/dir4":"US-ASCII"' +
+            '}' +
+            '}' +
+            '}'
+
+    result.task(":printSettings").outcome == TaskOutcome.SUCCESS
+  }
+
+  def "test partial project encoding settings"() {
+    given:
+    buildFile << """
+      import org.jetbrains.gradle.ext.*
+      
+      plugins {
+          id 'org.jetbrains.gradle.plugin.idea-ext'
+      }
+      
+      idea {
+        project {
+          settings {
+            encodings {
+              encoding = 'windows-1251'
+              properties.encoding = 'windows-1251'
+            }
+          }
+        }
+      }
+      
+      task printSettings {
+        doLast {
+          println project.idea.project.settings
+        }
+      }
+    """
+    when:
+    def result = GradleRunner.create()
+            .withProjectDir(testProjectDir.root)
+            .withArguments("printSettings", "-q")
+            .withPluginClasspath()
+            .build()
+    then:
+    def lines = result.output.readLines()
+    lines[0] == '{"encodings":{' +
+            '"encoding":"windows-1251",' +
+            '"properties":{' +
+            '"encoding":"windows-1251"' +
+            '}' +
+            '}' +
+            '}'
+
+    result.task(":printSettings").outcome == TaskOutcome.SUCCESS
+  }
+
   def "test extending the DSL with custom run configurations and facets"() {
     given:
     buildFile << """
