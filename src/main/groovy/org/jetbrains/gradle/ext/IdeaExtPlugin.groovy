@@ -42,7 +42,14 @@ class IdeaExtPlugin implements Plugin<Project> {
       addArtifacts(settingsExt, project)
     }
 
-    (ideaModel.module as ExtensionAware).extensions.create("settings", ModuleSettings, project)
+    def ideaModule = ideaModel.module
+    if (ideaModule) {
+      def moduleSettings = (ideaModel.module as ExtensionAware).extensions.create("settings", ModuleSettings, project)
+
+      def settingsExt = (moduleSettings as ExtensionAware).extensions
+
+      settingsExt.create("packagePrefix", PackagePrefixContainer, ideaModule)
+    }
   }
 
   static void addRunConfigurations(ExtensionContainer container, Project project) {

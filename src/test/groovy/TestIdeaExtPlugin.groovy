@@ -88,7 +88,6 @@ rootProject.name = "ProjectName"
             "name": "some"
         }
     ]""")
-
      prettyOutput.contains(
 """"runConfigurations": [
         {
@@ -410,11 +409,144 @@ task printSettings {
         then:
         def lines = result.output.readLines()
         lines[1] == '{"facets":[{"type":"spring","contexts":' +
-                          '[{"file":"spring_parent.xml","name":"p1","parent":null},' +
-                          '{"file":"spring_new_child.xml","name":"p2","parent":"p1"}],"name":"spring"}]}'
+                '[{"file":"spring_parent.xml","name":"p1","parent":null},' +
+                '{"file":"spring_new_child.xml","name":"p2","parent":"p1"}],"name":"spring"}]}'
 
         result.task(":printSettings").outcome == TaskOutcome.SUCCESS
     }
+
+  def "test module package prefix settings"() {
+    given:
+    buildFile << """
+          import org.jetbrains.gradle.ext.*
+          
+          plugins {
+              id 'org.jetbrains.gradle.plugin.idea-ext'
+          }
+          
+          idea {
+            module {
+              settings {
+                  packagePrefix["main/groovy"] = "com.example.main.groovy"
+                  packagePrefix["test/java"] = "com.example.test.java"
+              }
+            }
+          }
+          
+          task printSettings {
+            doLast {
+              println project.projectDir
+              println project.idea.module.settings
+            }
+          }
+        """
+    when:
+    def result = GradleRunner.create()
+            .withProjectDir(testProjectDir.root)
+            .withArguments("printSettings", "-q")
+            .withPluginClasspath()
+            .build()
+    then:
+    def lines = result.output.readLines()
+    def moduleContentRoot = testProjectDir.root.canonicalPath.replace(File.separator, '/')
+    lines[1] == '{"packagePrefix":{' +
+            '"' + moduleContentRoot + '/main/groovy":"com.example.main.groovy",' +
+            '"' + moduleContentRoot + '/test/java":"com.example.test.java"' +
+            '}}'
+
+    result.task(":printSettings").outcome == TaskOutcome.SUCCESS
+  }
+
+  def "test module settings with remote source root"() {
+    given:
+    buildFile << """
+      import org.jetbrains.gradle.ext.*
+      
+      plugins {
+          id 'org.jetbrains.gradle.plugin.idea-ext'
+      }
+      
+      apply plugin: "java"
+      
+      sourceSets {
+        main.java.srcDirs += "src"
+        main.java.srcDirs += "../subproject/src"
+      }
+      
+      idea {
+        module {
+          settings {
+            packagePrefix["src"] = "com.example.java"
+            packagePrefix["../subproject/src"] = "com.example.java.sub"
+          }
+        }
+      }
+      
+      task printSettings {
+        doLast {
+          println project.idea.module.settings
+        }
+      }
+    """
+    when:
+    def result = GradleRunner.create()
+            .withProjectDir(testProjectDir.root)
+            .withArguments("printSettings", "-q")
+            .withPluginClasspath()
+            .build()
+    then:
+    def lines = result.output.readLines()
+    def moduleContentRoot = testProjectDir.root.canonicalPath.replace(File.separator, '/')
+    lines[0] == '{"packagePrefix":{' +
+            '"' + moduleContentRoot + '/src":"com.example.java",' +
+            '"' + moduleContentRoot + '/../subproject/src":"com.example.java.sub"' +
+            '}}'
+
+    result.task(":printSettings").outcome == TaskOutcome.SUCCESS
+  }
+
+  def "test module settings with custom source root"() {
+    given:
+    buildFile << """
+      import org.jetbrains.gradle.ext.*
+      
+      plugins {
+          id 'org.jetbrains.gradle.plugin.idea-ext'
+      }
+      
+      apply plugin: "java"
+      
+      sourceSets {
+        main.java.srcDirs += "src"
+      }
+      
+      idea {
+        module {
+          settings {
+            packagePrefix["src"] = "com.example.java"
+          }
+        }
+      }
+      
+      task printSettings {
+        doLast {
+          println project.idea.module.settings
+        }
+      }
+    """
+    when:
+    def result = GradleRunner.create()
+            .withProjectDir(testProjectDir.root)
+            .withArguments("printSettings", "-q")
+            .withPluginClasspath()
+            .build()
+    then:
+    def lines = result.output.readLines()
+    def moduleContentRoot = testProjectDir.root.canonicalPath.replace(File.separator, '/')
+    lines[0] == '{"packagePrefix":{"' + moduleContentRoot + '/src":"com.example.java"}}'
+
+    result.task(":printSettings").outcome == TaskOutcome.SUCCESS
+  }
 
   def "test extending the DSL with custom run configurations and facets"() {
     given:
