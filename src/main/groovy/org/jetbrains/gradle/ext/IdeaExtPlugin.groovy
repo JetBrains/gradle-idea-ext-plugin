@@ -37,6 +37,7 @@ class IdeaExtPlugin implements Plugin<Project> {
       settingsExt.create("groovyCompiler", GroovyCompilerConfiguration)
       settingsExt.create("codeStyle", CodeStyleConfig)
       settingsExt.create("copyright", CopyrightConfiguration, project)
+      settingsExt.create("encodings", EncodingConfiguration, project)
       addRunConfigurations(settingsExt, project)
       addInspections(settingsExt, project)
       addArtifacts(settingsExt, project)
