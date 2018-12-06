@@ -1,14 +1,17 @@
 package org.jetbrains.gradle.ext
 
-import com.google.common.collect.ArrayListMultimap
+
 import com.google.common.collect.ListMultimap
+import com.google.common.collect.Multimaps
 import groovy.transform.CompileStatic
 import org.gradle.api.Task
 
 @CompileStatic
 class TaskTriggersConfig implements MapConvertible {
 
-  ListMultimap<String, Task> phaseMap = ArrayListMultimap.create()
+  ListMultimap<String, Task> phaseMap = Multimaps
+          .newListMultimap(new LinkedHashMap<String, Collection<Task>>(),
+          { new ArrayList<Task>()})
 
   void beforeSync(Task... tasks) {
     phaseMap.putAll("beforeSync", Arrays.asList(tasks))
@@ -34,7 +37,7 @@ class TaskTriggersConfig implements MapConvertible {
     def result = [:]
     phaseMap.keySet().each { String phase ->
       List<Task> tasks = phaseMap.get(phase)
-      def taskInfos = tasks.collect { task -> ["taskPath" : task.path, "projectPath" : task.project.rootProject.projectDir.path.replaceAll("\\\\", "/")] }
+      def taskInfos = tasks.collect { task -> ["taskPath" : task.name, "projectPath" : task.project.projectDir.path.replaceAll("\\\\", "/")] }
       result.put(phase, taskInfos)
     }
     return result

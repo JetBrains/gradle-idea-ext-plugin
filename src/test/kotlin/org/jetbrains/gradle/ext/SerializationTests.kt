@@ -270,6 +270,10 @@ class SerializationTests {
 
   @Test fun `test task triggers output`() {
     val config = TaskTriggersConfig()
+    val subProject = ProjectBuilder.builder()
+            .withProjectDir(File(myProject.projectDir, "subProject"))
+            .withParent(myProject)
+            .build()
 
     val tasks = myProject.tasks
     tasks.apply {
@@ -278,36 +282,49 @@ class SerializationTests {
       create("task3")
     }
 
+    val subTasks = subProject.tasks
+    subTasks.apply {
+      create("subtask")
+    }
+
     config.apply {
       beforeBuild(tasks.getByName("task1"), tasks.getByName("task2"))
       afterSync(tasks.getByName("task3"))
       beforeRebuild(tasks.getByName("task1"))
+      afterRebuild(subTasks.getByName("subtask"))
     }
 
-    val escapedRootProjectPath = myProject.rootProject.projectDir.path.replace("\\", "/")
+    val escapedRootProjectPath = myProject.projectDir.path.replace("\\", "/")
+    val subProjectPath = subProject.projectDir.path.replace("\\", "/")
 
     assertEquals("""
       |{
-      |    "beforeRebuild": [
-      |        {
-      |            "taskPath": ":task1",
-      |            "projectPath": "$escapedRootProjectPath"
-      |        }
-      |    ],
       |    "beforeBuild": [
       |        {
-      |            "taskPath": ":task1",
+      |            "taskPath": "task1",
       |            "projectPath": "$escapedRootProjectPath"
       |        },
       |        {
-      |            "taskPath": ":task2",
+      |            "taskPath": "task2",
       |            "projectPath": "$escapedRootProjectPath"
       |        }
       |    ],
       |    "afterSync": [
       |        {
-      |            "taskPath": ":task3",
+      |            "taskPath": "task3",
       |            "projectPath": "$escapedRootProjectPath"
+      |        }
+      |    ],
+      |    "beforeRebuild": [
+      |        {
+      |            "taskPath": "task1",
+      |            "projectPath": "$escapedRootProjectPath"
+      |        }
+      |    ],
+      |    "afterRebuild": [
+      |        {
+      |            "taskPath": "subtask",
+      |            "projectPath": "$subProjectPath"
       |        }
       |    ]
       |}
