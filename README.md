@@ -15,7 +15,7 @@ as simple as
 Apply from Gradle plugin repository
 
     plugins {
-      id "org.jetbrains.gradle.plugin.idea-ext" version "0.4.2"
+      id "org.jetbrains.gradle.plugin.idea-ext" version "0.5"
     }
 
 Or build and drop resulting jar into root directory of a project and add following snippet to `build.grade`
