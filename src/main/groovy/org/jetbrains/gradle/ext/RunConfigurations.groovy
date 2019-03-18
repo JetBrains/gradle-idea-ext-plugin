@@ -299,6 +299,37 @@ class Remote extends BaseRunConfiguration {
 }
 
 @CompileStatic
+class Gradle extends BaseRunConfiguration {
+
+    String projectPath
+    Collection<String> taskNames
+    Map<String, String> envs
+    String jvmArgs
+    String scriptParameters
+
+    @Inject
+    Gradle(String name) {
+        this.@name = name
+        this.@type = "gradle"
+    }
+
+    def setProject(Project project) {
+        projectPath = project.projectDir.absolutePath
+    }
+
+    @Override
+    Map<String, ?> toMap() {
+        return super.toMap() << [
+                "projectPath"     : projectPath,
+                "taskNames"       : taskNames,
+                "envs"            : envs,
+                "jvmArgs"       : jvmArgs,
+                "scriptParameters": scriptParameters
+        ]
+    }
+}
+
+@CompileStatic
 enum ShortenCommandLine {
   NONE,
   MANIFEST,

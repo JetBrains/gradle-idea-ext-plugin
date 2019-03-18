@@ -152,6 +152,37 @@ class SerializationTests {
     """.trimMargin(), JsonOutput.prettyPrint(JsonOutput.toJson(config.toMap())))
   }
 
+  @Test fun `test Gradle run configuration output`() {
+    val absolutePath = File("").absolutePath.replace("\\", "/")
+    val config = Gradle("gradleName").apply {
+      projectPath = absolutePath
+      taskNames = listOf(":cleanTest", ":test")
+      jvmArgs = "-Dkey=val"
+      scriptParameters = "-PscriptParam"
+      envs = mapOf("env1" to "envVal1", "env2" to "envVal2")
+      defaults = true
+    }
+
+    assertEquals("""
+      |{
+      |    "defaults": true,
+      |    "type": "gradle",
+      |    "name": "gradleName",
+      |    "projectPath": "$absolutePath",
+      |    "taskNames": [
+      |        ":cleanTest",
+      |        ":test"
+      |    ],
+      |    "envs": {
+      |        "env1": "envVal1",
+      |        "env2": "envVal2"
+      |    },
+      |    "jvmArgs": "-Dkey=val",
+      |    "scriptParameters": "-PscriptParam"
+      |}
+    """.trimMargin(), JsonOutput.prettyPrint(JsonOutput.toJson(config.toMap())))
+  }
+
   @Test fun `test Groovy config output`() {
     val config = GroovyCompilerConfiguration()
     config.excludes {
