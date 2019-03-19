@@ -32,7 +32,7 @@ class IdeaExtPlugin implements Plugin<Project> {
       def settingsExt = (projectSettings as ExtensionAware).extensions
 
       settingsExt.create("delegateActions", ActionDelegationConfig)
-      settingsExt.create("taskTriggers", TaskTriggersConfig)
+      settingsExt.create("taskTriggers", TaskTriggersConfig, project)
       settingsExt.create("compiler", IdeaCompilerConfiguration, project)
       settingsExt.create("groovyCompiler", GroovyCompilerConfiguration)
       settingsExt.create("codeStyle", CodeStyleConfig)

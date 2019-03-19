@@ -896,4 +896,74 @@ task printSettings {
     lines[1] == '{"myTest":[{"name":"moduleName1","param":1}]}'
 
   }
+
+
+  def "test task triggers settings"() {
+    given:
+    settingsFile << """
+rootProject.name = "ProjectName"
+"""
+    // language=groovy
+    buildFile << """
+      
+import org.gradle.api.DefaultTask
+import org.jetbrains.gradle.ext.*
+
+      plugins {
+          id 'org.jetbrains.gradle.plugin.idea-ext'
+      }
+      
+    
+      ext.lazyFlagForTaskTrigger = false  
+      def provider = tasks.register("LazyTask", DefaultTask) {
+          lazyFlagForTaskTrigger = true
+      }
+      
+      idea.project.settings {
+          taskTriggers {
+              beforeSync(":help", provider)
+          }
+      }
+      
+      
+      task printSettings {
+        doLast {
+          println("LazyFlag before=[\${project.lazyFlagForTaskTrigger}]")
+          println(project.idea.project.settings)
+          println("LazyFlag after=[\${project.lazyFlagForTaskTrigger}]")
+          println(projectDir.absolutePath.replace('\\\\', '/'))
+        }
+      }
+    """
+    when:
+    def result = GradleRunner.create()
+            .withProjectDir(testProjectDir.root)
+            .withArguments("printSettings", "-q")
+            .withPluginClasspath()
+            .build()
+    then:
+
+    def lines = result.output.readLines()
+    def projectDir = lines[3]
+    "LazyFlag before=[false]" == lines[0]
+    "LazyFlag after=[true]"   == lines[2]
+    def prettyOutput = JsonOutput.prettyPrint(lines[1])
+    prettyOutput ==
+"""{
+    "taskTriggers": {
+        "beforeSync": [
+            {
+                "taskPath": "help",
+                "projectPath": "$projectDir"
+            },
+            {
+                "taskPath": "LazyTask",
+                "projectPath": "$projectDir"
+            }
+        ]
+    }
+}"""
+
+    result.task(":printSettings").outcome == TaskOutcome.SUCCESS
+  }
 }

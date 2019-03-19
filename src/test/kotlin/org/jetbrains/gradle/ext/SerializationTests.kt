@@ -300,7 +300,7 @@ class SerializationTests {
   }
 
   @Test fun `test task triggers output`() {
-    val config = TaskTriggersConfig()
+    val config = TaskTriggersConfig(myProject)
     val subProject = ProjectBuilder.builder()
             .withProjectDir(File(myProject.projectDir, "subProject"))
             .withParent(myProject)
