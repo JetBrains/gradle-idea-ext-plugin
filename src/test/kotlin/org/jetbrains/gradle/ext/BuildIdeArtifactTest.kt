@@ -16,6 +16,12 @@ import org.junit.Before
 import org.junit.Test
 import java.io.File
 import java.lang.IllegalStateException
+import java.util.zip.ZipOutputStream
+import java.util.zip.ZipEntry
+import java.io.BufferedOutputStream
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.io.BufferedInputStream
 
 const val artifactName = "myArt"
 
@@ -244,11 +250,19 @@ class BuildIdeArtifactTest {
   }
 
   fun createTestArchive(sourceDir: File, destinationFile: File) {
-    myProject.tasks.create("testArchive", Zip::class.java) {
-      it.from(sourceDir)
-      it.destinationDir = destinationFile.parentFile
-      it.archiveName = destinationFile.name
-    }.execute()
+    var out = ZipOutputStream(BufferedOutputStream(FileOutputStream(destinationFile)))
+
+    sourceDir.walkBottomUp().forEach { file ->
+      if(!file.isDirectory()) {
+        var fi = FileInputStream(file)
+        var origin = BufferedInputStream(fi)
+        var entry = ZipEntry(file.absolutePath.removePrefix(sourceDir.absolutePath + "/"))
+        out.putNextEntry(entry)
+        origin.copyTo(out, 1024)
+        origin.close()
+      }
+    }
+    out.close()
   }
 
   @Test fun `test copy module sources`() {
@@ -277,7 +291,7 @@ class BuildIdeArtifactTest {
 
     val mainOutput = myProject.sourceSets.getByName("main").output
     val productionOutputRoots = mainOutput.classesDirs.files + mainOutput.dirs.files + mainOutput.resourcesDir
-    val productionClassesPaths = productionOutputRoots.flatMap { collectRelativeChildrenPaths(it) }
+    val productionClassesPaths = productionOutputRoots.flatMap { collectRelativeChildrenPaths(it!!) }
 
     val target = myProject.layout.buildDirectory
             .dir(DEFAULT_DESTINATION).get()
@@ -297,7 +311,7 @@ class BuildIdeArtifactTest {
 
     val testOutput = myProject.sourceSets.getByName("test").output
     val testClassesRoots = testOutput.classesDirs.files + testOutput.dirs.files + testOutput.resourcesDir
-    val testClassesPaths = testClassesRoots.flatMap { collectRelativeChildrenPaths(it) }
+    val testClassesPaths = testClassesRoots.flatMap { collectRelativeChildrenPaths(it!!) }
 
     val target = myProject.layout.buildDirectory
             .dir(DEFAULT_DESTINATION).get()
@@ -379,7 +393,7 @@ class BuildIdeArtifactTest {
       """)
 
     listOf("compileJava", "processResources", "processTestResources", "compileTestJava").forEach {
-      (myProject.tasks.findByName(it) as? AbstractTask)?.execute()
+//      (myProject.tasks.findByName(it) as? AbstractTask)?.execute()
     }
   }
 }
