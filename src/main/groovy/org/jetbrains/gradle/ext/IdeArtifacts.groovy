@@ -9,9 +9,10 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.tasks.TaskAction
-import org.gradle.api.tasks.bundling.Zip
-
+import java.util.zip.ZipOutputStream
+import java.util.zip.ZipEntry
 import javax.inject.Inject
+import java.nio.file.Files
 
 abstract class TypedArtifact implements MapConvertible {
   Project project
@@ -167,12 +168,29 @@ class ArchiveArtifact extends RecursiveArtifact {
       it.buildTo(temp)
     }
 
-    def customArchName = name
-    project.tasks.create(randomName, Zip) {
-      from temp
-      destinationDir destination
-      archiveName customArchName
-    }.execute()
+    createTestArchive(name, temp, destination)
+  }
+
+  def createTestArchive(String archiveName, File inputDir, File destinationDir) {
+
+    ZipOutputStream output = new ZipOutputStream(new FileOutputStream(new File(destinationDir, archiveName)))
+
+    inputDir.eachFileRecurse { file ->
+      if (!file.isFile()) {
+        return
+      }
+
+      String relativePath = inputDir.relativePath(file);
+      output.putNextEntry(new ZipEntry(relativePath));
+      InputStream input = new FileInputStream(file);
+
+      // Stream the document data to the ZIP
+      Files.copy(input, output);
+      output.closeEntry(); // End of current document in ZIP
+      input.close()
+    }
+    output.close(); // End of all documents - ZIP is complete
+
   }
 }
 

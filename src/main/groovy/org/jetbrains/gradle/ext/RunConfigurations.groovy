@@ -10,6 +10,7 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.internal.DefaultPolymorphicDomainObjectContainer
 import org.gradle.internal.reflect.Instantiator
+import org.gradle.api.internal.CollectionCallbackActionDecorator
 
 import javax.inject.Inject
 
@@ -25,7 +26,7 @@ class DefaultRunConfigurationContainer
 
     @Inject
     DefaultRunConfigurationContainer(Instantiator instantiator) {
-        super(RunConfiguration, instantiator)
+        super(RunConfiguration, instantiator, CollectionCallbackActionDecorator.NOOP)
     }
 
     @Override
