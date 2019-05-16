@@ -384,17 +384,12 @@ class BuildIdeArtifactTest {
 
     testFile.parentFile.mkdirs()
     testFile.writeText("""package testRoot;
-
       public class BClass {
         public static void main(String[] args) {
           System.out.println("Hello, Test World!");
         }
       }
       """)
-
-    listOf("compileJava", "processResources", "processTestResources", "compileTestJava").forEach {
-//      (myProject.tasks.findByName(it) as? AbstractTask)?.execute()
-    }
   }
 }
 
