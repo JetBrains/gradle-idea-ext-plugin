@@ -175,22 +175,21 @@ class ArchiveArtifact extends RecursiveArtifact {
 
     ZipOutputStream output = new ZipOutputStream(new FileOutputStream(new File(destinationDir, archiveName)))
 
-    inputDir.eachFileRecurse { file ->
-      if (!file.isFile()) {
-        return
+    output.withCloseable { closeableOutput ->
+      inputDir.eachFileRecurse { file ->
+        if (!file.isFile()) {
+          return
+        }
+
+        String relativePath = inputDir.relativePath(file);
+        closeableOutput.putNextEntry(new ZipEntry(relativePath));
+        InputStream input = new FileInputStream(file);
+
+        Files.copy(file.toPath(), closeableOutput)
+        closeableOutput.closeEntry(); // End of current document in ZIP
       }
 
-      String relativePath = inputDir.relativePath(file);
-      output.putNextEntry(new ZipEntry(relativePath));
-      InputStream input = new FileInputStream(file);
-
-      // Stream the document data to the ZIP
-      Files.copy(input, output);
-      output.closeEntry(); // End of current document in ZIP
-      input.close()
     }
-    output.close(); // End of all documents - ZIP is complete
-
   }
 }
 
