@@ -183,7 +183,6 @@ class ArchiveArtifact extends RecursiveArtifact {
 
         String relativePath = inputDir.relativePath(file);
         closeableOutput.putNextEntry(new ZipEntry(relativePath));
-        InputStream input = new FileInputStream(file);
 
         Files.copy(file.toPath(), closeableOutput)
         closeableOutput.closeEntry(); // End of current document in ZIP
