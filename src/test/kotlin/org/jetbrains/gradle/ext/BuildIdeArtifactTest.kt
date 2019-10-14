@@ -259,7 +259,7 @@ class BuildIdeArtifactTest {
         out.use { usedZipStream ->
             sourceDir.walkBottomUp().forEach { file ->
                 if (!file.isDirectory()) {
-                    var entry = ZipEntry(file.absolutePath.removePrefix(sourceDir.absolutePath + "/"))
+                    var entry = ZipEntry(file.absolutePath.removePrefix(sourceDir.absolutePath + File.separator))
                     usedZipStream.putNextEntry(entry)
                     Files.copy(file.toPath(), usedZipStream)
                 }
