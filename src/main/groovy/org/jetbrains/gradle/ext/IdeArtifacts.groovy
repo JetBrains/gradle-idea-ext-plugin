@@ -9,10 +9,11 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.tasks.TaskAction
-import java.util.zip.ZipOutputStream
-import java.util.zip.ZipEntry
+
 import javax.inject.Inject
 import java.nio.file.Files
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 abstract class TypedArtifact implements MapConvertible {
   Project project
@@ -168,10 +169,10 @@ class ArchiveArtifact extends RecursiveArtifact {
       it.buildTo(temp)
     }
 
-    createTestArchive(name, temp, destination)
+    createArchive(name, temp, destination)
   }
 
-  def createTestArchive(String archiveName, File inputDir, File destinationDir) {
+  static def createArchive(String archiveName, File inputDir, File destinationDir) {
 
     ZipOutputStream output = new ZipOutputStream(new FileOutputStream(new File(destinationDir, archiveName)))
 
