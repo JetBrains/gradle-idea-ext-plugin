@@ -2,6 +2,7 @@ package org.jetbrains.gradle.ext
 
 import groovy.json.JsonOutput
 import org.gradle.api.Project
+import org.gradle.api.internal.provider.DefaultProvider
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -311,6 +312,8 @@ class SerializationTests {
       create("task1")
       create("task2")
       create("task3")
+      create("task4")
+      create("task5")
     }
 
     val subTasks = subProject.tasks
@@ -321,7 +324,7 @@ class SerializationTests {
     config.apply {
       beforeBuild(tasks.getByName("task1"), tasks.getByName("task2"))
       afterSync(tasks.getByName("task3"))
-      beforeRebuild(tasks.getByName("task1"))
+      beforeRebuild(tasks.getByName("task1"), tasks.named("task4"), DefaultProvider<String> { "task5" } )
       afterRebuild(subTasks.getByName("subtask"))
     }
 
@@ -349,6 +352,14 @@ class SerializationTests {
       |    "beforeRebuild": [
       |        {
       |            "taskPath": "task1",
+      |            "projectPath": "$escapedRootProjectPath"
+      |        },
+      |        {
+      |            "taskPath": "task4",
+      |            "projectPath": "$escapedRootProjectPath"
+      |        },
+      |        {
+      |            "taskPath": "task5",
       |            "projectPath": "$escapedRootProjectPath"
       |        }
       |    ],

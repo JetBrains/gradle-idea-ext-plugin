@@ -5,7 +5,7 @@ import com.google.common.collect.Multimaps
 import groovy.transform.CompileStatic
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.tasks.TaskProvider
+import org.gradle.api.provider.Provider
 
 @CompileStatic
 class TaskTriggersConfig implements MapConvertible {
@@ -53,8 +53,8 @@ class TaskTriggersConfig implements MapConvertible {
   Task resolveTask(Object taskObject) {
     if (taskObject instanceof Task) {
       return (Task)taskObject
-    } else if (taskObject instanceof TaskProvider<Task>) {
-      return ((TaskProvider<Task>)taskObject).get()
+    } else if (taskObject instanceof Provider) {
+      return resolveTask(((Provider)taskObject).get())
     } else if (taskObject instanceof String) {
       return project.tasks.findByPath(taskObject)
     } else {
