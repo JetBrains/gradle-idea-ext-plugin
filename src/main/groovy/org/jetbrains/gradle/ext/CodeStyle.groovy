@@ -3,11 +3,17 @@ package org.jetbrains.gradle.ext
 import groovy.transform.CompileStatic
 import org.gradle.api.Action
 
+/**
+ * @deprecated Use .editorconfig to defined codestyle
+ */
 @CompileStatic
 enum ForceBraces {
     DO_NOT_FORCE, FORCE_BRACES_IF_MULTILINE, FORCE_BRACES_ALWAYS
 }
 
+/**
+ * @deprecated Use .editorconfig to defined codestyle
+ */
 @CompileStatic
 class CommonCodeStyleConfig implements MapConvertible {
 
@@ -32,6 +38,9 @@ class CommonCodeStyleConfig implements MapConvertible {
     }
 }
 
+/**
+ * @deprecated Use .editorconfig to defined codestyle
+ */
 class JavaCodeStyleConfig extends CommonCodeStyleConfig {
     public Integer classCountToUseImportOnDemand
     public Boolean alignParameterDescriptions
@@ -55,6 +64,10 @@ class JavaCodeStyleConfig extends CommonCodeStyleConfig {
         ] as Map<String, ?>)
     }
 }
+
+/**
+ * @deprecated Use .editorconfig to defined codestyle
+ */
 class GroovyCodeStyleConfig extends CommonCodeStyleConfig {
     public Integer classCountToUseImportOnDemand
     public Boolean alignMultilineNamedArguments
@@ -69,6 +82,9 @@ class GroovyCodeStyleConfig extends CommonCodeStyleConfig {
     }
 }
 
+/**
+ * @deprecated Use .editorconfig to defined codestyle
+ */
 @CompileStatic
 class CodeStyleConfig implements MapConvertible {
 
