@@ -323,6 +323,7 @@ class SerializationTests {
 
     config.apply {
       beforeBuild(tasks.getByName("task1"), tasks.getByName("task2"))
+      beforeBuild(tasks.matching { it.name.endsWith("3")})
       afterSync(tasks.getByName("task3"))
       beforeRebuild(tasks.getByName("task1"), tasks.named("task4"), DefaultProvider<String> { "task5" } )
       afterRebuild(subTasks.getByName("subtask"))
@@ -340,6 +341,10 @@ class SerializationTests {
       |        },
       |        {
       |            "taskPath": "task2",
+      |            "projectPath": "$escapedRootProjectPath"
+      |        },
+      |        {
+      |            "taskPath": "task3",
       |            "projectPath": "$escapedRootProjectPath"
       |        }
       |    ],
