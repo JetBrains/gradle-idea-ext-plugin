@@ -1012,11 +1012,11 @@ import org.jetbrains.gradle.ext.*
     "taskTriggers": {
         "beforeSync": [
             {
-                "taskPath": "help",
+                "taskPath": ":help",
                 "projectPath": "$projectDir"
             },
             {
-                "taskPath": "LazyTask",
+                "taskPath": ":LazyTask",
                 "projectPath": "$projectDir"
             }
         ]

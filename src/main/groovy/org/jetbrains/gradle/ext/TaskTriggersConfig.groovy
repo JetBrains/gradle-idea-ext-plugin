@@ -43,7 +43,7 @@ class TaskTriggersConfig implements MapConvertible {
     phaseMap.keySet().each { String phase ->
       List<Object> tasksObjects = phaseMap.get(phase)
       List<Task> tasks = (List<Task>) tasksObjects.collect { resolveTasks(it) }.findAll { !it.isEmpty() }.flatten()
-      def taskInfos = tasks.collect { task -> ["taskPath" : task.name, "projectPath" : task.project.projectDir.path.replaceAll("\\\\", "/")] }
+      def taskInfos = tasks.collect { task -> ["taskPath" : task.path, "projectPath" : task.project.rootProject.projectDir.path.replaceAll("\\\\", "/")] }
       result.put(phase, taskInfos)
     }
     return result
