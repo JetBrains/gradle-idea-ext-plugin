@@ -54,7 +54,8 @@ class IdeaExtPlugin implements Plugin<Project> {
   }
 
   static void addRunConfigurations(ExtensionContainer container, Project project) {
-    def runConfigurations = GradleUtils.customPolymorphicContainer(project, DefaultRunConfigurationContainer)
+    RunConfigurationContainer runConfigurations = GradleUtils.runConfigurationsContainer(project)
+
     runConfigurations.registerFactory(Application) { String name -> project.objects.newInstance(Application, name, project) }
     runConfigurations.registerFactory(JUnit) { String name -> project.objects.newInstance(JUnit, name) }
     runConfigurations.registerFactory(Remote) { String name -> project.objects.newInstance(Remote, name) }
@@ -74,7 +75,6 @@ class IdeaExtPlugin implements Plugin<Project> {
   }
 }
 
-@CompileStatic
 abstract class AbstractExtensibleSettings {
   TypeOf mapConvertibleType = TypeOf.typeOf(MapConvertible)
   TypeOf iterableType = TypeOf.typeOf(Iterable)
@@ -167,7 +167,6 @@ class ProjectSettings extends AbstractExtensibleSettings {
 }
 
 
-@CompileStatic
 class ModuleSettings extends AbstractExtensibleSettings {
   final PolymorphicDomainObjectContainer<Facet> facets
 

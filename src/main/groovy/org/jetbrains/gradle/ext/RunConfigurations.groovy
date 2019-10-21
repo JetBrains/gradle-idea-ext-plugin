@@ -1,40 +1,18 @@
 package org.jetbrains.gradle.ext
 
 import groovy.transform.CompileStatic
-import groovy.transform.TypeCheckingMode
 import org.gradle.api.Action
 import org.gradle.api.ExtensiblePolymorphicDomainObjectContainer
 import org.gradle.api.Named
 import org.gradle.api.PolymorphicDomainObjectContainer
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.internal.DefaultPolymorphicDomainObjectContainer
-import org.gradle.internal.reflect.Instantiator
-import org.gradle.api.internal.CollectionCallbackActionDecorator
 
 import javax.inject.Inject
 
 @CompileStatic
 interface RunConfigurationContainer extends ExtensiblePolymorphicDomainObjectContainer<RunConfiguration> {
     public <T extends RunConfiguration> void defaults(Class<T> type, Action<T> action)
-}
-
-@CompileStatic
-class DefaultRunConfigurationContainer
-        extends DefaultPolymorphicDomainObjectContainer<RunConfiguration>
-        implements RunConfigurationContainer {
-
-    @Inject
-    DefaultRunConfigurationContainer(Instantiator instantiator) {
-        super(RunConfiguration, instantiator, CollectionCallbackActionDecorator.NOOP)
-    }
-
-    @Override
-    public <T extends RunConfiguration> void defaults(Class<T> type, Action<T> action) {
-        def defaults = maybeCreate("default_$type.name", type)
-        defaults.defaults = true
-        action.execute(defaults)
-    }
 }
 
 @CompileStatic
@@ -70,7 +48,6 @@ abstract class BaseRunConfiguration implements RunConfiguration {
     }
 }
 
-@CompileStatic
 class Application extends BaseRunConfiguration {
 
     String mainClass
@@ -84,7 +61,6 @@ class Application extends BaseRunConfiguration {
     final PolymorphicDomainObjectContainer<BeforeRunTask> beforeRun
 
     @Inject
-    @CompileStatic(TypeCheckingMode.SKIP)
     Application(String name, Project project) {
         this.@name = name
         this.@type = "application"
