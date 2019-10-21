@@ -1,6 +1,7 @@
 import groovy.json.JsonOutput
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
+import org.gradle.util.GradleVersion
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
@@ -10,6 +11,8 @@ class IdeaModelExtensionFunctionalTest extends Specification {
   final TemporaryFolder testProjectDir = new TemporaryFolder()
   File buildFile
   File settingsFile
+
+  static List<String> gradleVersionList = ["4.2", "5.0", "5.6"]
 
   def setup() {
     buildFile = testProjectDir.newFile('build.gradle')
@@ -68,6 +71,7 @@ rootProject.name = "ProjectName"
     """
     when:
     def result = GradleRunner.create()
+            .withGradleVersion(gradleVersion)
             .withProjectDir(testProjectDir.root)
             .withArguments("printSettings", "-q")
             .withPluginClasspath()
@@ -124,6 +128,8 @@ rootProject.name = "ProjectName"
     )
 
     result.task(":printSettings").outcome == TaskOutcome.SUCCESS
+    where:
+    gradleVersion << gradleVersionList
   }
 
   def "test groovy compiler settings"() {
@@ -155,6 +161,7 @@ task printSettings {
 
     when:
     def result = GradleRunner.create()
+            .withGradleVersion(gradleVersion)
             .withProjectDir(testProjectDir.root)
             .withArguments("printSettings", "-q")
             .withPluginClasspath()
@@ -164,7 +171,8 @@ task printSettings {
     def lines = result.output.readLines()
     lines[0] == '{"groovyCompiler":{"excludes":[{"url":"/some/myFile","includeSubdirectories":false,"isFile":true},' +
             '{"url":"/a/dir","includeSubdirectories":true,"isFile":false}]}}'
-    
+    where:
+    gradleVersion << gradleVersionList
   }
 
   def "test artifacts settings"() {
@@ -199,6 +207,7 @@ task printSettings {
 
     when:
     def result = GradleRunner.create()
+            .withGradleVersion(gradleVersion)
             .withProjectDir(testProjectDir.root)
             .withArguments("printSettings", "-q")
             .withPluginClasspath()
@@ -234,6 +243,9 @@ task printSettings {
         }
     ]
 }"""
+
+    where:
+    gradleVersion << gradleVersionList
   }
 
   def "test build ide artifact reference"() {
@@ -266,13 +278,17 @@ task buildIdeArtifact(type: org.jetbrains.gradle.ext.BuildIdeArtifact) {
 """
 
     when:
-      GradleRunner.create()
+    GradleRunner.create()
+            .withGradleVersion(gradleVersion)
             .withProjectDir(testProjectDir.root)
             .withArguments("buildIdeArtifact")
             .withPluginClasspath()
             .build()
     then:
     new File(testProjectDir.root, "build/idea-artifacts/root/dir1/build.gradle").exists()
+
+    where:
+    gradleVersion << gradleVersionList
   }
 
 
@@ -309,6 +325,7 @@ task printSettings {
 
     when:
     def result = GradleRunner.create()
+            .withGradleVersion(gradleVersion)
             .withProjectDir(testProjectDir.root)
             .withArguments("printSettings", "-q")
             .withPluginClasspath()
@@ -332,6 +349,8 @@ task printSettings {
     }
 }"""
 
+    where:
+    gradleVersion << gradleVersionList
   }
 
   def "idea extension plugin can be applied in multiproject build"() {
@@ -352,6 +371,7 @@ task printSettings {
 """
     when:
     def result = GradleRunner.create()
+            .withGradleVersion(gradleVersion)
             .withProjectDir(testProjectDir.root)
             .withArguments("projects", "--stacktrace")
             .withPluginClasspath()
@@ -359,6 +379,9 @@ task printSettings {
     then:
     // result.output.contains("p1")
     result.task(":projects").outcome == TaskOutcome.SUCCESS
+
+    where:
+    gradleVersion << gradleVersionList
   }
 
     def "test module settings"() {
@@ -402,6 +425,7 @@ task printSettings {
         """
         when:
         def result = GradleRunner.create()
+                .withGradleVersion(gradleVersion)
                 .withProjectDir(testProjectDir.root)
                 .withArguments("printSettings", "-q")
                 .withPluginClasspath()
@@ -413,6 +437,9 @@ task printSettings {
                 '{"file":"spring_new_child.xml","name":"p2","parent":"p1"}],"name":"spring"}]}'
 
         result.task(":printSettings").outcome == TaskOutcome.SUCCESS
+
+      where:
+      gradleVersion << gradleVersionList
     }
 
   def "test module package prefix settings"() {
@@ -442,6 +469,7 @@ task printSettings {
         """
     when:
     def result = GradleRunner.create()
+            .withGradleVersion(gradleVersion)
             .withProjectDir(testProjectDir.root)
             .withArguments("printSettings", "-q")
             .withPluginClasspath()
@@ -455,6 +483,9 @@ task printSettings {
             '}}'
 
     result.task(":printSettings").outcome == TaskOutcome.SUCCESS
+
+    where:
+    gradleVersion << gradleVersionList
   }
 
   def "test module settings with remote source root"() {
@@ -490,6 +521,7 @@ task printSettings {
     """
     when:
     def result = GradleRunner.create()
+            .withGradleVersion(gradleVersion)
             .withProjectDir(testProjectDir.root)
             .withArguments("printSettings", "-q")
             .withPluginClasspath()
@@ -503,6 +535,9 @@ task printSettings {
             '}}'
 
     result.task(":printSettings").outcome == TaskOutcome.SUCCESS
+
+    where:
+    gradleVersion << gradleVersionList
   }
 
   def "test module settings with custom source root"() {
@@ -536,6 +571,7 @@ task printSettings {
     """
     when:
     def result = GradleRunner.create()
+            .withGradleVersion(gradleVersion)
             .withProjectDir(testProjectDir.root)
             .withArguments("printSettings", "-q")
             .withPluginClasspath()
@@ -546,6 +582,9 @@ task printSettings {
     lines[0] == '{"packagePrefix":{"' + moduleContentRoot + '/src":"com.example.java"}}'
 
     result.task(":printSettings").outcome == TaskOutcome.SUCCESS
+
+    where:
+    gradleVersion << gradleVersionList
   }
 
   def "test complex project encoding settings"() {
@@ -585,6 +624,7 @@ task printSettings {
     """
     when:
     def result = GradleRunner.create()
+            .withGradleVersion(gradleVersion)
             .withProjectDir(testProjectDir.root)
             .withArguments("printSettings", "-q")
             .withPluginClasspath()
@@ -609,6 +649,9 @@ task printSettings {
             '}'
 
     result.task(":printSettings").outcome == TaskOutcome.SUCCESS
+
+    where:
+    gradleVersion << gradleVersionList
   }
 
   def "test partial project encoding settings"() {
@@ -639,6 +682,7 @@ task printSettings {
     """
     when:
     def result = GradleRunner.create()
+            .withGradleVersion(gradleVersion)
             .withProjectDir(testProjectDir.root)
             .withArguments("printSettings", "-q")
             .withPluginClasspath()
@@ -654,6 +698,9 @@ task printSettings {
             '}'
 
     result.task(":printSettings").outcome == TaskOutcome.SUCCESS
+
+    where:
+    gradleVersion << gradleVersionList
   }
 
   def "test extending the DSL with custom run configurations and facets"() {
@@ -734,6 +781,7 @@ task printSettings {
 
     when:
     def result = GradleRunner.create()
+            .withGradleVersion(gradleVersion)
             .withProjectDir(testProjectDir.root)
             .withArguments("printSettings", "-q")
             .withPluginClasspath()
@@ -743,6 +791,9 @@ task printSettings {
     def lines = result.output.readLines()
     lines[0] == '{"runConfigurations":[{"name":"testRunConfig","type":"myRunConfiguration","aKey":"project_test_value"}]}'
     lines[1] == '{"facets":[{"type":"MyFacetType","facetKey":"module_facet_value"}]}'
+
+    where:
+    gradleVersion << gradleVersionList
 
   }
 
@@ -801,6 +852,7 @@ task printSettings {
 
     when:
     def result = GradleRunner.create()
+            .withGradleVersion(gradleVersion)
             .withProjectDir(testProjectDir.root)
             .withArguments("printSettings", "-q")
             .withPluginClasspath()
@@ -810,6 +862,9 @@ task printSettings {
     def lines = result.output.readLines()
     lines[0] == '{"myTest":{"name":"test_project_value"}}'
     lines[1] == '{"myTest":{"name":"test_module_value"}}'
+
+    where:
+    gradleVersion << gradleVersionList
 
   }
 
@@ -885,6 +940,7 @@ task printSettings {
 
     when:
     def result = GradleRunner.create()
+            .withGradleVersion(gradleVersion)
             .withProjectDir(testProjectDir.root)
             .withArguments("printSettings", "-q")
             .withPluginClasspath()
@@ -895,6 +951,8 @@ task printSettings {
     lines[0] == '{"myTest":[{"name":"projectName1","param":1},{"name":"projectName2","param":2}]}'
     lines[1] == '{"myTest":[{"name":"moduleName1","param":1}]}'
 
+    where:
+    gradleVersion << gradleVersionList
   }
 
 
@@ -937,6 +995,7 @@ import org.jetbrains.gradle.ext.*
     """
     when:
     def result = GradleRunner.create()
+            .withGradleVersion(gradleVersion)
             .withProjectDir(testProjectDir.root)
             .withArguments("printSettings", "-q")
             .withPluginClasspath()
@@ -965,5 +1024,8 @@ import org.jetbrains.gradle.ext.*
 }"""
 
     result.task(":printSettings").outcome == TaskOutcome.SUCCESS
+
+    where:
+    gradleVersion << gradleVersionList.findAll { (GradleVersion.version(it) >= GradleVersion.version("5.0")) }
   }
 }

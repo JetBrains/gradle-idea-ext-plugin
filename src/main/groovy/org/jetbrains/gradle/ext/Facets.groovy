@@ -13,7 +13,6 @@ interface Facet extends Named, MapConvertible {
     String getType()
 }
 
-@CompileStatic
 class SpringFacet implements Facet {
 
     final String name

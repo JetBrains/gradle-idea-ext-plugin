@@ -2,13 +2,11 @@ package org.jetbrains.gradle.ext
 
 import com.google.common.collect.ListMultimap
 import com.google.common.collect.Multimaps
-import groovy.transform.CompileStatic
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskCollection
 
-@CompileStatic
 class TaskTriggersConfig implements MapConvertible {
 
   Project project
