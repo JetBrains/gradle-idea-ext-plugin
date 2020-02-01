@@ -8,6 +8,7 @@ import org.gradle.api.artifacts.ArtifactCollection
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 
 import javax.inject.Inject
@@ -438,21 +439,19 @@ class BuildIdeArtifact extends DefaultTask {
       return
     }
 
-    File destination = createDestinationDir()
-    artifact.buildTo(destination)
+    artifact.buildTo(getOutputDirectory())
   }
 
-  private File createDestinationDir() {
-    File destination
+  @OutputDirectory
+  File getOutputDirectory() {
     if (outputDirectory == null) {
-      destination = project.layout.buildDirectory
-              .dir(DEFAULT_DESTINATION).get()
-              .dir(artifact.name)
-              .asFile
-    } else {
-      destination = outputDirectory
+      outputDirectory = project.layout.buildDirectory
+                               .dir(DEFAULT_DESTINATION).get()
+                               .dir(artifact.name)
+                               .asFile
     }
-    destination.mkdirs()
-    return destination
+    outputDirectory.mkdirs()
+    return outputDirectory
   }
+
 }
