@@ -1,9 +1,11 @@
 package org.jetbrains.gradle.ext
 
+import com.google.gson.JsonParser
 import groovy.json.JsonOutput
 import org.gradle.api.Project
 import org.gradle.api.internal.provider.DefaultProvider
 import org.gradle.testfixtures.ProjectBuilder
+import org.intellij.lang.annotations.Language
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -55,30 +57,32 @@ class SerializationTests {
             JsonOutput.prettyPrint(JsonOutput.toJson(application.toMap())))
   }
 
-  @Test fun `test remote json output`() {
+  @Test
+  fun `test remote json output`() {
     val remote = Remote("remote debug").apply {
       host = "hostname"
       port = 1234
       sharedMemoryAddress = "jvmdebug"
     }
 
-    assertEquals("""
-    |{
-    |    "defaults": false,
-    |    "type": "remote",
-    |    "name": "remote debug",
-    |    "mode": "ATTACH",
-    |    "port": 1234,
-    |    "transport": "SOCKET",
-    |    "host": "hostname",
-    |    "sharedMemoryAddress": "jvmdebug"
-    |}
-    """.trimMargin(),
-            JsonOutput.prettyPrint(JsonOutput.toJson(remote.toMap())))
-
+    @Language("JSON")
+    val expected = JsonParser.parseString("""
+    {
+        "defaults": false,
+        "type": "remote",
+        "name": "remote debug",
+        "mode": "ATTACH",
+        "port": 1234,
+        "transport": "SOCKET",
+        "host": "hostname",
+        "sharedMemoryAddress": "jvmdebug"
+    }
+    """)
+    assertEquals(expected, JsonParser.parseString(JsonOutput.toJson(remote.toMap())))
   }
 
-  @Test fun `test JUnit config output`() {
+  @Test
+  fun `test JUnit config output`() {
     val config = JUnit("myName").apply {
       className = "my.TestClass"
       repeat = "untilFailure"
@@ -91,29 +95,31 @@ class SerializationTests {
       shortenCommandLine = ShortenCommandLine.CLASSPATH_FILE
     }
 
-    assertEquals("""
-      |{
-      |    "defaults": true,
-      |    "type": "junit",
-      |    "name": "myName",
-      |    "directory": null,
-      |    "repeat": "untilFailure",
-      |    "envs": {
-      |        "env1": "envVal1",
-      |        "env2": "envVal2"
-      |    },
-      |    "vmParameters": "-Dkey=Value",
-      |    "category": null,
-      |    "workingDirectory": "myWorkDir",
-      |    "className": "my.TestClass",
-      |    "moduleName": "myModule",
-      |    "passParentEnvs": true,
-      |    "packageName": null,
-      |    "pattern": null,
-      |    "method": null,
-      |    "shortenCommandLine": "CLASSPATH_FILE"
-      |}
-    """.trimMargin(), JsonOutput.prettyPrint(JsonOutput.toJson(config.toMap())))
+    @Language("JSON")
+    val expected = JsonParser.parseString("""
+                {
+                    "defaults": true,
+                    "type": "junit",
+                    "name": "myName",
+                    "directory": null,
+                    "repeat": "untilFailure",
+                    "envs": {
+                        "env1": "envVal1",
+                        "env2": "envVal2"
+                    },
+                    "vmParameters": "-Dkey=Value",
+                    "category": null,
+                    "workingDirectory": "myWorkDir",
+                    "className": "my.TestClass",
+                    "moduleName": "myModule",
+                    "passParentEnvs": true,
+                    "packageName": null,
+                    "pattern": null,
+                    "method": null,
+                    "shortenCommandLine": "CLASSPATH_FILE"
+                }
+      """)
+    assertEquals(expected, JsonParser.parseString(JsonOutput.toJson(config.toMap())))
   }
 
   @Test fun `test TestNG config output`() {
@@ -129,31 +135,34 @@ class SerializationTests {
       shortenCommandLine = ShortenCommandLine.ARGS_FILE
     }
 
-    assertEquals("""
-      |{
-      |    "defaults": true,
-      |    "type": "testng",
-      |    "name": "myName",
-      |    "package": null,
-      |    "class": "my.TestClass",
-      |    "method": null,
-      |    "group": null,
-      |    "suite": null,
-      |    "pattern": null,
-      |    "workingDirectory": "myWorkDir",
-      |    "vmParameters": "-Dkey=Value",
-      |    "passParentEnvs": true,
-      |    "moduleName": "myModule",
-      |    "envs": {
-      |        "env1": "envVal1",
-      |        "env2": "envVal2"
-      |    },
-      |    "shortenCommandLine": "ARGS_FILE"
-      |}
-    """.trimMargin(), JsonOutput.prettyPrint(JsonOutput.toJson(config.toMap())))
+    @Language("JSON")
+    val expected = JsonParser.parseString("""
+      {
+          "defaults": true,
+          "type": "testng",
+          "name": "myName",
+          "package": null,
+          "class": "my.TestClass",
+          "method": null,
+          "group": null,
+          "suite": null,
+          "pattern": null,
+          "workingDirectory": "myWorkDir",
+          "vmParameters": "-Dkey=Value",
+          "passParentEnvs": true,
+          "moduleName": "myModule",
+          "envs": {
+              "env1": "envVal1",
+              "env2": "envVal2"
+          },
+          "shortenCommandLine": "ARGS_FILE"
+      }
+    """)
+    assertEquals(expected, JsonParser.parseString(JsonOutput.toJson(config.toMap())))
   }
 
-  @Test fun `test Gradle run configuration output`() {
+  @Test
+  fun `test Gradle run configuration output`() {
     val absolutePath = File("").absolutePath.replace("\\", "/")
     val config = Gradle("gradleName").apply {
       projectPath = absolutePath
@@ -164,24 +173,26 @@ class SerializationTests {
       defaults = true
     }
 
-    assertEquals("""
-      |{
-      |    "defaults": true,
-      |    "type": "gradle",
-      |    "name": "gradleName",
-      |    "projectPath": "$absolutePath",
-      |    "taskNames": [
-      |        ":cleanTest",
-      |        ":test"
-      |    ],
-      |    "envs": {
-      |        "env1": "envVal1",
-      |        "env2": "envVal2"
-      |    },
-      |    "jvmArgs": "-Dkey=val",
-      |    "scriptParameters": "-PscriptParam"
-      |}
-    """.trimMargin(), JsonOutput.prettyPrint(JsonOutput.toJson(config.toMap())))
+    @Language("JSON")
+    val expected = JsonParser.parseString("""
+      {
+          "defaults": true,
+          "type": "gradle",
+          "name": "gradleName",
+          "projectPath": "$absolutePath",
+          "taskNames": [
+              ":cleanTest",
+              ":test"
+          ],
+          "envs": {
+              "env1": "envVal1",
+              "env2": "envVal2"
+          },
+          "jvmArgs": "-Dkey=val",
+          "scriptParameters": "-PscriptParam"
+      }
+    """)
+    assertEquals(expected, JsonParser.parseString(JsonOutput.toJson(config.toMap())))
   }
 
   @Test fun `test Groovy config output`() {
@@ -407,6 +418,7 @@ class SerializationTests {
 
     // as long as this junit is used for build itself, it can be used safely
     myProject.repositories.mavenLocal()
+    myProject.repositories.jcenter()
     myProject.dependencies.add(configurationName, "junit:junit:4.12")
 
 
