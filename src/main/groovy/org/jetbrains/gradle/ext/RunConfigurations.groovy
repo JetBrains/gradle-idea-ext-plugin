@@ -48,22 +48,15 @@ abstract class BaseRunConfiguration implements RunConfiguration {
     }
 }
 
-class Application extends BaseRunConfiguration {
-
-    String mainClass
+abstract class JavaRunConfiguration extends BaseRunConfiguration {
     String workingDirectory
     String jvmArgs
-    String moduleName
     String programParameters
     Map<String, String> envs
-    ShortenCommandLine shortenCommandLine
 
     final PolymorphicDomainObjectContainer<BeforeRunTask> beforeRun
 
-    @Inject
-    Application(String name, Project project) {
-        this.@name = name
-        this.@type = "application"
+    JavaRunConfiguration(Project project) {
         def beforeRun = GradleUtils.polymorphicContainer(project, BeforeRunTask)
         beforeRun.registerFactory(Make, { project.objects.newInstance(Make) })
         beforeRun.registerFactory(GradleTask, { project.objects.newInstance(GradleTask) })
@@ -80,12 +73,51 @@ class Application extends BaseRunConfiguration {
         return super.toMap() << [
                 "envs"             : envs,
                 "workingDirectory" : workingDirectory,
-                "mainClass"        : mainClass,
-                "moduleName"       : moduleName,
                 "beforeRun"        : beforeRun.toList().collect { it.toMap() },
                 "jvmArgs"          : jvmArgs,
-                "programParameters": programParameters,
+                "programParameters": programParameters
+        ]
+    }
+}
+
+class Application extends JavaRunConfiguration {
+    String mainClass
+    String moduleName
+    ShortenCommandLine shortenCommandLine
+
+    @Inject
+    Application(String name, Project project) {
+        super(project)
+        this.@name = name
+        this.@type = "application"
+    }
+
+    @Override
+    Map<String, ?> toMap() {
+        return super.toMap() << [
+                "mainClass"        : mainClass,
+                "moduleName"       : moduleName,
                 "shortenCommandLine": shortenCommandLine
+        ]
+    }
+}
+
+class JarApplication extends JavaRunConfiguration {
+    String jarPath
+    String moduleName
+
+    @Inject
+    JarApplication(String name, Project project) {
+        super(project)
+        this.@name = name
+        this.@type = "jarApplication"
+    }
+
+    @Override
+    Map<String, ?> toMap() {
+        return super.toMap() << [
+                "jarPath": jarPath,
+                "moduleName": moduleName
         ]
     }
 }

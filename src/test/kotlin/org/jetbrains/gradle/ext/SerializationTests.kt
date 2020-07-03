@@ -35,8 +35,6 @@ class SerializationTests {
     |    "name": "test",
     |    "envs": null,
     |    "workingDirectory": null,
-    |    "mainClass": null,
-    |    "moduleName": null,
     |    "beforeRun": [
     |        {
     |            "type": "buildArtifact",
@@ -49,10 +47,48 @@ class SerializationTests {
     |    ],
     |    "jvmArgs": null,
     |    "programParameters": null,
+    |    "mainClass": null,
+    |    "moduleName": null,
     |    "shortenCommandLine": "MANIFEST"
     |}
     """.trimMargin(),
             JsonOutput.prettyPrint(JsonOutput.toJson(application.toMap())))
+  }
+  @Test fun `test JarApplication json output`() {
+    val jarApplication = JarApplication("test", myProject).apply {
+      beforeRun.create("make", Make::class.java).apply {
+        enabled = false
+      }
+      beforeRun.create("myArtifact", BuildArtifact::class.java).apply {
+        artifactName = "myName"
+      }
+      jarPath = "myJarPath"
+    }
+
+    assertEquals("""
+    |{
+    |    "defaults": false,
+    |    "type": "jarApplication",
+    |    "name": "test",
+    |    "envs": null,
+    |    "workingDirectory": null,
+    |    "beforeRun": [
+    |        {
+    |            "type": "buildArtifact",
+    |            "artifactName": "myName"
+    |        },
+    |        {
+    |            "type": "make",
+    |            "enabled": false
+    |        }
+    |    ],
+    |    "jvmArgs": null,
+    |    "programParameters": null,
+    |    "jarPath": "myJarPath",
+    |    "moduleName": null
+    |}
+    """.trimMargin(),
+            JsonOutput.prettyPrint(JsonOutput.toJson(jarApplication.toMap())))
   }
 
   @Test fun `test remote json output`() {
