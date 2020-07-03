@@ -61,6 +61,7 @@ class IdeaExtPlugin implements Plugin<Project> {
     runConfigurations.registerFactory(Remote) { String name -> project.objects.newInstance(Remote, name) }
     runConfigurations.registerFactory(TestNG) { String name -> project.objects.newInstance(TestNG, name) }
     runConfigurations.registerFactory(Gradle) { String name -> project.objects.newInstance(Gradle, name) }
+    runConfigurations.registerFactory(JarApplication) { String name -> project.objects.newInstance(JarApplication, name, project) }
 
     container.add("runConfigurations", runConfigurations)
   }
