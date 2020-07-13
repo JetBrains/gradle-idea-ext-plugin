@@ -5,8 +5,8 @@ import junit.framework.Assert.assertFalse
 import org.assertj.core.api.Assertions.assertThat
 import org.gradle.api.NamedDomainObjectCollection
 import org.gradle.api.Project
-import org.gradle.api.internal.plugins.DefaultConvention
 import org.gradle.api.tasks.SourceSet
+import org.gradle.internal.extensibility.DefaultConvention
 import org.gradle.plugins.ide.idea.model.IdeaModel
 import org.gradle.testfixtures.ProjectBuilder
 import org.jetbrains.gradle.ext.BuildIdeArtifact.DEFAULT_DESTINATION
@@ -187,6 +187,7 @@ class BuildIdeArtifactTest {
     @Test
     fun `test libraries are copied`() {
         myProject.repositories.mavenLocal()
+        myProject.repositories.jcenter()
         val myCfg = myProject.configurations.create("myCfg")
         myProject.dependencies.add(myCfg.name, "junit:junit:4.12")
 

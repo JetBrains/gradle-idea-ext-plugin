@@ -12,7 +12,7 @@ class IdeaModelExtensionFunctionalTest extends Specification {
   File buildFile
   File settingsFile
 
-  static List<String> gradleVersionList = ["4.2", "5.0", "5.6"]
+  static List<String> gradleVersionList = ["4.2", "5.0", "5.6", "5.6.4", "6.1.1"]
 
   def setup() {
     buildFile = testProjectDir.newFile('build.gradle')
@@ -71,11 +71,11 @@ rootProject.name = "ProjectName"
     """
     when:
     def result = GradleRunner.create()
-            .withGradleVersion(gradleVersion)
-            .withProjectDir(testProjectDir.root)
-            .withArguments("printSettings", "-q")
-            .withPluginClasspath()
-            .build()
+                             .withGradleVersion(gradleVersion)
+                             .withProjectDir(testProjectDir.root)
+                             .withArguments("printSettings", "-q")
+                             .withPluginClasspath()
+                             .build()
     then:
 
     def lines = result.output.readLines()

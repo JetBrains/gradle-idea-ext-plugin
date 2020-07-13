@@ -166,13 +166,13 @@ class TestNG extends BaseRunConfiguration {
     Map<String, String> envs
     ShortenCommandLine shortenCommandLine
 
-    @Inject
-    TestNG(String name) {
-        this.@name = name
-        this.@type = "testng"
-    }
+  @Inject
+  TestNG(String name) {
+    super.@name = name
+    super.@type = "testng"
+  }
 
-    @Override
+  @Override
     Map<String, ?> toMap() {
         return super.toMap() << [
                 "type": type,
@@ -214,13 +214,13 @@ class JUnit extends BaseRunConfiguration {
     Map<String, String> envs
     ShortenCommandLine shortenCommandLine
 
-    @Inject
-    JUnit(String name) {
-        this.@name = name
-        this.@type = "junit"
-    }
+  @Inject
+  JUnit(String name) {
+    super.@name = name
+    super.@type = "junit"
+  }
 
-    @Override
+  @Override
     Map<String, ?> toMap() {
         return super.toMap() << [
                 "directory"       : directory,
@@ -257,13 +257,13 @@ class Remote extends BaseRunConfiguration {
     Integer port
     String sharedMemoryAddress
 
-    @Inject
-    Remote(String name) {
-        this.@name = name
-        this.@type = "remote"
-    }
+  @Inject
+  Remote(String name) {
+    super.@name = name
+    super.@type = "remote"
+  }
 
-    @Override
+  @Override
     Map<String, ?> toMap() {
         return super.toMap() << [
                 "mode"               : mode,
@@ -284,11 +284,11 @@ class Gradle extends BaseRunConfiguration {
     String jvmArgs
     String scriptParameters
 
-    @Inject
-    Gradle(String name) {
-        this.@name = name
-        this.@type = "gradle"
-    }
+  @Inject
+  Gradle(String name) {
+    super.@name = name
+    super.@type = "gradle"
+  }
 
     def setProject(Project project) {
         projectPath = project.projectDir.absolutePath
