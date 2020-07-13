@@ -383,42 +383,42 @@ class SerializationTests {
       |{
       |    "beforeBuild": [
       |        {
-      |            "taskPath": ":task1",
+      |            "taskPath": "task1",
       |            "projectPath": "$escapedRootProjectPath"
       |        },
       |        {
-      |            "taskPath": ":task2",
+      |            "taskPath": "task2",
       |            "projectPath": "$escapedRootProjectPath"
       |        },
       |        {
-      |            "taskPath": ":task3",
+      |            "taskPath": "task3",
       |            "projectPath": "$escapedRootProjectPath"
       |        }
       |    ],
       |    "afterSync": [
       |        {
-      |            "taskPath": ":task3",
+      |            "taskPath": "task3",
       |            "projectPath": "$escapedRootProjectPath"
       |        }
       |    ],
       |    "beforeRebuild": [
       |        {
-      |            "taskPath": ":task1",
+      |            "taskPath": "task1",
       |            "projectPath": "$escapedRootProjectPath"
       |        },
       |        {
-      |            "taskPath": ":task4",
+      |            "taskPath": "task4",
       |            "projectPath": "$escapedRootProjectPath"
       |        },
       |        {
-      |            "taskPath": ":task5",
+      |            "taskPath": "task5",
       |            "projectPath": "$escapedRootProjectPath"
       |        }
       |    ],
       |    "afterRebuild": [
       |        {
-      |            "taskPath": ":test:subtask",
-      |            "projectPath": "$escapedRootProjectPath"
+      |            "taskPath": "subtask",
+      |            "projectPath": "$subProjectPath"
       |        }
       |    ]
       |}
