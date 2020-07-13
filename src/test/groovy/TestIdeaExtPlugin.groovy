@@ -99,11 +99,11 @@ rootProject.name = "ProjectName"
             "type": "application",
             "name": "Run my app",
             "workingDirectory": ${JsonOutput.toJson(projectDir)},
-            "mainClass": "foo.App",
-            "moduleName": "ProjectName",
             "beforeRun": [
                 
-            ]
+            ],
+            "mainClass": "foo.App",
+            "moduleName": "ProjectName"
         },
         {
             "defaults": true,
@@ -1012,11 +1012,11 @@ import org.jetbrains.gradle.ext.*
     "taskTriggers": {
         "beforeSync": [
             {
-                "taskPath": ":help",
+                "taskPath": "help",
                 "projectPath": "$projectDir"
             },
             {
-                "taskPath": ":LazyTask",
+                "taskPath": "LazyTask",
                 "projectPath": "$projectDir"
             }
         ]
