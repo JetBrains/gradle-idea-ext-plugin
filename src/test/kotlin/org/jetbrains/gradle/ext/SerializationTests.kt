@@ -39,12 +39,12 @@ class SerializationTests {
     |    "workingDirectory": null,
     |    "beforeRun": [
     |        {
-    |            "type": "buildArtifact",
-    |            "artifactName": "myName"
-    |        },
-    |        {
     |            "type": "make",
     |            "enabled": false
+    |        },
+    |        {
+    |            "type": "buildArtifact",
+    |            "artifactName": "myName"
     |        }
     |    ],
     |    "jvmArgs": null,
@@ -76,12 +76,12 @@ class SerializationTests {
     |    "workingDirectory": null,
     |    "beforeRun": [
     |        {
-    |            "type": "buildArtifact",
-    |            "artifactName": "myName"
-    |        },
-    |        {
     |            "type": "make",
     |            "enabled": false
+    |        },
+    |        {
+    |            "type": "buildArtifact",
+    |            "artifactName": "myName"
     |        }
     |    ],
     |    "jvmArgs": null,
