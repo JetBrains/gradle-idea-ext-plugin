@@ -48,6 +48,7 @@ abstract class BaseRunConfiguration implements RunConfiguration {
     }
 }
 
+@CompileStatic
 abstract class JavaRunConfiguration extends BaseRunConfiguration {
     String workingDirectory
     String jvmArgs
@@ -58,9 +59,9 @@ abstract class JavaRunConfiguration extends BaseRunConfiguration {
 
     JavaRunConfiguration(Project project) {
         def beforeRun = GradleUtils.polymorphicContainer(project, BeforeRunTask)
-        beforeRun.registerFactory(Make, { project.objects.newInstance(Make) })
-        beforeRun.registerFactory(GradleTask, { project.objects.newInstance(GradleTask) })
-        beforeRun.registerFactory(BuildArtifact, { project.objects.newInstance(BuildArtifact) })
+        beforeRun.registerFactory(Make) { String name -> project.objects.newInstance(Make, name) }
+        beforeRun.registerFactory(GradleTask) { String name -> project.objects.newInstance(GradleTask, name) }
+        beforeRun.registerFactory(BuildArtifact) { String name -> project.objects.newInstance(BuildArtifact, name) }
         this.beforeRun = beforeRun
     }
 
@@ -80,6 +81,7 @@ abstract class JavaRunConfiguration extends BaseRunConfiguration {
     }
 }
 
+@CompileStatic
 class Application extends JavaRunConfiguration {
     String mainClass
     String moduleName
@@ -102,6 +104,7 @@ class Application extends JavaRunConfiguration {
     }
 }
 
+@CompileStatic
 class JarApplication extends JavaRunConfiguration {
     String jarPath
     String moduleName
@@ -125,10 +128,11 @@ class JarApplication extends JavaRunConfiguration {
 @CompileStatic
 abstract class BeforeRunTask implements Named, MapConvertible {
     protected String type
+    protected String name
 
     @Override
     String getName() {
-        return type
+        return name
     }
 
     @Override
@@ -142,7 +146,10 @@ class Make extends BeforeRunTask {
     Boolean enabled = true
 
     @Inject
-    Make() { this.@type = "make" }
+    Make(String name) {
+        this.@type = "make"
+        this.@name = name
+    }
 
     @Override
     Map<String, ?> toMap() {
@@ -155,7 +162,10 @@ class GradleTask extends BeforeRunTask {
     Task task
 
     @Inject
-    GradleTask() { this.@type = "gradleTask" }
+    GradleTask(String name) {
+        this.@type = "gradleTask"
+        this.@name = name
+    }
 
     @Override
     Map<String, ?> toMap() {
@@ -171,7 +181,10 @@ class BuildArtifact extends BeforeRunTask {
     String artifactName
 
     @Inject
-    BuildArtifact() { this.@type = "buildArtifact" }
+    BuildArtifact(String name) {
+        this.@type = "buildArtifact"
+        this.@name = name
+    }
 
     @Override
     Map<String, ?> toMap() {
