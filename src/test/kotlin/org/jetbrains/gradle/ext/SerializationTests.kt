@@ -565,5 +565,79 @@ class SerializationTests {
       assertEquals(addCount, beforeRun.containerWithType(type.java).size)
     }
   }
+
+  @Test fun `test Make BeforeRunTask json output`() {
+    val beforeRun = JavaRunConfiguration.createBeforeRun(myProject)
+    beforeRun.create("make1", Make::class.java) {
+      it.enabled = true
+    }
+    beforeRun.create("make2", Make::class.java) {
+      it.enabled = false
+    }
+    assertEquals("""
+      |[
+      |    {
+      |        "type": "make",
+      |        "enabled": true
+      |    },
+      |    {
+      |        "type": "make",
+      |        "enabled": false
+      |    }
+      |]
+    """.trimMargin(),
+            JsonOutput.prettyPrint(JsonOutput.toJson(beforeRun.map { it.toMap() })))
+  }
+
+  @Test fun `test GradleTask BeforeRunTask json output`() {
+    val taskA = myProject.tasks.create("beforeRunTestA")
+    val taskB = myProject.tasks.create("beforeRunTestB")
+    val escapedRootProjectPath = myProject.projectDir.path.replace("\\", "/")
+    val beforeRun = JavaRunConfiguration.createBeforeRun(myProject)
+    beforeRun.create("gradleTask1", GradleTask::class.java) {
+      it.task = taskA
+    }
+    beforeRun.create("gradleTask2", GradleTask::class.java) {
+      it.task = taskB
+    }
+    assertEquals("""
+      |[
+      |    {
+      |        "type": "gradleTask",
+      |        "projectPath": "$escapedRootProjectPath",
+      |        "taskName": "${taskA.name}"
+      |    },
+      |    {
+      |        "type": "gradleTask",
+      |        "projectPath": "$escapedRootProjectPath",
+      |        "taskName": "${taskB.name}"
+      |    }
+      |]
+    """.trimMargin(),
+      JsonOutput.prettyPrint(JsonOutput.toJson(beforeRun.map { it.toMap() })))
+  }
+
+  @Test fun `test BuildArtifact BeforeRunTask json output`() {
+    val beforeRun = JavaRunConfiguration.createBeforeRun(myProject)
+    beforeRun.create("buildArtifact1", BuildArtifact::class.java) {
+      it.artifactName = "myName1"
+    }
+    beforeRun.create("buildArtifact2", BuildArtifact::class.java) {
+      it.artifactName = "myName2"
+    }
+    assertEquals("""
+      |[
+      |    {
+      |        "type": "buildArtifact",
+      |        "artifactName": "myName1"
+      |    },
+      |    {
+      |        "type": "buildArtifact",
+      |        "artifactName": "myName2"
+      |    }
+      |]
+    """.trimMargin(),
+            JsonOutput.prettyPrint(JsonOutput.toJson(beforeRun.map { it.toMap() })))
+  }
 }
 

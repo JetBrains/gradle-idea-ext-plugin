@@ -174,7 +174,7 @@ class GradleTask extends BeforeRunTask {
     @Override
     Map<String, ?> toMap() {
         return super.toMap() << [
-                "projectPath": task.project.rootDir.absolutePath,
+                "projectPath": task.project.rootDir.absolutePath.replaceAll("\\\\", "/"),
                 "taskName": task.name
         ]
     }
