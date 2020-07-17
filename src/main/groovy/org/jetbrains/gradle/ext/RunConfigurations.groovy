@@ -57,12 +57,16 @@ abstract class JavaRunConfiguration extends BaseRunConfiguration {
 
     final PolymorphicDomainObjectContainer<BeforeRunTask> beforeRun
 
-    JavaRunConfiguration(Project project) {
+    static PolymorphicDomainObjectContainer<BeforeRunTask> createBeforeRun(Project project) {
         def beforeRun = GradleUtils.polymorphicContainer(project, BeforeRunTask)
         beforeRun.registerFactory(Make) { String name -> project.objects.newInstance(Make, name) }
         beforeRun.registerFactory(GradleTask) { String name -> project.objects.newInstance(GradleTask, name) }
         beforeRun.registerFactory(BuildArtifact) { String name -> project.objects.newInstance(BuildArtifact, name) }
-        this.beforeRun = beforeRun
+        return beforeRun
+    }
+
+    JavaRunConfiguration(Project project) {
+        this.beforeRun = createBeforeRun(project)
     }
 
     def beforeRun(Action<PolymorphicDomainObjectContainer<BeforeRunTask>> action) {

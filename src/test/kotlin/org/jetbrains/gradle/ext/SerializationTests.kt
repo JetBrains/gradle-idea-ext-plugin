@@ -551,6 +551,19 @@ class SerializationTests {
 
   }
 
-
+  @Test fun `test multiple BeforeRunTasks of same type`() {
+    val beforeRun = JavaRunConfiguration.createBeforeRun(myProject)
+    val addCount = 2
+    listOf(Make::class, GradleTask::class, BuildArtifact::class).forEach { type ->
+      repeat(addCount) { i ->
+        val name = "${type.simpleName}$i"
+        beforeRun.create(name, type.java)
+        // Checks the name equals with the given $name.
+        assertEquals(name, beforeRun.findByName(name)?.getName())
+      }
+      // Checks the tasks properly added $addCount times.
+      assertEquals(addCount, beforeRun.containerWithType(type.java).size)
+    }
+  }
 }
 
