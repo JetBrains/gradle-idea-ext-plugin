@@ -1,6 +1,7 @@
 package org.jetbrains.gradle.ext
 
 import groovy.transform.CompileStatic
+import org.codehaus.groovy.runtime.DefaultGroovyMethods
 import org.gradle.api.Action
 import org.gradle.api.ExtensiblePolymorphicDomainObjectContainer
 import org.gradle.api.Named
@@ -78,7 +79,7 @@ abstract class JavaRunConfiguration extends BaseRunConfiguration {
         return super.toMap() << [
                 "envs"             : envs,
                 "workingDirectory" : workingDirectory,
-                "beforeRun"        : beforeRun.toList().collect { it.toMap() },
+                "beforeRun"        : DefaultGroovyMethods.collect(beforeRun.toList() as Collection<BeforeRunTask>) { it.toMap() },
                 "jvmArgs"          : jvmArgs,
                 "programParameters": programParameters
         ]
