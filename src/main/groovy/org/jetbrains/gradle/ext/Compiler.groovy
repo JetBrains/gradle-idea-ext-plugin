@@ -61,6 +61,7 @@ class IdeaCompilerConfiguration implements MapConvertible {
 class JavacConfiguration {
     Boolean preferTargetJDKCompiler
     String javacAdditionalOptions
+    Map<String, String> moduleJavacAdditionalOptions
     Boolean generateDebugInfo
     Boolean generateDeprecationWarnings
     Boolean generateNoWarnings
@@ -69,6 +70,7 @@ class JavacConfiguration {
         def map = [:]
         if (preferTargetJDKCompiler != null) map.put("preferTargetJDKCompiler", preferTargetJDKCompiler)
         if (javacAdditionalOptions != null) map.put("javacAdditionalOptions", javacAdditionalOptions)
+        if (moduleJavacAdditionalOptions != null) map.put("moduleJavacAdditionalOptions", moduleJavacAdditionalOptions)
         if (generateDebugInfo != null) map.put("generateDebugInfo", generateDebugInfo)
         if (generateDeprecationWarnings != null) map.put("generateDeprecationWarnings", generateDeprecationWarnings)
         if (generateNoWarnings != null) map.put("generateNoWarnings", generateNoWarnings)

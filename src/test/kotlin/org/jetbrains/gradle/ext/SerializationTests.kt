@@ -327,6 +327,7 @@ class SerializationTests {
       javac {
         it.preferTargetJDKCompiler = false
         it.javacAdditionalOptions = "-Xmaxwarns 999"
+        it.moduleJavacAdditionalOptions = mapOf("some.test" to "-Xmaxwarns 899", "some.core" to "-Xmaxwarns 799")
       }
       additionalVmOptions = "-Xms120"
       useReleaseOption = false
@@ -340,7 +341,11 @@ class SerializationTests {
       |    "useReleaseOption": false,
       |    "javacOptions": {
       |        "preferTargetJDKCompiler": false,
-      |        "javacAdditionalOptions": "-Xmaxwarns 999"
+      |        "javacAdditionalOptions": "-Xmaxwarns 999",
+      |        "moduleJavacAdditionalOptions": {
+      |            "some.test": "-Xmaxwarns 899",
+      |            "some.core": "-Xmaxwarns 799"
+      |        }
       |    }
       |}
       """.trimMargin(),
