@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'org.jetbrains.gradle.plugin.idea-ext'
-version = '0.9'
+version = '0.10-SNAPSHOT'
 
 repositories {
   jcenter()
