@@ -50,6 +50,7 @@ class IdeaExtPlugin implements Plugin<Project> {
       def settingsExt = (moduleSettings as ExtensionAware).extensions
 
       settingsExt.create("packagePrefix", PackagePrefixContainer, ideaModule)
+      settingsExt.create("moduleType", ModuleTypesConfig, project, settingsExt)
     }
   }
 

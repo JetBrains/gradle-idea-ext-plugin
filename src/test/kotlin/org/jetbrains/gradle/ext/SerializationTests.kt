@@ -2,8 +2,13 @@ package org.jetbrains.gradle.ext
 
 import com.google.gson.JsonParser
 import groovy.json.JsonOutput
+import org.gradle.api.NamedDomainObjectCollection
 import org.gradle.api.Project
+import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.api.internal.provider.DefaultProvider
+import org.gradle.api.tasks.SourceSet
+import org.gradle.internal.extensibility.DefaultConvention
+import org.gradle.internal.reflect.Instantiator
 import org.gradle.testfixtures.ProjectBuilder
 import org.intellij.lang.annotations.Language
 import org.junit.Assert.assertEquals
@@ -636,5 +641,29 @@ class SerializationTests {
     """.trimMargin(),
             JsonOutput.prettyPrint(JsonOutput.toJson(beforeRun.map { it.toMap() })))
   }
+
+  @Test fun `test module types json output`() {
+    val moduleTypes = ModuleTypesConfig(myProject, DefaultConvention((myProject as ProjectInternal).services.get(Instantiator::class.java)))
+
+    myProject.apply(mapOf("plugin" to "java"))
+    moduleTypes.putAt(myProject.sourceSets.findByName("main"), "PYTHON_MODULE");
+    moduleTypes.putAt(myProject.sourceSets.findByName("test"), "JAVA_MODULE");
+
+    assertEquals("""
+      |{
+      |    "main": "PYTHON_MODULE",
+      |    "test": "JAVA_MODULE"
+      |}
+    """.trimMargin(),
+            JsonOutput.prettyPrint(JsonOutput.toJson(moduleTypes.toMap())))
+
+  }
 }
+
+private val Project.sourceSets: NamedDomainObjectCollection<SourceSet>
+  get() {
+    return (this.extensions as DefaultConvention)
+            .extensionsAsDynamicObject.getProperty("sourceSets") as? NamedDomainObjectCollection<SourceSet>
+            ?: throw IllegalStateException("Source sets are not available for this project. Check that 'java' plugin is applied")
+  }
 

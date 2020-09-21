@@ -8,11 +8,11 @@ import spock.lang.Specification
 
 class IdeaModelExtensionFunctionalTest extends Specification {
   @Rule
-  final TemporaryFolder testProjectDir = new TemporaryFolder()
+  TemporaryFolder testProjectDir = new TemporaryFolder()
   File buildFile
   File settingsFile
 
-  static List<String> gradleVersionList = ["4.2", "5.0", "5.6", "5.6.4", "6.1.1"]
+  static List<String> gradleVersionList = ["5.0", "5.6", "5.6.4", "6.1.1", "6.6"]
 
   def setup() {
     buildFile = testProjectDir.newFile('build.gradle')
@@ -386,30 +386,36 @@ task printSettings {
 
     def "test module settings"() {
         given:
+        // language=groovy
         buildFile << """
           import org.jetbrains.gradle.ext.*
           
           plugins {
               id 'org.jetbrains.gradle.plugin.idea-ext'
+              id 'java'
           }
           
           idea {
             module {
               settings {
-                  facets {
-                      spring(SpringFacet) {
-                        contexts {
-                          p1 {
-                            file = 'spring_parent.xml'
-                          }
-                          
-                          p2 {
-                            file = 'spring_child.xml'
-                            parent = 'p1'
-                          }
-                        }
+                facets {
+                  spring(SpringFacet) {
+                    contexts {
+                      p1 {
+                        file = 'spring_parent.xml'
+                      }
+                      
+                      p2 {
+                        file = 'spring_child.xml'
+                        parent = 'p1'
                       }
                     }
+                  }
+                }
+                
+                rootModuleType = "SOME_TYPE"
+                moduleType[sourceSets.main] = "JAVA_MODULE"
+                moduleType[sourceSets.test] = "PYTHON_MODULE"
               }
             }
           }
@@ -432,7 +438,8 @@ task printSettings {
                 .build()
         then:
         def lines = result.output.readLines()
-        lines[1] == '{"facets":[{"type":"spring","contexts":' +
+        lines[1] == '{"moduleType":{"":"SOME_TYPE","main":"JAVA_MODULE","test":"PYTHON_MODULE"},' +
+                '"facets":[{"type":"spring","contexts":' +
                 '[{"file":"spring_parent.xml","name":"p1","parent":null},' +
                 '{"file":"spring_new_child.xml","name":"p2","parent":"p1"}],"name":"spring"}]}'
 
