@@ -52,6 +52,7 @@ rootProject.name = "ProjectName"
                     mainClass = 'foo.App'
                     workingDirectory = "\$projectDir" 
                     moduleName = getProject().idea.module.name
+                    includeProvidedDependencies = true 
                 }
                 defaults(Application) {
                     jvmArgs = '-DmyKey=myVal'
@@ -103,7 +104,8 @@ rootProject.name = "ProjectName"
                 
             ],
             "mainClass": "foo.App",
-            "moduleName": "ProjectName"
+            "moduleName": "ProjectName",
+            "includeProvidedDependencies": true
         },
         {
             "defaults": true,
@@ -112,7 +114,8 @@ rootProject.name = "ProjectName"
             "beforeRun": [
                 
             ],
-            "jvmArgs": "-DmyKey=myVal"
+            "jvmArgs": "-DmyKey=myVal",
+            "includeProvidedDependencies": false
         }
     ]""")
     prettyOutput.contains(

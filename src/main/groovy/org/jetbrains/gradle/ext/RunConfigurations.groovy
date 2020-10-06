@@ -91,6 +91,7 @@ class Application extends JavaRunConfiguration {
     String mainClass
     String moduleName
     ShortenCommandLine shortenCommandLine
+    Boolean includeProvidedDependencies = false
 
     @Inject
     Application(String name, Project project) {
@@ -104,7 +105,8 @@ class Application extends JavaRunConfiguration {
         return super.toMap() << [
                 "mainClass"        : mainClass,
                 "moduleName"       : moduleName,
-                "shortenCommandLine": shortenCommandLine
+                "shortenCommandLine": shortenCommandLine,
+                "includeProvidedDependencies": includeProvidedDependencies
         ]
     }
 }

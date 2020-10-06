@@ -57,7 +57,8 @@ class SerializationTests {
     |    "programParameters": null,
     |    "mainClass": null,
     |    "moduleName": null,
-    |    "shortenCommandLine": "MANIFEST"
+    |    "shortenCommandLine": "MANIFEST",
+    |    "includeProvidedDependencies": false
     |}
     """.trimMargin(),
             JsonOutput.prettyPrint(JsonOutput.toJson(application.toMap())))
