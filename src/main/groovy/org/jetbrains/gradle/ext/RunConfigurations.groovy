@@ -52,7 +52,38 @@ abstract class BaseRunConfiguration implements RunConfiguration {
 }
 
 @CompileStatic
-abstract class JavaRunConfiguration extends BaseRunConfiguration {
+abstract class ModuleRunConfiguration extends BaseRunConfiguration {
+    String moduleName
+    ModuleRef moduleRef
+
+    void setModuleName(String name) {
+        moduleName = name
+        moduleRef = null
+    }
+
+    void setModuleRef(ModuleRef ref) {
+        moduleRef = ref
+        moduleName = null
+    }
+
+    @Override
+    Map<String, ?> toMap() {
+        String resultingModuleName = null;
+
+        if (moduleName != null) {
+            resultingModuleName = moduleName
+        } else if (moduleRef != null) {
+            resultingModuleName = moduleRef.toModuleName()
+        }
+
+        return super.toMap() << [
+                "moduleName"        : resultingModuleName,
+        ]
+    }
+}
+
+@CompileStatic
+abstract class JavaRunConfiguration extends ModuleRunConfiguration {
     String workingDirectory
     String jvmArgs
     String programParameters
@@ -91,8 +122,6 @@ abstract class JavaRunConfiguration extends BaseRunConfiguration {
 @CompileStatic
 class Application extends JavaRunConfiguration {
     String mainClass
-    String moduleName
-    ModuleRef moduleRef
     ShortenCommandLine shortenCommandLine
     Boolean includeProvidedDependencies = false
 
@@ -103,29 +132,10 @@ class Application extends JavaRunConfiguration {
         this.@type = "application"
     }
 
-    void setModuleName(String name) {
-        moduleName = name
-        moduleRef = null
-    }
-
-    void setModuleRef(ModuleRef ref) {
-        moduleRef = ref
-        moduleName = null
-    }
-
     @Override
     Map<String, ?> toMap() {
-        String resultingModuleName = null;
-
-        if (moduleName != null) {
-            resultingModuleName = moduleName
-        } else if (moduleRef != null) {
-            resultingModuleName = moduleRef.toModuleName()
-        }
-
         return super.toMap() << [
                 "mainClass"         : mainClass,
-                "moduleName"        : resultingModuleName,
                 "shortenCommandLine": shortenCommandLine,
                 "includeProvidedDependencies": includeProvidedDependencies
         ]
@@ -135,7 +145,6 @@ class Application extends JavaRunConfiguration {
 @CompileStatic
 class JarApplication extends JavaRunConfiguration {
     String jarPath
-    String moduleName
 
     @Inject
     JarApplication(String name, Project project) {
@@ -147,8 +156,7 @@ class JarApplication extends JavaRunConfiguration {
     @Override
     Map<String, ?> toMap() {
         return super.toMap() << [
-                "jarPath": jarPath,
-                "moduleName": moduleName
+                "jarPath": jarPath
         ]
     }
 }
@@ -221,7 +229,7 @@ class BuildArtifact extends BeforeRunTask {
 }
 
 @CompileStatic
-class TestNG extends BaseRunConfiguration {
+class TestNG extends ModuleRunConfiguration {
 
     // only one type will be used
     String packageName
@@ -235,7 +243,6 @@ class TestNG extends BaseRunConfiguration {
     String workingDirectory
     String vmParameters
     Boolean passParentEnvs
-    String moduleName
     Map<String, String> envs
     ShortenCommandLine shortenCommandLine
 
@@ -260,7 +267,6 @@ class TestNG extends BaseRunConfiguration {
                 "workingDirectory": workingDirectory,
                 "vmParameters": vmParameters,
                 "passParentEnvs": passParentEnvs,
-                "moduleName": moduleName,
                 "envs": envs,
                 "shortenCommandLine": shortenCommandLine
         ]
@@ -268,7 +274,7 @@ class TestNG extends BaseRunConfiguration {
 }
 
 @CompileStatic
-class JUnit extends BaseRunConfiguration {
+class JUnit extends ModuleRunConfiguration {
 
     // only one (first not null) type will be used
     String packageName
@@ -283,7 +289,6 @@ class JUnit extends BaseRunConfiguration {
     String workingDirectory
     String vmParameters
     Boolean passParentEnvs
-    String moduleName
     Map<String, String> envs
     ShortenCommandLine shortenCommandLine
 
@@ -303,7 +308,6 @@ class JUnit extends BaseRunConfiguration {
                 "category"        : category,
                 "workingDirectory": workingDirectory,
                 "className"       : className,
-                "moduleName"      : moduleName,
                 "passParentEnvs"  : passParentEnvs,
                 "packageName"     : packageName,
                 "defaults"        : defaults,

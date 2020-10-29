@@ -99,12 +99,12 @@ rootProject.name = "ProjectName"
             "defaults": false,
             "type": "application",
             "name": "Run my app",
+            "moduleName": "ProjectName",
             "workingDirectory": ${JsonOutput.toJson(projectDir)},
             "beforeRun": [
                 
             ],
             "mainClass": "foo.App",
-            "moduleName": "ProjectName",
             "includeProvidedDependencies": true
         },
         {

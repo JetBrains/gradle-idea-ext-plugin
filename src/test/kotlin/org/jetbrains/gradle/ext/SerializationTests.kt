@@ -42,6 +42,7 @@ class SerializationTests {
     |    "defaults": false,
     |    "type": "application",
     |    "name": "test",
+    |    "moduleName": "test",
     |    "envs": null,
     |    "workingDirectory": null,
     |    "beforeRun": [
@@ -57,7 +58,6 @@ class SerializationTests {
     |    "jvmArgs": null,
     |    "programParameters": null,
     |    "mainClass": null,
-    |    "moduleName": "test",
     |    "shortenCommandLine": "MANIFEST",
     |    "includeProvidedDependencies": false
     |}
@@ -80,6 +80,7 @@ class SerializationTests {
     |    "defaults": false,
     |    "type": "jarApplication",
     |    "name": "test",
+    |    "moduleName": null,
     |    "envs": null,
     |    "workingDirectory": null,
     |    "beforeRun": [
@@ -94,8 +95,7 @@ class SerializationTests {
     |    ],
     |    "jvmArgs": null,
     |    "programParameters": null,
-    |    "jarPath": "myJarPath",
-    |    "moduleName": null
+    |    "jarPath": "myJarPath"
     |}
     """.trimMargin(),
             JsonOutput.prettyPrint(JsonOutput.toJson(jarApplication.toMap())))
