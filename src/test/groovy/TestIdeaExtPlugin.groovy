@@ -51,7 +51,7 @@ rootProject.name = "ProjectName"
                 "Run my app"(Application) {
                     mainClass = 'foo.App'
                     workingDirectory = "\$projectDir" 
-                    moduleName = getProject().idea.module.name
+                    moduleRef = new ModuleRef(project.getProject()) 
                     includeProvidedDependencies = true 
                 }
                 defaults(Application) {

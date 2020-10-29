@@ -33,6 +33,7 @@ class SerializationTests {
       beforeRun.create("myArtifact", BuildArtifact::class.java).apply {
         artifactName = "myName"
       }
+      moduleRef = ModuleRef(myProject)
       shortenCommandLine = ShortenCommandLine.MANIFEST
     }
 
@@ -56,7 +57,7 @@ class SerializationTests {
     |    "jvmArgs": null,
     |    "programParameters": null,
     |    "mainClass": null,
-    |    "moduleName": null,
+    |    "moduleName": "test",
     |    "shortenCommandLine": "MANIFEST",
     |    "includeProvidedDependencies": false
     |}

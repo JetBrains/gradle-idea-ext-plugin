@@ -8,6 +8,8 @@ import org.gradle.api.Named
 import org.gradle.api.PolymorphicDomainObjectContainer
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.tasks.SourceSet
+import org.gradle.api.tasks.SourceSetContainer
 
 import javax.inject.Inject
 
@@ -90,6 +92,7 @@ abstract class JavaRunConfiguration extends BaseRunConfiguration {
 class Application extends JavaRunConfiguration {
     String mainClass
     String moduleName
+    ModuleRef moduleRef
     ShortenCommandLine shortenCommandLine
     Boolean includeProvidedDependencies = false
 
@@ -100,11 +103,29 @@ class Application extends JavaRunConfiguration {
         this.@type = "application"
     }
 
+    void setModuleName(String name) {
+        moduleName = name
+        moduleRef = null
+    }
+
+    void setModuleRef(ModuleRef ref) {
+        moduleRef = ref
+        moduleName = null
+    }
+
     @Override
     Map<String, ?> toMap() {
+        String resultingModuleName = null;
+
+        if (moduleName != null) {
+            resultingModuleName = moduleName
+        } else if (moduleRef != null) {
+            resultingModuleName = moduleRef.toModuleName()
+        }
+
         return super.toMap() << [
-                "mainClass"        : mainClass,
-                "moduleName"       : moduleName,
+                "mainClass"         : mainClass,
+                "moduleName"        : resultingModuleName,
                 "shortenCommandLine": shortenCommandLine,
                 "includeProvidedDependencies": includeProvidedDependencies
         ]
@@ -355,6 +376,48 @@ class Gradle extends BaseRunConfiguration {
                 "jvmArgs"       : jvmArgs,
                 "scriptParameters": scriptParameters
         ]
+    }
+}
+
+@CompileStatic
+class ModuleRef {
+
+    Project project
+    String sourceSetName = ""
+
+    /**
+     * Creates a reference to a module based on project and a source set
+     * If a source set is not null, it must belong to the project
+     * @param project Gradle project
+     * @param sourceSet Source set within project, optional.
+     * @throw IllegalArgumentException if source set does not belong to project
+     */
+    ModuleRef(Project project, SourceSet sourceSet) {
+        this.project = project
+        if (sourceSet != null && project.hasProperty("sourceSets")) {
+            SourceSetContainer sourceSets = project.property("sourceSets") as SourceSetContainer
+            if (sourceSets.contains(sourceSet)) {
+                this.sourceSetName = sourceSet.name
+            } else {
+                throw new IllegalArgumentException("Source set $sourceSet does not belong to $project")
+            }
+        }
+    }
+
+    ModuleRef(Project project) {
+        this(project, null)
+    }
+
+    String toModuleName() {
+        def name = project.rootProject.name
+        if (project.path == ":") {
+            return addSourceSetName(name)
+        }
+        return addSourceSetName(name + project.path.replaceAll(":", "."))
+    }
+
+    String addSourceSetName(String moduleName) {
+        return moduleName + (sourceSetName.isEmpty() ? "" : "." + sourceSetName)
     }
 }
 
