@@ -66,6 +66,10 @@ abstract class ModuleRunConfiguration extends BaseRunConfiguration {
         moduleName = null
     }
 
+    def moduleRef(Project project, SourceSet sourceSet = null) {
+        setModuleRef(new ModuleRef(project, sourceSet))
+    }
+
     @Override
     Map<String, ?> toMap() {
         String resultingModuleName = null;
