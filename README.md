@@ -32,4 +32,4 @@ Or build and drop resulting jar into root directory of a project and add followi
 See the [Wiki](https://github.com/JetBrains/gradle-idea-ext-plugin/wiki) for full DSL documentation
 
 
-Version 0.10 requires IntelliJ IDEA 2020.2
+Version 0.10 requires IntelliJ IDEA 2020.3
