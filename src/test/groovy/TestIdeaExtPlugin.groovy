@@ -6,6 +6,8 @@ import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
+import static groovy.json.StringEscapeUtils.escapeJava
+
 class IdeaModelExtensionFunctionalTest extends Specification {
   @Rule
   TemporaryFolder testProjectDir = new TemporaryFolder()
@@ -235,7 +237,7 @@ task printSettings {
                                 {
                                     "type": "FILE",
                                     "sourceFiles": [
-                                        "${buildFile.canonicalPath.replace('\\\\' as char, '/' as char)}"
+                                        "${escapeJava(buildFile.canonicalPath.replace('\\\\' as char, '/' as char))}"
                                     ]
                                 }
                             ]
@@ -486,7 +488,7 @@ task printSettings {
             .build()
     then:
     def lines = result.output.readLines()
-    def moduleContentRoot = testProjectDir.root.canonicalPath.replace(File.separator, '/')
+    def moduleContentRoot = escapeJava(testProjectDir.root.canonicalPath.replace(File.separator, '/'))
     lines[1] == '{"packagePrefix":{' +
             '"' + moduleContentRoot + '/main/groovy":"com.example.main.groovy",' +
             '"' + moduleContentRoot + '/test/java":"com.example.test.java"' +
@@ -538,7 +540,7 @@ task printSettings {
             .build()
     then:
     def lines = result.output.readLines()
-    def moduleContentRoot = testProjectDir.root.canonicalPath.replace(File.separator, '/')
+    def moduleContentRoot = escapeJava(testProjectDir.root.canonicalPath.replace(File.separator, '/'))
     lines[0] == '{"packagePrefix":{' +
             '"' + moduleContentRoot + '/src":"com.example.java",' +
             '"' + moduleContentRoot + '/../subproject/src":"com.example.java.sub"' +
@@ -588,7 +590,7 @@ task printSettings {
             .build()
     then:
     def lines = result.output.readLines()
-    def moduleContentRoot = testProjectDir.root.canonicalPath.replace(File.separator, '/')
+    def moduleContentRoot = escapeJava(testProjectDir.root.canonicalPath.replace(File.separator, '/'))
     lines[0] == '{"packagePrefix":{"' + moduleContentRoot + '/src":"com.example.java"}}'
 
     result.task(":printSettings").outcome == TaskOutcome.SUCCESS
@@ -1013,7 +1015,7 @@ import org.jetbrains.gradle.ext.*
     then:
 
     def lines = result.output.readLines()
-    def projectDir = lines[3]
+    def projectDir = escapeJava(lines[3])
     "LazyFlag before=[false]" == lines[0]
     "LazyFlag after=[true]"   == lines[2]
     def prettyOutput = JsonOutput.prettyPrint(lines[1])

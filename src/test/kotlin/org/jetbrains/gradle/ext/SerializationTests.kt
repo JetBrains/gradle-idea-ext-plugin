@@ -2,6 +2,7 @@ package org.jetbrains.gradle.ext
 
 import com.google.gson.JsonParser
 import groovy.json.JsonOutput
+import groovy.json.StringEscapeUtils.escapeJava
 import org.gradle.api.NamedDomainObjectCollection
 import org.gradle.api.Project
 import org.gradle.api.internal.project.ProjectInternal
@@ -389,8 +390,8 @@ class SerializationTests {
       afterRebuild(subTasks.getByName("subtask"))
     }
 
-    val escapedRootProjectPath = myProject.projectDir.path.replace("\\", "/")
-    val subProjectPath = subProject.projectDir.path.replace("\\", "/")
+    val escapedRootProjectPath = escapeJava(myProject.projectDir.path.replace("\\", "/"))
+    val subProjectPath = escapeJava(subProject.projectDir.path.replace("\\", "/"))
 
     assertEquals("""
       |{
@@ -448,7 +449,9 @@ class SerializationTests {
     val filePath = File(rootDir, "file.txt").apply {
       createNewFile()
       writeText("Some text")
-    }.path.replace('\\', '/')
+    }.path.replace('\\', '/').let {
+      escapeJava(it)
+    }
 
     val dirPath = File(rootDir, "dir").apply {
       mkdirs()
@@ -456,11 +459,14 @@ class SerializationTests {
         createNewFile()
         writeText("Some text in subdirectory")
       }
-    }.path.replace('\\', '/')
+    }.path.replace('\\', '/').let {
+      escapeJava(it)
+    }
 
     val archivePath = File(rootDir, "my.zip")
             .apply { createNewFile() }
             .path.replace('\\', '/')
+            .let { escapeJava(it) }
 
     val configurationName = "testCfg"
     val testCfg = myProject.configurations.create(configurationName)
@@ -592,7 +598,7 @@ class SerializationTests {
   @Test fun `test GradleTask BeforeRunTask json output`() {
     val taskA = myProject.tasks.create("beforeRunTestA")
     val taskB = myProject.tasks.create("beforeRunTestB")
-    val escapedRootProjectPath = myProject.projectDir.path.replace("\\", "/")
+    val escapedRootProjectPath = escapeJava(myProject.projectDir.path.replace("\\", "/"))
     val beforeRun = JavaRunConfiguration.createBeforeRun(myProject)
     beforeRun.create("gradleTask1", GradleTask::class.java) {
       it.task = taskA
