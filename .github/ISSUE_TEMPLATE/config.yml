@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Consolidate issues in JetBrains YouTrack
+    url: https://youtrack.jetbrains.com/newIssue?project=IDEA&summary=Gradle%20IDEA%20Ext&c=Subsystem%20Build.%20Gradle&c=tag%20idea_ext
+    about: Please, consider opening issues in the JetBrains YouTrack instance
