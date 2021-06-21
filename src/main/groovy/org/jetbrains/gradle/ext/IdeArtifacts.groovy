@@ -8,6 +8,7 @@ import org.gradle.api.artifacts.ArtifactCollection
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 
@@ -429,8 +430,16 @@ enum ArtifactType {
 
 class BuildIdeArtifact extends DefaultTask {
   public static final String DEFAULT_DESTINATION = "idea-artifacts"
+
+  @Internal
   RecursiveArtifact artifact
   File outputDirectory = null
+
+  BuildIdeArtifact() {
+    // The artifact cannot be used as input, so the task cannot declare its inputs
+    // and should always be out-of-date.
+    outputs.upToDateWhen { false }
+  }
 
   @TaskAction
   void createArtifact() {
