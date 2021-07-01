@@ -12,7 +12,7 @@ class IdeaModelExtensionFunctionalTest extends Specification {
   File buildFile
   File settingsFile
 
-  static List<String> gradleVersionList = ["5.0", "5.6", "5.6.4", "6.1.1", "6.6"]
+  static List<String> gradleVersionList = ["5.0", "5.6", "5.6.4", "6.1.1", "6.6", "7.0"]
 
   def setup() {
     buildFile = testProjectDir.newFile('build.gradle')
