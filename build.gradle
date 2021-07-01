@@ -10,7 +10,7 @@ group = 'org.jetbrains.gradle.plugin.idea-ext'
 version = '1.0.1-SNAPSHOT'
 
 repositories {
-  jcenter()
+  mavenCentral()
 }
 
 dependencies {
