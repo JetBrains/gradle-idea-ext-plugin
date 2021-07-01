@@ -18,11 +18,11 @@ import org.jetbrains.gradle.ext.internal.DefaultRunConfigurationContainer51
 @PackageScope
 class GradleUtils {
 
-    static boolean is_Gradle_5_1_or_older = GradleVersion.current().compareTo(GradleVersion.version("5.1")) >= 0
+    static boolean is_Gradle_5_1_or_newer = GradleVersion.current().compareTo(GradleVersion.version("5.1")) >= 0
 
     static <T extends Named> ExtensiblePolymorphicDomainObjectContainer<T> polymorphicContainer(Project project, Class<T> type) {
         def instantiator = (project as ProjectInternal).services.get(Instantiator.class)
-        if (is_Gradle_5_1_or_older) {
+        if (is_Gradle_5_1_or_newer) {
             return instantiator.newInstance(DefaultPolymorphicDomainObjectContainer, type, instantiator, CollectionCallbackActionDecorator.NOOP)
         } else {
             return instantiator.newInstance(DefaultPolymorphicDomainObjectContainer, type, instantiator)
@@ -30,7 +30,7 @@ class GradleUtils {
     }
 
     static RunConfigurationContainer runConfigurationsContainer(Project project) {
-        if(is_Gradle_5_1_or_older) {
+        if(is_Gradle_5_1_or_newer) {
             def instantiator = (project as ProjectInternal).services.get(Instantiator.class)
             return instantiator.newInstance(DefaultRunConfigurationContainer51, instantiator)
         } else {
