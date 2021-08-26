@@ -12,6 +12,7 @@ import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.plugins.ExtensionContainer
 import org.gradle.api.reflect.TypeOf
+import org.gradle.api.tasks.SourceSet
 import org.gradle.plugins.ide.idea.model.IdeaModel
 import org.gradle.util.GradleVersion
 
@@ -26,8 +27,10 @@ class IdeaExtPlugin implements Plugin<Project> {
     def ideaModel = project.extensions.findByName('idea') as IdeaModel
     if (!ideaModel) { return }
 
+    IdeaFilesProcessor ideaFilesProcessor = new IdeaFilesProcessor(project)
+    project.tasks.create("processIdeaSettings", ProcessIdeaFilesTask, ideaFilesProcessor)
     if (ideaModel.project) {
-      def projectSettings = (ideaModel.project as ExtensionAware).extensions.create("settings", ProjectSettings, project)
+      def projectSettings = (ideaModel.project as ExtensionAware).extensions.create("settings", ProjectSettings, project, ideaFilesProcessor)
 
       def settingsExt = (projectSettings as ExtensionAware).extensions
 
@@ -45,7 +48,7 @@ class IdeaExtPlugin implements Plugin<Project> {
 
     def ideaModule = ideaModel.module
     if (ideaModule) {
-      def moduleSettings = (ideaModel.module as ExtensionAware).extensions.create("settings", ModuleSettings, project)
+      def moduleSettings = (ideaModel.module as ExtensionAware).extensions.create("settings", ModuleSettings, project, ideaFilesProcessor)
 
       def settingsExt = (moduleSettings as ExtensionAware).extensions
 
@@ -146,9 +149,11 @@ class ProjectSettings extends AbstractExtensibleSettings {
 
   private Gson gson = new Gson()
 
-  ProjectSettings(Project project) {
+  ProjectSettings(Project project, IdeaFilesProcessor processor) {
     this.project = project
   }
+
+  def withIDEADir(Action<File> action) {}
 
   def doNotDetectFrameworks(String... ids) {
     if (detectExclusions == null) {
@@ -172,7 +177,7 @@ class ProjectSettings extends AbstractExtensibleSettings {
 class ModuleSettings extends AbstractExtensibleSettings {
   final PolymorphicDomainObjectContainer<Facet> facets
 
-  ModuleSettings(Project project) {
+  ModuleSettings(Project project, IdeaFilesProcessor processor) {
     def facets = GradleUtils.polymorphicContainer(project, Facet)
 
     facets.registerFactory(SpringFacet) { String name -> project.objects.newInstance(SpringFacet, name, project) }
@@ -182,6 +187,9 @@ class ModuleSettings extends AbstractExtensibleSettings {
   def facets(Action<PolymorphicDomainObjectContainer<Facet>> action) {
     action.execute(facets)
   }
+
+  def withModuleFile(Action<File> action) {}
+  def withModuleFile(SourceSet s, Action<File> action) {}
 
   @Override
   String toString() {

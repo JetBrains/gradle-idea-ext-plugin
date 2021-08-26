@@ -8,6 +8,7 @@ import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.api.internal.provider.DefaultProvider
 import org.gradle.api.tasks.SourceSet
 import org.gradle.internal.extensibility.DefaultConvention
+import org.gradle.internal.instantiation.InstanceGenerator
 import org.gradle.internal.reflect.Instantiator
 import org.gradle.testfixtures.ProjectBuilder
 import org.intellij.lang.annotations.Language
@@ -645,7 +646,10 @@ class SerializationTests {
   }
 
   @Test fun `test module types json output`() {
-    val moduleTypes = ModuleTypesConfig(myProject, DefaultConvention((myProject as ProjectInternal).services.get(Instantiator::class.java)))
+    val moduleTypes = ModuleTypesConfig(myProject,
+      DefaultConvention((myProject as ProjectInternal)
+        .services
+        .get(InstanceGenerator::class.java)))
 
     myProject.apply(mapOf("plugin" to "java"))
     moduleTypes.putAt(myProject.sourceSets.findByName("main"), "PYTHON_MODULE");
