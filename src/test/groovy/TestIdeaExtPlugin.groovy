@@ -6,6 +6,8 @@ import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
+import static org.assertj.core.api.Assertions.assertThat
+
 class IdeaModelExtensionFunctionalTest extends Specification {
   @Rule
   TemporaryFolder testProjectDir = new TemporaryFolder()
@@ -1038,4 +1040,105 @@ import org.jetbrains.gradle.ext.*
     where:
     gradleVersion << gradleVersionList.findAll { (GradleVersion.version(it) >= GradleVersion.version("5.0")) }
   }
+    
+    def "test process IDEA project files task"() {
+        given:
+        def layoutFile = testProjectDir.newFile('layout.json')
+        layoutFile << """
+{
+  "ideaDirPath": "$testProjectDir/.idea",
+  "modulesMap": {
+    "ProjectName": "$testProjectDir/.idea/modules/ProjectName.iml",
+    "ProjectName:test": "$testProjectDir/.idea/modules/ProjectName.test.iml",
+    "ProjectName:main": "$testProjectDir/.idea/modules/ProjectName.main.iml"
+  }
+}
+"""
+        def modulesFolder = testProjectDir.newFolder(".idea", "modules")
+        def parentModuleFile = new File(modulesFolder, 'ProjectName.iml')
+        // language=xml
+        parentModuleFile << """<?xml version="1.0" encoding="UTF-8"?>
+<module external.linked.project.id="ProjectName" external.linked.project.path="\$MODULE_DIR\$/../.." external.root.project.path="\$MODULE_DIR\$/../.." external.system.id="GRADLE" external.system.module.group="" external.system.module.version="1.0.2-SNAPSHOT" type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://\$MODULE_DIR\$/../..">
+      <excludeFolder url="file://\$MODULE_DIR\$/../../.gradle" />
+      <excludeFolder url="file://\$MODULE_DIR\$/../../build" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>
+"""
+        def mainModuleFile = new File(modulesFolder, 'ProjectName.main.iml')
+        // language=xml
+        mainModuleFile << """<?xml version="1.0" encoding="UTF-8"?>
+<module external.linked.project.id="ProjectName:main" external.linked.project.path="\$MODULE_DIR\$/../.." external.root.project.path="\$MODULE_DIR\$/../.." external.system.id="GRADLE" external.system.module.group="" external.system.module.type="sourceSet" external.system.module.version="1.0.2-SNAPSHOT" type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <output url="file://\$MODULE_DIR\$/../../build/classes/java/main" />
+    <exclude-output />
+    <content url="file://\$MODULE_DIR\$/../../src/main">
+      <sourceFolder url="file://\$MODULE_DIR\$/../../src/main/groovy" isTestSource="false" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Gradle: com.google.code.gson:gson:2.8.6" level="project" />
+    <orderEntry type="library" name="Gradle: com.google.guava:guava:28.2-jre" level="project" />
+  </component>
+</module>
+"""
+        settingsFile << """
+rootProject.name = "ProjectName"
+"""
+        // language=groovy
+        buildFile << """
+      
+import org.gradle.api.DefaultTask
+import org.jetbrains.gradle.ext.*
+
+      plugins {
+          id 'org.jetbrains.gradle.plugin.idea-ext'
+          id 'java'
+      }
+      
+      idea.project.settings {
+          withIDEADir { File dir ->
+            println("Callback 1 executed with: " + dir.absolutePath)         
+          }
+
+          withIDEADir { File dir ->
+            println("Callback 2 executed with: " + dir.absolutePath)
+          }
+      }
+      
+      idea.module.settings {
+        withModuleFile { dom ->
+          println("Callback for parent module executed")
+        }
+        withModuleFile(sourceSets.main) { dom ->
+          println("Callback for main module executed")
+        }
+      }
+    """
+        when:
+        def result = GradleRunner.create()
+                .withGradleVersion(gradleVersion)
+                .withProjectDir(testProjectDir.root)
+                .withArguments("processIdeaSettings")
+                .withPluginClasspath()
+                .build()
+        then:
+
+        result.task(":processIdeaSettings").outcome == TaskOutcome.SUCCESS
+
+        String ideaDir = new File(testProjectDir.root,".idea").absolutePath
+        def lines = result.output.readLines()
+        assertThat(lines).contains("Callback 1 executed with: " + ideaDir,
+                "Callback 2 executed with: " + ideaDir,
+                "Callback for parent module executed",
+                "Callback for main module executed")
+
+        where:
+        gradleVersion << gradleVersionList.findAll { (GradleVersion.version(it) >= GradleVersion.version("7.0")) }
+    }
 }
