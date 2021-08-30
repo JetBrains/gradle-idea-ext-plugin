@@ -15,7 +15,7 @@ import javax.inject.Inject
 class IdeaFilesProcessor {
     Project myProject
     List<Action<File>> ideaDirCallbacks = new ArrayList<>()
-    List<Action<Object>> imlsCallbacks = new ArrayList<>()
+    Map<String, Action<File>> imlsCallbacks = new HashMap<>()
 
     IdeaFilesProcessor(Project project) {
         myProject = project
@@ -23,16 +23,19 @@ class IdeaFilesProcessor {
     def withIDEAdir(Action<File> callback) {
         ideaDirCallbacks.add(callback)
     }
-    def withModuleFile(SourceSet s = null, Action<Object> callback) {
-        imlsCallbacks.add(callback)
+    def withModuleFile(String path, Action<File> callback) {
+        imlsCallbacks.put(path, callback)
     }
+
     def process() {
         def gson = new Gson()
         def layout = gson.fromJson(myProject.file("layout.json").text, IdeaLayoutJson)
         def ideaDir = new File(layout.ideaDirPath)
         ideaDirCallbacks.each { it.execute(ideaDir) }
-        def obj = new Object()
-        imlsCallbacks.each {it.execute(obj)}
+        imlsCallbacks.each {entry  ->
+            def moduleFile = new File(layout.modulesMap.get(entry.key))
+            entry.value.execute(moduleFile)
+        }
     }
 }
 

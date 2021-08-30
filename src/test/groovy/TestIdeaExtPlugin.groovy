@@ -1113,11 +1113,11 @@ import org.jetbrains.gradle.ext.*
       }
       
       idea.module.settings {
-        withModuleFile { dom ->
-          println("Callback for parent module executed")
+        withModuleFile(project.name) { File file ->
+          println("Callback for parent module executed with " + file.absolutePath)
         }
-        withModuleFile(sourceSets.main) { dom ->
-          println("Callback for main module executed")
+        withModuleFile(project.name + ":" + sourceSets.main.name) { File file ->
+          println("Callback for main module executed with " + file.absolutePath)
         }
       }
     """
@@ -1127,6 +1127,7 @@ import org.jetbrains.gradle.ext.*
                 .withProjectDir(testProjectDir.root)
                 .withArguments("processIdeaSettings")
                 .withPluginClasspath()
+                .withDebug(true)
                 .build()
         then:
 
@@ -1136,8 +1137,8 @@ import org.jetbrains.gradle.ext.*
         def lines = result.output.readLines()
         assertThat(lines).contains("Callback 1 executed with: " + ideaDir,
                 "Callback 2 executed with: " + ideaDir,
-                "Callback for parent module executed",
-                "Callback for main module executed")
+                "Callback for parent module executed with " + parentModuleFile.absolutePath,
+                "Callback for main module executed with " + mainModuleFile.absolutePath)
 
         where:
         gradleVersion << gradleVersionList.findAll { (GradleVersion.version(it) >= GradleVersion.version("7.0")) }
