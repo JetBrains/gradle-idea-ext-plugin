@@ -146,14 +146,18 @@ abstract class AbstractExtensibleSettings {
 class ProjectSettings extends AbstractExtensibleSettings {
   private Project project
   private FrameworkDetectionExclusionSettings detectExclusions
+  private IdeaFilesProcessor ideaFilesProcessor
 
   private Gson gson = new Gson()
 
   ProjectSettings(Project project, IdeaFilesProcessor processor) {
     this.project = project
+    ideaFilesProcessor = processor
   }
 
-  def withIDEADir(Action<File> action) {}
+  def withIDEADir(Action<File> action) {
+    ideaFilesProcessor.withIDEAdir(action)
+  }
 
   def doNotDetectFrameworks(String... ids) {
     if (detectExclusions == null) {
@@ -176,20 +180,26 @@ class ProjectSettings extends AbstractExtensibleSettings {
 
 class ModuleSettings extends AbstractExtensibleSettings {
   final PolymorphicDomainObjectContainer<Facet> facets
+  final IdeaFilesProcessor ideaFilesProcessor
 
   ModuleSettings(Project project, IdeaFilesProcessor processor) {
     def facets = GradleUtils.polymorphicContainer(project, Facet)
 
     facets.registerFactory(SpringFacet) { String name -> project.objects.newInstance(SpringFacet, name, project) }
     this.facets = facets
+    ideaFilesProcessor = processor
   }
 
   def facets(Action<PolymorphicDomainObjectContainer<Facet>> action) {
     action.execute(facets)
   }
 
-  def withModuleFile(Action<File> action) {}
-  def withModuleFile(SourceSet s, Action<File> action) {}
+  def withModuleFile(Action<File> action) {
+    ideaFilesProcessor.withModuleFile(null, action)
+  }
+  def withModuleFile(SourceSet s, Action<File> action) {
+    ideaFilesProcessor.withModuleFile(s, action)
+  }
 
   @Override
   String toString() {

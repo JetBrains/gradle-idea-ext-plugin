@@ -1044,13 +1044,14 @@ import org.jetbrains.gradle.ext.*
     def "test process IDEA project files task"() {
         given:
         def layoutFile = testProjectDir.newFile('layout.json')
+        def rootPath = testProjectDir.root.absolutePath.replace('\\', '/')
         layoutFile << """
 {
-  "ideaDirPath": "$testProjectDir/.idea",
+  "ideaDirPath": "${rootPath}/.idea",
   "modulesMap": {
-    "ProjectName": "$testProjectDir/.idea/modules/ProjectName.iml",
-    "ProjectName:test": "$testProjectDir/.idea/modules/ProjectName.test.iml",
-    "ProjectName:main": "$testProjectDir/.idea/modules/ProjectName.main.iml"
+    "ProjectName": "${rootPath}/.idea/modules/ProjectName.iml",
+    "ProjectName:test": "${rootPath}/.idea/modules/ProjectName.test.iml",
+    "ProjectName:main": "${rootPath}/.idea/modules/ProjectName.main.iml"
   }
 }
 """
