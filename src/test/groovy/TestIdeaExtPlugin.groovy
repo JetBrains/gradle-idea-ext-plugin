@@ -1113,10 +1113,10 @@ import org.jetbrains.gradle.ext.*
       }
       
       idea.module.settings {
-        withModuleFile(project.name) { File file ->
+        withModuleFile { File file ->
           println("Callback for parent module executed with " + file.absolutePath)
         }
-        withModuleFile(project.name + ":" + sourceSets.main.name) { File file ->
+        withModuleFile(sourceSets.main) { File file ->
           println("Callback for main module executed with " + file.absolutePath)
         }
       }

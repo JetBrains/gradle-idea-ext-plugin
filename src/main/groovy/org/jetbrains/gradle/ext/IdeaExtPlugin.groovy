@@ -194,8 +194,12 @@ class ModuleSettings extends AbstractExtensibleSettings {
     action.execute(facets)
   }
 
-  def withModuleFile(String path, Action<File> action) {
-    ideaFilesProcessor.withModuleFile(path, action)
+  def withModuleFile(SourceSet s, Action<File> action) {
+    ideaFilesProcessor.withModuleFile(s, action)
+  }
+
+  def withModuleFile(Action<File> action) {
+    ideaFilesProcessor.withModuleFile(null, action)
   }
 
   @Override
