@@ -23,8 +23,13 @@ class IdeaFilesProcessor {
     def withIDEAdir(Action<File> callback) {
         ideaDirCallbacks.add(callback)
     }
-    def withModuleFile(String path, Action<File> callback) {
-        imlsCallbacks.put(path, callback)
+    def withModuleFile(SourceSet s, Action<File> callback) {
+        imlsCallbacks.put(getName(s), callback)
+    }
+
+    def String getName(SourceSet s) {
+        def projectPath = myProject.path == ":" ? myProject.name : myProject.path
+        return s == null ? projectPath : "$projectPath:$s.name"
     }
 
     def process() {
@@ -36,6 +41,10 @@ class IdeaFilesProcessor {
             def moduleFile = new File(layout.modulesMap.get(entry.key))
             entry.value.execute(moduleFile)
         }
+    }
+
+    boolean hasPostprocessors() {
+        return !ideaDirCallbacks.isEmpty() || !imlsCallbacks.isEmpty()
     }
 }
 
