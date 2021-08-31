@@ -170,8 +170,10 @@ class ProjectSettings extends AbstractExtensibleSettings {
     def map = collectExtensionsMap()
 
     if (detectExclusions != null) {
-      map["frameworkDetectionExcludes"] = detectExclusions.excludes
+      map.put("frameworkDetectionExcludes", detectExclusions.excludes)
     }
+
+    map.put("requiresPostprocessing", ideaFilesProcessor.hasPostprocessors())
 
     return gson.toJson(map)
   }
