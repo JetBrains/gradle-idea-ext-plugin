@@ -84,7 +84,7 @@ abstract class AbstractExtensibleSettings {
   TypeOf mapConvertibleType = TypeOf.typeOf(MapConvertible)
   TypeOf iterableType = TypeOf.typeOf(Iterable)
 
-  Map<String, ?> collectExtensionsMap() {
+  Map<String, Object> collectExtensionsMap() {
     def result = [:]
     if (this instanceof ExtensionAware) {
       def extContainer = (this as ExtensionAware).extensions
@@ -173,7 +173,9 @@ class ProjectSettings extends AbstractExtensibleSettings {
       map.put("frameworkDetectionExcludes", detectExclusions.excludes)
     }
 
-    map.put("requiresPostprocessing", ideaFilesProcessor.hasPostprocessors())
+    if (ideaFilesProcessor.hasPostprocessors()) {
+      map.put("requiresPostprocessing", true)
+    }
 
     return gson.toJson(map)
   }
