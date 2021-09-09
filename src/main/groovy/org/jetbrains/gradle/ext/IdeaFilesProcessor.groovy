@@ -34,12 +34,21 @@ class IdeaFilesProcessor {
 
     def process() {
         def gson = new Gson()
-        def layout = gson.fromJson(myProject.file("layout.json").text, IdeaLayoutJson)
-        def ideaDir = new File(layout.ideaDirPath)
-        ideaDirCallbacks.each { it.execute(ideaDir) }
-        imlsCallbacks.each {entry  ->
-            def moduleFile = new File(layout.modulesMap.get(entry.key))
-            entry.value.execute(moduleFile)
+        def file = myProject.file("layout.json")
+        if (!file.exists()) {
+            myProject.logger.lifecycle("IDEA layout file 'layout.json' was not found, terminating.")
+            return
+        }
+        try {
+            def layout = gson.fromJson(file.text, IdeaLayoutJson)
+            def ideaDir = new File(layout.ideaDirPath)
+            ideaDirCallbacks.each { it.execute(ideaDir) }
+            imlsCallbacks.each { entry ->
+                def moduleFile = new File(layout.modulesMap.get(entry.key))
+                entry.value.execute(moduleFile)
+            }
+        } finally {
+            file.delete()
         }
     }
 
