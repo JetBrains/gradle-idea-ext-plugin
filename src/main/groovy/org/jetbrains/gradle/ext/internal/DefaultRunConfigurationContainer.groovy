@@ -9,6 +9,10 @@ import org.jetbrains.gradle.ext.RunConfigurationContainer
 
 import javax.inject.Inject
 
+/**
+ * This class is only used with Gradle <5.1.
+ * With 5.1+ the {@link DefaultRunConfigurationContainer51} will be created
+ */
 @CompileStatic
 class DefaultRunConfigurationContainer
         extends DefaultPolymorphicDomainObjectContainer<RunConfiguration>
