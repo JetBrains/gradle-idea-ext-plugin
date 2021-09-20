@@ -1056,6 +1056,16 @@ import org.jetbrains.gradle.ext.*
 }
 """
         def modulesFolder = testProjectDir.newFolder(".idea", "modules")
+        def ideaDir = modulesFolder.parentFile
+        def vcsFile = new File(ideaDir, "vcs.xml")
+        // language=xml
+        vcsFile << """<?xml version="1.0"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="" vcs="Git" />
+  </component>
+</project>"""
+
         def parentModuleFile = new File(modulesFolder, 'ProjectName.iml')
         // language=xml
         parentModuleFile << """<?xml version="1.0" encoding="UTF-8"?>
@@ -1095,7 +1105,10 @@ rootProject.name = "ProjectName"
         buildFile << """
       
 import org.gradle.api.DefaultTask
+import org.gradle.api.XmlProvider
 import org.jetbrains.gradle.ext.*
+import org.w3c.dom.Element
+import org.w3c.dom.Node
 
       plugins {
           id 'org.jetbrains.gradle.plugin.idea-ext'
@@ -1110,14 +1123,26 @@ import org.jetbrains.gradle.ext.*
           withIDEADir { File dir ->
             println("Callback 2 executed with: " + dir.absolutePath)
           }
+          
+          withIDEAFileXml("vcs.xml") { XmlProvider p ->
+            p.asNode().component
+            .find { it.@name == 'VcsDirectoryMappings' }
+            .mapping.@vcs = 'SVN'
+          }
       }
       
       idea.module.settings {
         withModuleFile { File file ->
           println("Callback for parent module executed with " + file.absolutePath)
         }
+        withModuleXml { XmlProvider p ->
+          p.asNode().appendNode("test", ["key":"value"])
+        }
         withModuleFile(sourceSets.main) { File file ->
           println("Callback for main module executed with " + file.absolutePath)
+        }
+        withModuleXml(sourceSets.main) { XmlProvider p ->
+          p.asNode().appendNode("testMain", ["key":"valueMain"])
         }
       }
     """
@@ -1133,12 +1158,22 @@ import org.jetbrains.gradle.ext.*
 
         result.task(":processIdeaSettings").outcome == TaskOutcome.SUCCESS
 
-        String ideaDir = new File(testProjectDir.root,".idea").absolutePath
+        String ideaDirPath = ideaDir.absolutePath
         def lines = result.output.readLines()
-        assertThat(lines).contains("Callback 1 executed with: " + ideaDir,
-                "Callback 2 executed with: " + ideaDir,
+        assertThat(lines).contains("Callback 1 executed with: " + ideaDirPath,
+                "Callback 2 executed with: " + ideaDirPath,
                 "Callback for parent module executed with " + parentModuleFile.absolutePath,
                 "Callback for main module executed with " + mainModuleFile.absolutePath)
+
+        assertThat(vcsFile).hasContent("""<?xml version="1.0"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="" vcs="SVN"/>
+  </component>
+</project>""")
+
+        assertThat(parentModuleFile.text).contains("""<test key="value"/>""")
+        assertThat(mainModuleFile.text).contains("""<testMain key="valueMain"/>""")
 
         where:
         gradleVersion << gradleVersionList.findAll { (GradleVersion.version(it) >= GradleVersion.version("7.0")) }
