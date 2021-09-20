@@ -9,6 +9,7 @@ import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.PolymorphicDomainObjectContainer
 import org.gradle.api.Project
+import org.gradle.api.XmlProvider
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.plugins.ExtensionContainer
 import org.gradle.api.reflect.TypeOf
@@ -159,6 +160,10 @@ class ProjectSettings extends AbstractExtensibleSettings {
     ideaFilesProcessor.withIDEAdir(action)
   }
 
+  def withIDEAFileXml(String relativeFilePath, Action<XmlProvider> action) {
+    ideaFilesProcessor.withIDEAFileXml(relativeFilePath, action)
+  }
+
   def doNotDetectFrameworks(String... ids) {
     if (detectExclusions == null) {
       detectExclusions = project.objects.newInstance(FrameworkDetectionExclusionSettings)
@@ -204,6 +209,14 @@ class ModuleSettings extends AbstractExtensibleSettings {
 
   def withModuleFile(Action<File> action) {
     ideaFilesProcessor.withModuleFile(null, action)
+  }
+
+  def withModuleXml(SourceSet s, Action<XmlProvider> action) {
+    ideaFilesProcessor.withModuleXml(s, action)
+  }
+
+  def withModuleXml(Action<XmlProvider> action) {
+    ideaFilesProcessor.withModuleXml(null, action)
   }
 
   @Override
