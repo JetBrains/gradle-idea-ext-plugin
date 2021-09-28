@@ -1,5 +1,8 @@
 package org.jetbrains.gradle.ext
 
+import com.google.common.collect.LinkedListMultimap
+import com.google.common.collect.Multimap
+import com.google.common.collect.Multimaps
 import com.google.gson.Gson
 import groovy.transform.CompileStatic
 import org.gradle.api.Action
@@ -17,9 +20,9 @@ import javax.inject.Inject
 class IdeaFilesProcessor {
     Project myProject
     List<Action<File>> ideaDirCallbacks = new ArrayList<>()
-    Map<String, Action<XmlProvider>> ideaFileXmlCallbacks = new HashMap<>()
-    Map<String, Action<File>> imlsCallbacks = new HashMap<>()
-    Map<String, Action<XmlProvider>> xmlCallbacks = new HashMap<>()
+    Map<String, List<Action<XmlProvider>>> ideaFileXmlCallbacks = new HashMap<>()
+    Map<String, List<Action<File>>> imlsCallbacks = new HashMap<>()
+    Map<String, List<Action<XmlProvider>>> xmlCallbacks = new HashMap<>()
 
     IdeaFilesProcessor(Project project) {
         myProject = project
@@ -29,18 +32,22 @@ class IdeaFilesProcessor {
     }
 
     def withIDEAFileXml(String relativeFilePath, Action<XmlProvider> callback) {
-        ideaFileXmlCallbacks.put(relativeFilePath, callback)
+        put(ideaFileXmlCallbacks, relativeFilePath, callback)
     }
 
     def withModuleFile(SourceSet s, Action<File> callback) {
-        imlsCallbacks.put(getName(s), callback)
+        put(imlsCallbacks, getName(s), callback)
     }
 
     def withModuleXml(SourceSet s, Action<XmlProvider> callback) {
-        xmlCallbacks.put(getName(s), callback)
+        put(xmlCallbacks, getName(s), callback)
     }
 
-    def String getName(SourceSet s) {
+    static <V> void put(Map<String, List<V>> collection, String key, V value) {
+        collection.computeIfAbsent(key, { new ArrayList<V>() }).add(value)
+    }
+
+    String getName(SourceSet s) {
         def projectPath = myProject.path == ":" ? myProject.name : myProject.path
         return s == null ? projectPath : "$projectPath:$s.name"
     }
@@ -60,20 +67,20 @@ class IdeaFilesProcessor {
             ideaFileXmlCallbacks.each { entry ->
                 def ideaFile = new File(ideaDir, entry.getKey())
                 def transformer = new XmlTransformer()
-                transformer.addAction(entry.value)
+                entry.value.each {transformer.addAction(it) }
                 def result = transformer.transform(ideaFile.text)
                 ideaFile.write(result)
             }
 
             imlsCallbacks.each { entry ->
                 def moduleFile = new File(layout.modulesMap.get(entry.key))
-                entry.value.execute(moduleFile)
+                entry.value.each { it.execute(moduleFile) }
             }
 
             xmlCallbacks.each { entry ->
                 def moduleFile = new File(layout.modulesMap.get(entry.key))
                 def transformer = new XmlTransformer()
-                transformer.addAction(entry.value)
+                entry.value.each { transformer.addAction(it) }
                 def result = transformer.transform(moduleFile.text)
                 moduleFile.write(result)
             }

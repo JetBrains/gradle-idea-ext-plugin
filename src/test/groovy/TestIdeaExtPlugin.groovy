@@ -1138,6 +1138,9 @@ import org.w3c.dom.Node
         withModuleXml { XmlProvider p ->
           p.asNode().appendNode("test", ["key":"value"])
         }
+        withModuleXml { XmlProvider p ->
+          p.asNode().appendNode("test2", ["key":"value"])
+        }
         withModuleFile(sourceSets.main) { File file ->
           println("Callback for main module executed with " + file.absolutePath)
         }
@@ -1172,7 +1175,9 @@ import org.w3c.dom.Node
   </component>
 </project>""")
 
-        assertThat(parentModuleFile.text).contains("""<test key="value"/>""")
+        assertThat(parentModuleFile.text)
+                .contains("""<test key="value"/>""")
+                .contains("""<test2 key="value"/>""")
         assertThat(mainModuleFile.text).contains("""<testMain key="valueMain"/>""")
 
         where:
