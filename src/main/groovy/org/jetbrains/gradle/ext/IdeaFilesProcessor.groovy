@@ -90,7 +90,10 @@ class IdeaFilesProcessor {
     }
 
     boolean hasPostprocessors() {
-        return !ideaDirCallbacks.isEmpty() || !imlsCallbacks.isEmpty()
+        return !ideaDirCallbacks.isEmpty() ||
+                !imlsCallbacks.isEmpty() ||
+                !ideaFileXmlCallbacks.isEmpty() ||
+                !xmlCallbacks.isEmpty()
     }
 }
 
