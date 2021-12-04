@@ -195,6 +195,7 @@ class ModuleSettings extends AbstractExtensibleSettings {
     def facets = GradleUtils.polymorphicContainer(project, Facet)
 
     facets.registerFactory(SpringFacet) { String name -> project.objects.newInstance(SpringFacet, name, project) }
+    facets.registerFactory(WebFacet) { String name -> project.objects.newInstance(WebFacet, name, project) }
     this.facets = facets
     ideaFilesProcessor = processor
   }

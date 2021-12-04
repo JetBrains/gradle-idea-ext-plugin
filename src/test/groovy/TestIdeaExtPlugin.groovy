@@ -416,6 +416,13 @@ task printSettings {
                       }
                     }
                   }
+                  web(WebFacet) {
+                      sourceSet = sourceSets.main
+                      webRoots = [
+                        'resources/test1': 'test1',
+                        'resources/test2': 'test2'
+                      ]
+                  }
                 }
                 
                 rootModuleType = "SOME_TYPE"
@@ -446,7 +453,11 @@ task printSettings {
         lines[1] == '{"moduleType":{"":"SOME_TYPE","main":"JAVA_MODULE","test":"PYTHON_MODULE"},' +
                 '"facets":[{"type":"spring","contexts":' +
                 '[{"file":"spring_parent.xml","name":"p1","parent":null},' +
-                '{"file":"spring_new_child.xml","name":"p2","parent":"p1"}],"name":"spring"}]}'
+                '{"file":"spring_new_child.xml","name":"p2","parent":"p1"}],"name":"spring"},' +
+                '{"type":"web","sourceSet":"main","webRoots":{"' +
+                new File(testProjectDir.root, 'resources/test1').canonicalPath + '":"test1","' +
+                new File(testProjectDir.root, 'resources/test2').canonicalPath + '":"test2"' +
+                '},"name":"web"}]}'
 
         result.task(":printSettings").outcome == TaskOutcome.SUCCESS
 

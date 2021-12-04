@@ -5,6 +5,7 @@ import org.gradle.api.Action
 import org.gradle.api.Named
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
+import org.gradle.api.tasks.SourceSet
 
 import javax.inject.Inject
 
@@ -54,6 +55,32 @@ class SpringContext {
                 "file"  : file,
                 "name"  : name,
                 "parent": parent
+        ]
+    }
+}
+
+class WebFacet implements Facet {
+
+    final String name
+    final String type = "web"
+
+    SourceSet sourceSet
+    Map<String, String> webRoots
+
+    Project project
+
+    @Inject
+    WebFacet(String name, Project project) {
+        this.project = project
+        this.name = name
+    }
+
+    Map<String, ?> toMap() {
+        return [
+                "type"     : type,
+                "sourceSet": sourceSet?.name ?: 'main',
+                "webRoots" : webRoots.collectEntries { source, target -> [project.file(source).path, target]},
+                "name"     : name
         ]
     }
 }
