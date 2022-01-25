@@ -1,3 +1,5 @@
+import org.gradle.kotlin.dsl.ProjectExtensionsKt
+
 plugins {
   id 'groovy'
   id 'java-gradle-plugin'
@@ -15,6 +17,8 @@ repositories {
 dependencies {
   implementation 'com.google.code.gson:gson:2.8.6'
   implementation 'com.google.guava:guava:28.2-jre'
+  implementation ProjectExtensionsKt.gradleKotlinDsl(project)
+
   testImplementation 'org.jetbrains.kotlin:kotlin-stdlib'
   testImplementation('org.spockframework:spock-core:1.3-groovy-2.5') {
     exclude group: 'org.codehaus.groovy'
@@ -50,3 +54,7 @@ wrapper {
   gradleVersion = "5.6.4"
   distributionType = Wrapper.DistributionType.BIN
 }
+
+compileGroovy.dependsOn.remove('compileJava')
+compileKotlin.dependsOn compileGroovy
+compileKotlin.classpath += files(compileGroovy.destinationDir)
