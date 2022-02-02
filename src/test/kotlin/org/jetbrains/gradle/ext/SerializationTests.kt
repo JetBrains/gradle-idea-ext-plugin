@@ -9,6 +9,7 @@ import org.gradle.api.tasks.SourceSet
 import org.gradle.internal.extensibility.DefaultConvention
 import org.gradle.testfixtures.ProjectBuilder
 import org.intellij.lang.annotations.Language
+import org.jetbrains.gradle.ext.SerializationUtil.prettyPrintJSON
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Before
@@ -21,6 +22,16 @@ class SerializationTests {
 
   @Before fun setup() {
     myProject = ProjectBuilder.builder().build()
+  }
+
+  data class Holder(val value: String)
+
+  @Test fun `test json special character handling`() {
+    assertEquals("""
+    |{
+    |    "value": "symbols: =ł"
+    |}
+    """.trimMargin(), prettyPrintJSON(Holder("symbols: =ł")))
   }
 
   @Test fun `test application json output`() {
@@ -60,7 +71,7 @@ class SerializationTests {
     |    "includeProvidedDependencies": false
     |}
     """.trimMargin(),
-            JsonOutput.prettyPrint(JsonOutput.toJson(application.toMap())))
+            prettyPrintJSON(application.toMap()))
   }
   @Test fun `test JarApplication json output`() {
     val jarApplication = JarApplication("test", myProject).apply {
@@ -96,7 +107,7 @@ class SerializationTests {
     |    "jarPath": "myJarPath"
     |}
     """.trimMargin(),
-            JsonOutput.prettyPrint(JsonOutput.toJson(jarApplication.toMap())))
+            prettyPrintJSON(jarApplication.toMap()))
   }
 
   @Test
@@ -266,7 +277,7 @@ class SerializationTests {
       |    ]
       |}
     """.trimMargin(),
-            JsonOutput.prettyPrint(JsonOutput.toJson(config.toMap())))
+            prettyPrintJSON(config.toMap()))
   }
 
   @Test fun `test code style output`() {
@@ -319,7 +330,7 @@ class SerializationTests {
     |    }
     |}
     """.trimMargin(),
-            JsonOutput.prettyPrint(JsonOutput.toJson(config.toMap())))
+            prettyPrintJSON(config.toMap()))
 
   }
 
@@ -354,7 +365,7 @@ class SerializationTests {
       |    }
       |}
       """.trimMargin(),
-            JsonOutput.prettyPrint(JsonOutput.toJson(config.toMap()))
+            prettyPrintJSON(config.toMap())
     )
   }
 
@@ -434,7 +445,7 @@ class SerializationTests {
       |    ]
       |}
     """.trimMargin(),
-            JsonOutput.prettyPrint(JsonOutput.toJson(config.toMap()))
+            prettyPrintJSON(config.toMap())
       )
   }
 
@@ -557,7 +568,7 @@ class SerializationTests {
       |    ]
       |}
     """.trimMargin(),
-            JsonOutput.prettyPrint(JsonOutput.toJson(mapOf("artifacts" to artifacts.map { it.toMap() })))
+            prettyPrintJSON(mapOf("artifacts" to artifacts.map { it.toMap() }))
     )
 
   }
@@ -584,7 +595,7 @@ class SerializationTests {
       |    }
       |]
     """.trimMargin(),
-            JsonOutput.prettyPrint(JsonOutput.toJson(beforeRun.map { it.toMap() })))
+            prettyPrintJSON(beforeRun.map { it.toMap() }))
   }
 
   @Test fun `test GradleTask BeforeRunTask json output`() {
@@ -614,7 +625,7 @@ class SerializationTests {
       |    }
       |]
     """.trimMargin(),
-      JsonOutput.prettyPrint(JsonOutput.toJson(beforeRun.map { it.toMap() })))
+      prettyPrintJSON(beforeRun.map { it.toMap() }))
   }
 
   @Test fun `test BuildArtifact BeforeRunTask json output`() {
@@ -639,7 +650,7 @@ class SerializationTests {
       |    }
       |]
     """.trimMargin(),
-            JsonOutput.prettyPrint(JsonOutput.toJson(beforeRun.map { it.toMap() })))
+            prettyPrintJSON(beforeRun.map { it.toMap() }))
   }
 
   @Test fun `test module types json output`() {
@@ -656,7 +667,7 @@ class SerializationTests {
       |    "test": "JAVA_MODULE"
       |}
     """.trimMargin(),
-            JsonOutput.prettyPrint(JsonOutput.toJson(moduleTypes.toMap())))
+            prettyPrintJSON(moduleTypes.toMap()))
 
   }
 }

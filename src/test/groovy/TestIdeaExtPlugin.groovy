@@ -2,6 +2,7 @@ import groovy.json.JsonOutput
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.gradle.util.GradleVersion
+import org.jetbrains.gradle.ext.SerializationUtil
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
@@ -83,7 +84,7 @@ rootProject.name = "ProjectName"
 
     def lines = result.output.readLines()
     def projectDir = lines[0]
-    def prettyOutput = JsonOutput.prettyPrint(lines[1])
+    def prettyOutput = prettyPrintJSON(lines[1])
     prettyOutput.contains(
 """"compiler": {
         "resourcePatterns": "!*.java;!*.class"
@@ -103,9 +104,7 @@ rootProject.name = "ProjectName"
             "name": "Run my app",
             "moduleName": "ProjectName",
             "workingDirectory": ${JsonOutput.toJson(projectDir)},
-            "beforeRun": [
-                
-            ],
+            "beforeRun": [],
             "mainClass": "foo.App",
             "includeProvidedDependencies": true
         },
@@ -113,9 +112,7 @@ rootProject.name = "ProjectName"
             "defaults": true,
             "type": "application",
             "name": "default_org.jetbrains.gradle.ext.Application",
-            "beforeRun": [
-                
-            ],
+            "beforeRun": [],
             "jvmArgs": "-DmyKey=myVal",
             "includeProvidedDependencies": false
         }
@@ -137,7 +134,7 @@ rootProject.name = "ProjectName"
     gradleVersion << gradleVersionList
   }
 
-  def "test groovy compiler settings"() {
+    def "test groovy compiler settings"() {
     given:
     buildFile << """
 plugins {
@@ -220,7 +217,7 @@ task printSettings {
     then:
 
     def lines = result.output.readLines()
-    JsonOutput.prettyPrint(lines[0]) == """{
+    prettyPrintJSON(lines[0]) == """{
     "ideArtifacts": [
         {
             "type": "ARTIFACT",
@@ -338,7 +335,7 @@ task printSettings {
     then:
 
     def lines = result.output.readLines()
-    JsonOutput.prettyPrint(lines[0]) ==
+    prettyPrintJSON(lines[0]) ==
 """{
     "codeStyle": {
         "RIGHT_MARGIN": 200,
@@ -1018,7 +1015,7 @@ import org.jetbrains.gradle.ext.*
     def projectDir = lines[3]
     "LazyFlag before=[false]" == lines[0]
     "LazyFlag after=[true]"   == lines[2]
-    def prettyOutput = JsonOutput.prettyPrint(lines[1])
+    def prettyOutput = prettyPrintJSON(lines[1])
     prettyOutput ==
 """{
     "taskTriggers": {
@@ -1182,5 +1179,9 @@ import org.w3c.dom.Node
 
         where:
         gradleVersion << gradleVersionList.findAll { (GradleVersion.version(it) >= GradleVersion.version("7.0")) }
+    }
+
+    private static String prettyPrintJSON(String line) {
+        return SerializationUtil.prettyPrintJsonStr(line)
     }
 }
