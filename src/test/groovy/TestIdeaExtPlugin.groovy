@@ -1,4 +1,4 @@
-import groovy.json.JsonOutput
+import com.google.gson.Gson
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.gradle.util.GradleVersion
@@ -103,7 +103,7 @@ rootProject.name = "ProjectName"
             "type": "application",
             "name": "Run my app",
             "moduleName": "ProjectName",
-            "workingDirectory": ${JsonOutput.toJson(projectDir)},
+            "workingDirectory": ${new Gson().toJson(projectDir)},
             "beforeRun": [],
             "mainClass": "foo.App",
             "includeProvidedDependencies": true

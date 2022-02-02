@@ -1,15 +1,9 @@
 package org.jetbrains.gradle.ext
 
-
 import com.google.gson.Gson
-import groovy.json.JsonOutput
+import com.google.gson.GsonBuilder
 import groovy.transform.CompileStatic
-import org.gradle.api.Action
-import org.gradle.api.GradleException
-import org.gradle.api.Plugin
-import org.gradle.api.PolymorphicDomainObjectContainer
-import org.gradle.api.Project
-import org.gradle.api.XmlProvider
+import org.gradle.api.*
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.plugins.ExtensionContainer
 import org.gradle.api.reflect.TypeOf
@@ -225,6 +219,10 @@ class ModuleSettings extends AbstractExtensibleSettings {
     if (!facets.isEmpty()) {
       map["facets"] = facets.asList().collect { it.toMap() }
     }
-    return JsonOutput.toJson(map)
+    return new GsonBuilder()
+            .disableHtmlEscaping()
+            .serializeNulls()
+            .create()
+            .toJson(map)
   }
 }

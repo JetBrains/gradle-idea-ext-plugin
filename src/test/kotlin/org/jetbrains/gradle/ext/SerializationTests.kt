@@ -1,7 +1,5 @@
 package org.jetbrains.gradle.ext
 
-import com.google.gson.JsonParser
-import groovy.json.JsonOutput
 import org.gradle.api.NamedDomainObjectCollection
 import org.gradle.api.Project
 import org.gradle.api.internal.provider.DefaultProvider
@@ -119,7 +117,7 @@ class SerializationTests {
     }
 
     @Language("JSON")
-    val expected = JsonParser.parseString("""
+    val expected = """
     {
         "defaults": false,
         "type": "remote",
@@ -130,8 +128,8 @@ class SerializationTests {
         "host": "hostname",
         "sharedMemoryAddress": "jvmdebug"
     }
-    """)
-    assertEquals(expected, JsonParser.parseString(JsonOutput.toJson(remote.toMap())))
+    """.trimIndent()
+    assertEquals(expected, prettyPrintJSON(remote.toMap()))
   }
 
   @Test
@@ -149,11 +147,12 @@ class SerializationTests {
     }
 
     @Language("JSON")
-    val expected = JsonParser.parseString("""
+    val expected = """
                 {
                     "defaults": true,
                     "type": "junit",
                     "name": "myName",
+                    "moduleName": "myModule",
                     "directory": null,
                     "repeat": "untilFailure",
                     "envs": {
@@ -164,15 +163,14 @@ class SerializationTests {
                     "category": null,
                     "workingDirectory": "myWorkDir",
                     "className": "my.TestClass",
-                    "moduleName": "myModule",
                     "passParentEnvs": true,
                     "packageName": null,
                     "pattern": null,
                     "method": null,
                     "shortenCommandLine": "CLASSPATH_FILE"
                 }
-      """)
-    assertEquals(expected, JsonParser.parseString(JsonOutput.toJson(config.toMap())))
+      """.trimIndent()
+    assertEquals(expected, prettyPrintJSON(config.toMap()))
   }
 
   @Test fun `test TestNG config output`() {
@@ -189,11 +187,12 @@ class SerializationTests {
     }
 
     @Language("JSON")
-    val expected = JsonParser.parseString("""
+    val expected = """
       {
           "defaults": true,
           "type": "testng",
           "name": "myName",
+          "moduleName": "myModule",
           "package": null,
           "class": "my.TestClass",
           "method": null,
@@ -203,15 +202,14 @@ class SerializationTests {
           "workingDirectory": "myWorkDir",
           "vmParameters": "-Dkey=Value",
           "passParentEnvs": true,
-          "moduleName": "myModule",
           "envs": {
               "env1": "envVal1",
               "env2": "envVal2"
           },
           "shortenCommandLine": "ARGS_FILE"
       }
-    """)
-    assertEquals(expected, JsonParser.parseString(JsonOutput.toJson(config.toMap())))
+    """.trimIndent()
+    assertEquals(expected, prettyPrintJSON(config.toMap()))
   }
 
   @Test
@@ -227,7 +225,7 @@ class SerializationTests {
     }
 
     @Language("JSON")
-    val expected = JsonParser.parseString("""
+    val expected = """
       {
           "defaults": true,
           "type": "gradle",
@@ -244,8 +242,8 @@ class SerializationTests {
           "jvmArgs": "-Dkey=val",
           "scriptParameters": "-PscriptParam"
       }
-    """)
-    assertEquals(expected, JsonParser.parseString(JsonOutput.toJson(config.toMap())))
+    """.trimIndent()
+    assertEquals(expected, prettyPrintJSON(config.toMap()))
   }
 
   @Test fun `test Groovy config output`() {

@@ -1,6 +1,6 @@
-import groovy.json.JsonOutput
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
+import org.jetbrains.gradle.ext.SerializationUtil
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
@@ -66,7 +66,7 @@ rootProject.name = "ProjectName"
         then:
 
         def lines = result.output.readLines()
-        def prettyOutput = JsonOutput.prettyPrint(lines[0])
+        def prettyOutput = SerializationUtil.prettyPrintJsonStr(lines[0])
         prettyOutput.contains(
             """"compiler": {
         "processHeapSize": 8192,

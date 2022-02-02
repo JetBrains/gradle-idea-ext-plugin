@@ -5,7 +5,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonWriter;
-import groovy.json.JsonOutput;
 
 import java.io.IOException;
 import java.io.StringWriter;
