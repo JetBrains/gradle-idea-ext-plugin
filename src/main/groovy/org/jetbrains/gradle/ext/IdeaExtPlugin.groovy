@@ -62,7 +62,7 @@ class IdeaExtPlugin implements Plugin<Project> {
     runConfigurations.registerFactory(Gradle) { String name -> project.objects.newInstance(Gradle, name) }
     runConfigurations.registerFactory(JarApplication) { String name -> project.objects.newInstance(JarApplication, name, project) }
 
-    container.add("runConfigurations", runConfigurations)
+    container.add(RunConfigurationContainer, "runConfigurations", runConfigurations)
   }
   static void addInspections(ExtensionContainer container, Project project) {
     def inspections = project.container(Inspection)
