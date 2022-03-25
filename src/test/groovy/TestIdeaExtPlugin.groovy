@@ -1177,8 +1177,145 @@ import org.w3c.dom.Node
                 .contains("""<test2 key="value"/>""")
         assertThat(mainModuleFile.text).contains("""<testMain key="valueMain"/>""")
 
+        assertThat(layoutFile).doesNotExist()
+
         where:
-        gradleVersion << gradleVersionList.findAll { (GradleVersion.version(it) >= GradleVersion.version("7.0")) }
+        gradleVersion << gradleVersionList
+    }
+
+    def "test process IDEA project files in multi-module project"() {
+        given:
+        File layoutFile = testProjectDir.newFile('layout.json')
+        def rootPath = testProjectDir.root.absolutePath.replace('\\', '/')
+        layoutFile << """
+{
+  "ideaDirPath": "${rootPath}/.idea",
+  "modulesMap": {
+    "ProjectName": "${rootPath}/.idea/modules/ProjectName.iml",
+    "ProjectName:test": "${rootPath}/.idea/modules/ProjectName.test.iml",
+    "ProjectName:main": "${rootPath}/.idea/modules/ProjectName.main.iml",
+    "ProjectName:Sub": "${rootPath}/.idea/modules/ProjectName.Sub.iml"
+  }
+}
+"""
+        def modulesFolder = testProjectDir.newFolder(".idea", "modules")
+        def ideaDir = modulesFolder.parentFile
+        def vcsFile = new File(ideaDir, "vcs.xml")
+        // language=xml
+        vcsFile << """<?xml version="1.0"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="" vcs="Git" />
+  </component>
+</project>"""
+
+        def parentModuleFile = new File(modulesFolder, 'ProjectName.iml')
+        // language=xml
+        parentModuleFile << """<?xml version="1.0" encoding="UTF-8"?>
+<module external.linked.project.id="ProjectName" external.linked.project.path="\$MODULE_DIR\$/../.." external.root.project.path="\$MODULE_DIR\$/../.." external.system.id="GRADLE" external.system.module.group="" external.system.module.version="1.0.2-SNAPSHOT" type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://\$MODULE_DIR\$/../..">
+      <excludeFolder url="file://\$MODULE_DIR\$/../../.gradle" />
+      <excludeFolder url="file://\$MODULE_DIR\$/../../build" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>
+"""
+        def mainModuleFile = new File(modulesFolder, 'ProjectName.main.iml')
+        // language=xml
+        mainModuleFile << """<?xml version="1.0" encoding="UTF-8"?>
+<module external.linked.project.id="ProjectName:main" external.linked.project.path="\$MODULE_DIR\$/../.." external.root.project.path="\$MODULE_DIR\$/../.." external.system.id="GRADLE" external.system.module.group="" external.system.module.type="sourceSet" external.system.module.version="1.0.2-SNAPSHOT" type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <output url="file://\$MODULE_DIR\$/../../build/classes/java/main" />
+    <exclude-output />
+    <content url="file://\$MODULE_DIR\$/../../src/main">
+      <sourceFolder url="file://\$MODULE_DIR\$/../../src/main/groovy" isTestSource="false" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Gradle: com.google.code.gson:gson:2.8.6" level="project" />
+    <orderEntry type="library" name="Gradle: com.google.guava:guava:28.2-jre" level="project" />
+  </component>
+</module>
+"""
+        def subModuleFile = new File(modulesFolder, 'ProjectName.Sub.iml')
+        // language=xml
+        subModuleFile << """<?xml version="1.0" encoding="UTF-8"?>
+<module external.linked.project.id="ProjectName:Sub" external.linked.project.path="\$MODULE_DIR\$/../.." external.root.project.path="\$MODULE_DIR\$/../.." external.system.id="GRADLE" external.system.module.group="" external.system.module.type="sourceSet" external.system.module.version="1.0.2-SNAPSHOT" type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <output url="file://\$MODULE_DIR\$/../../build/classes/java/main" />
+    <exclude-output />
+    <content url="file://\$MODULE_DIR\$/../../src/main">
+      <sourceFolder url="file://\$MODULE_DIR\$/../../src/main/groovy" isTestSource="false" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Gradle: com.google.code.gson:gson:2.8.6" level="project" />
+  </component>
+</module>
+"""
+        settingsFile << """
+rootProject.name = "ProjectName"
+include 'Sub'
+"""
+        // language=groovy
+        buildFile << """
+      plugins {
+          id 'org.jetbrains.gradle.plugin.idea-ext'
+          id 'java'
+      }
+    """
+        File subBuildFile = new File(testProjectDir.newFolder("Sub"), "build.gradle")
+
+        // language=groovy
+        subBuildFile << """import org.gradle.api.DefaultTask
+import org.gradle.api.XmlProvider
+import org.jetbrains.gradle.ext.*
+import org.w3c.dom.Element
+import org.w3c.dom.Node
+
+      plugins {
+          id 'org.jetbrains.gradle.plugin.idea-ext'
+          id 'java'
+      }
+      
+      rootProject.idea.project.settings {
+          withIDEAFileXml("vcs.xml") { XmlProvider p ->
+             p.asNode().appendNode("test1", ["key1":"value1"])
+          }
+      }
+      
+      idea.module.settings {
+        withModuleXml { XmlProvider p ->
+          p.asNode().appendNode("test2", ["key2":"value2"])
+        }
+      }
+"""
+        when:
+        def result = GradleRunner.create()
+                .withGradleVersion(gradleVersion)
+                .withProjectDir(testProjectDir.root)
+                .withArguments("processIdeaSettings", "-s")
+                .withPluginClasspath()
+                .withDebug(true)
+                .build()
+        then:
+
+        result.task(":processIdeaSettings").outcome == TaskOutcome.SUCCESS
+
+        assertThat(vcsFile.text)
+                .contains("""<test1 key1="value1"/>""")
+
+        assertThat(subModuleFile.text)
+                .contains("""<test2 key2="value2"/>""")
+
+        assertThat(layoutFile).doesNotExist()
+
+        where:
+        gradleVersion << gradleVersionList
     }
 
     private static String prettyPrintJSON(String line) {
