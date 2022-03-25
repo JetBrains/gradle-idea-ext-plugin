@@ -23,7 +23,6 @@ class IdeaExtPlugin implements Plugin<Project> {
     if (!ideaModel) { return }
 
     IdeaFilesProcessor ideaFilesProcessor = new IdeaFilesProcessor(project)
-    project.tasks.create("processIdeaSettings", ProcessIdeaFilesTask, ideaFilesProcessor)
     if (ideaModel.project) {
       def projectSettings = (ideaModel.project as ExtensionAware).extensions.create("settings", ProjectSettings, project, ideaFilesProcessor)
 
