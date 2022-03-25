@@ -55,6 +55,10 @@ wrapper {
   distributionType = Wrapper.DistributionType.BIN
 }
 
-compileGroovy.dependsOn.remove('compileJava')
-compileKotlin.dependsOn compileGroovy
-compileKotlin.classpath += files(compileGroovy.destinationDir)
+tasks.named('compileGroovy') {
+  // do not depend on compileJava
+  classpath = sourceSets.main.compileClasspath
+}
+// depend on compileGroovy
+compileKotlin.classpath += files(sourceSets.main.groovy.classesDirectory)
+compileKotlin.kotlinOptions.jvmTarget=1.8
