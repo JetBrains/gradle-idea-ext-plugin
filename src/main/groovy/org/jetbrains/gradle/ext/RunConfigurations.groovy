@@ -72,7 +72,7 @@ abstract class ModuleRunConfiguration extends BaseRunConfiguration {
 
     @Override
     Map<String, ?> toMap() {
-        String resultingModuleName = null;
+        String resultingModuleName = null
 
         if (moduleName != null) {
             resultingModuleName = moduleName
@@ -130,10 +130,10 @@ class Application extends JavaRunConfiguration {
     Boolean includeProvidedDependencies = false
 
     @Inject
-    Application(String name, Project project) {
+    Application(String nameParam, Project project) {
         super(project)
-        this.@name = name
-        this.@type = "application"
+        name = nameParam
+        type = "application"
     }
 
     @Override
@@ -151,10 +151,10 @@ class JarApplication extends JavaRunConfiguration {
     String jarPath
 
     @Inject
-    JarApplication(String name, Project project) {
+    JarApplication(String nameParam, Project project) {
         super(project)
-        this.@name = name
-        this.@type = "jarApplication"
+        name = nameParam
+        type = "jarApplication"
     }
 
     @Override
@@ -186,9 +186,9 @@ class Make extends BeforeRunTask {
     Boolean enabled = true
 
     @Inject
-    Make(String name) {
-        this.@type = "make"
-        this.@name = name
+    Make(String nameParam) {
+        type = "make"
+        name = nameParam
     }
 
     @Override
@@ -202,9 +202,9 @@ class GradleTask extends BeforeRunTask {
     Task task
 
     @Inject
-    GradleTask(String name) {
-        this.@type = "gradleTask"
-        this.@name = name
+    GradleTask(String nameParam) {
+        type = "gradleTask"
+        name = nameParam
     }
 
     @Override
@@ -221,9 +221,9 @@ class BuildArtifact extends BeforeRunTask {
     String artifactName
 
     @Inject
-    BuildArtifact(String name) {
-        this.@type = "buildArtifact"
-        this.@name = name
+    BuildArtifact(String nameParam) {
+        type = "buildArtifact"
+        name = nameParam
     }
 
     @Override
@@ -251,9 +251,9 @@ class TestNG extends ModuleRunConfiguration {
     ShortenCommandLine shortenCommandLine
 
   @Inject
-  TestNG(String name) {
-    super.@name = name
-    super.@type = "testng"
+  TestNG(String nameParam) {
+    name = nameParam
+    type = "testng"
   }
 
   @Override
@@ -297,9 +297,9 @@ class JUnit extends ModuleRunConfiguration {
     ShortenCommandLine shortenCommandLine
 
   @Inject
-  JUnit(String name) {
-    super.@name = name
-    super.@type = "junit"
+  JUnit(String nameParam) {
+    name = nameParam
+    type = "junit"
   }
 
   @Override
@@ -339,9 +339,9 @@ class Remote extends BaseRunConfiguration {
     String sharedMemoryAddress
 
   @Inject
-  Remote(String name) {
-    super.@name = name
-    super.@type = "remote"
+  Remote(String nameParam) {
+    name = nameParam
+    type = "remote"
   }
 
   @Override
@@ -366,9 +366,9 @@ class Gradle extends BaseRunConfiguration {
     String scriptParameters
 
   @Inject
-  Gradle(String name) {
-    super.@name = name
-    super.@type = "gradle"
+  Gradle(String nameParam) {
+    name = nameParam
+    type = "gradle"
   }
 
     def setProject(Project project) {
