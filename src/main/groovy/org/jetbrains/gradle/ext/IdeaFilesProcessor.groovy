@@ -26,7 +26,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 @CompileStatic
 class IdeaFilesProcessor {
-    private static final AtomicBoolean isBuildFinishedListenerInitialized = new AtomicBoolean(false)
     Project myProject
     List<Action<File>> ideaDirCallbacks = new ArrayList<>()
     Map<String, List<Action<XmlProvider>>> ideaFileXmlCallbacks = new HashMap<>()
@@ -146,11 +145,8 @@ class IdeaFilesProcessor {
 
     @Synchronized
     void installBuildFinishedListener() {
-        if (!isBuildFinishedListenerInitialized.get()) {
-            def listener = new FilesProcessorBuildListener()
-            myProject.gradle.addBuildListener(listener)
-            isBuildFinishedListenerInitialized.set(true)
-        }
+        def listener = new FilesProcessorBuildListener()
+        myProject.gradle.addBuildListener(listener)
     }
 }
 
