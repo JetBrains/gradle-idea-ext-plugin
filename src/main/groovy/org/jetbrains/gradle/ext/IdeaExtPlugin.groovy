@@ -175,6 +175,18 @@ class ProjectSettings extends AbstractExtensibleSettings {
       map.put("requiresPostprocessing", true)
     }
 
+    boolean hasNestedPostprocessors = project.allprojects.any {
+      def ideaModel = it.extensions.findByName('idea') as IdeaModel
+      if (!ideaModel) { return false }
+      def moduleSettings = (ideaModel.module as ExtensionAware).extensions.findByName("settings") as ModuleSettings
+      if (!moduleSettings) { return false }
+      return moduleSettings.ideaFilesProcessor.hasPostprocessors()
+    }
+
+    if (hasNestedPostprocessors) {
+      map.put("requiresPostprocessing", true)
+    }
+
     return gson.toJson(map)
   }
 }

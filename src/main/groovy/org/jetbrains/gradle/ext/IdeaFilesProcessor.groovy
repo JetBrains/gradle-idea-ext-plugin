@@ -28,9 +28,9 @@ import java.util.concurrent.atomic.AtomicBoolean
 class IdeaFilesProcessor {
     Project myProject
     List<Action<File>> ideaDirCallbacks = new ArrayList<>()
-    Map<String, List<Action<XmlProvider>>> ideaFileXmlCallbacks = new HashMap<>()
-    Map<String, List<Action<File>>> imlsCallbacks = new HashMap<>()
-    Map<String, List<Action<XmlProvider>>> xmlCallbacks = new HashMap<>()
+    Map<String, List<Action<XmlProvider>>> ideaFileXmlCallbacks = new HashMap<String, List<Action<XmlProvider>>>()
+    Map<String, List<Action<File>>> imlsCallbacks = new HashMap<String, List<Action<File>>>()
+    Map<String, List<Action<XmlProvider>>> xmlCallbacks = new HashMap<String, List<Action<XmlProvider>>>()
 
     IdeaFilesProcessor(Project project) {
         myProject = project
@@ -91,11 +91,8 @@ class IdeaFilesProcessor {
         collection.computeIfAbsent(key, { new ArrayList<V>() }).add(value)
     }
 
-    String getName(SourceSet s) {
-        def projectPath = myProject.path == ":"
-                ? myProject.name
-                : "${myProject.rootProject.name}${myProject.path}"
-        return s == null ? projectPath : "$projectPath:$s.name"
+    static String getName(SourceSet s) {
+        return s == null ? "" : "$s.name"
     }
 
     def process() {
@@ -123,17 +120,51 @@ class IdeaFilesProcessor {
         }
 
         imlsCallbacks.each { entry ->
-            def moduleFile = new File(layout.modulesMap.get(entry.key))
+            def imlPath = lookUpImlPath(layout, entry.key)
+            if (imlPath == null) {
+                myProject.logger.warn("No path to iml is present for key [${entry.key}].\nLayout: $layout")
+                return
+            }
+            def moduleFile = new File(imlPath)
             entry.value.each { it.execute(moduleFile) }
         }
 
         xmlCallbacks.each { entry ->
-            def moduleFile = new File(layout.modulesMap.get(entry.key))
+            String imlPath = lookUpImlPath(layout, entry.key)
+            if (imlPath == null) {
+                myProject.logger.warn("No path to iml is present for key [${entry.key}].\\nLayout: $layout")
+                return
+            }
+            def moduleFile = new File(imlPath)
             def transformer = new XmlTransformer()
             entry.value.each { transformer.addAction(it) }
             def result = transformer.transform(moduleFile.text)
             moduleFile.write(result)
         }
+    }
+
+    private String lookUpImlPath(IdeaLayoutJson layout, String entryKey) {
+        def result = searchByProjectName(layout, entryKey)
+        if (result != null) {
+            return result
+        }
+        return searchByProjectPath(layout, entryKey)
+    }
+
+    private String searchByProjectName(IdeaLayoutJson layout, String entryKey) {
+        def key = myProject.name
+        if (entryKey != "") {
+            key = key + ":${entryKey}"
+        }
+        return layout.modulesMap.get(key)
+    }
+
+    private String searchByProjectPath(IdeaLayoutJson layout, String entryKey) {
+        def key = myProject.path == ":" ? myProject.name : myProject.path
+        if (entryKey != "") {
+            key = key + ":${entryKey}"
+        }
+        return layout.modulesMap.get(key)
     }
 
     boolean hasPostprocessors() {

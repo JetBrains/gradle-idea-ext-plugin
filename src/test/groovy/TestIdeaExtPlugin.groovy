@@ -1194,7 +1194,7 @@ import org.w3c.dom.Node
     "ProjectName": "${rootPath}/.idea/modules/ProjectName.iml",
     "ProjectName:test": "${rootPath}/.idea/modules/ProjectName.test.iml",
     "ProjectName:main": "${rootPath}/.idea/modules/ProjectName.main.iml",
-    "ProjectName:Sub": "${rootPath}/.idea/modules/ProjectName.Sub.iml"
+    "Sub": "${rootPath}/.idea/modules/ProjectName.Sub.iml"
   }
 }
 """
