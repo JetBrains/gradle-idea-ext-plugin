@@ -31,6 +31,24 @@ abstract class BaseRunConfiguration implements RunConfiguration {
     protected String name
     protected String type
 
+    final PolymorphicDomainObjectContainer<BeforeRunTask> beforeRun
+
+    static PolymorphicDomainObjectContainer<BeforeRunTask> createBeforeRun(Project project) {
+        def beforeRun = GradleUtils.polymorphicContainer(project, BeforeRunTask)
+        beforeRun.registerFactory(Make) { String name -> project.objects.newInstance(Make, name) }
+        beforeRun.registerFactory(GradleTask) { String name -> project.objects.newInstance(GradleTask, name) }
+        beforeRun.registerFactory(BuildArtifact) { String name -> project.objects.newInstance(BuildArtifact, name) }
+        return beforeRun
+    }
+
+    BaseRunConfiguration(Project project) {
+        this.beforeRun = createBeforeRun(project)
+    }
+
+    def beforeRun(Action<PolymorphicDomainObjectContainer<BeforeRunTask>> action) {
+        action.execute(beforeRun)
+    }
+
     @Override
     String getType() {
         return type
@@ -44,9 +62,10 @@ abstract class BaseRunConfiguration implements RunConfiguration {
     @Override
     Map<String, ?> toMap() {
         return [
-                "defaults" : defaults,
-                "type": type,
-                "name": name
+                "defaults"  : defaults,
+                "type"      : type,
+                "name"      : name,
+                "beforeRun" : DefaultGroovyMethods.collect(beforeRun.toList() as Collection<BeforeRunTask>) { it.toMap() },
         ]
     }
 }
@@ -55,6 +74,10 @@ abstract class BaseRunConfiguration implements RunConfiguration {
 abstract class ModuleRunConfiguration extends BaseRunConfiguration {
     String moduleName
     ModuleRef moduleRef
+
+    ModuleRunConfiguration(Project project) {
+        super(project)
+    }
 
     void setModuleName(String name) {
         moduleName = name
@@ -93,22 +116,8 @@ abstract class JavaRunConfiguration extends ModuleRunConfiguration {
     String programParameters
     Map<String, String> envs
 
-    final PolymorphicDomainObjectContainer<BeforeRunTask> beforeRun
-
-    static PolymorphicDomainObjectContainer<BeforeRunTask> createBeforeRun(Project project) {
-        def beforeRun = GradleUtils.polymorphicContainer(project, BeforeRunTask)
-        beforeRun.registerFactory(Make) { String name -> project.objects.newInstance(Make, name) }
-        beforeRun.registerFactory(GradleTask) { String name -> project.objects.newInstance(GradleTask, name) }
-        beforeRun.registerFactory(BuildArtifact) { String name -> project.objects.newInstance(BuildArtifact, name) }
-        return beforeRun
-    }
-
     JavaRunConfiguration(Project project) {
-        this.beforeRun = createBeforeRun(project)
-    }
-
-    def beforeRun(Action<PolymorphicDomainObjectContainer<BeforeRunTask>> action) {
-        action.execute(beforeRun)
+        super(project)
     }
 
     @Override
@@ -116,7 +125,6 @@ abstract class JavaRunConfiguration extends ModuleRunConfiguration {
         return super.toMap() << [
                 "envs"             : envs,
                 "workingDirectory" : workingDirectory,
-                "beforeRun"        : DefaultGroovyMethods.collect(beforeRun.toList() as Collection<BeforeRunTask>) { it.toMap() },
                 "jvmArgs"          : jvmArgs,
                 "programParameters": programParameters
         ]
@@ -251,7 +259,8 @@ class TestNG extends ModuleRunConfiguration {
     ShortenCommandLine shortenCommandLine
 
   @Inject
-  TestNG(String nameParam) {
+  TestNG(String nameParam, Project project) {
+    super(project)
     name = nameParam
     type = "testng"
   }
@@ -297,7 +306,8 @@ class JUnit extends ModuleRunConfiguration {
     ShortenCommandLine shortenCommandLine
 
   @Inject
-  JUnit(String nameParam) {
+  JUnit(String nameParam, Project project) {
+    super(project)
     name = nameParam
     type = "junit"
   }
@@ -339,7 +349,8 @@ class Remote extends BaseRunConfiguration {
     String sharedMemoryAddress
 
   @Inject
-  Remote(String nameParam) {
+  Remote(String nameParam, Project project) {
+    super(project)
     name = nameParam
     type = "remote"
   }
@@ -366,7 +377,8 @@ class Gradle extends BaseRunConfiguration {
     String scriptParameters
 
   @Inject
-  Gradle(String nameParam) {
+  Gradle(String nameParam, Project project) {
+    super(project)
     name = nameParam
     type = "gradle"
   }

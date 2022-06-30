@@ -102,9 +102,9 @@ rootProject.name = "ProjectName"
             "defaults": false,
             "type": "application",
             "name": "Run my app",
+            "beforeRun": [],
             "moduleName": "ProjectName",
             "workingDirectory": ${new Gson().toJson(projectDir)},
-            "beforeRun": [],
             "mainClass": "foo.App",
             "includeProvidedDependencies": true
         },
@@ -726,7 +726,7 @@ class MyRC extends BaseRunConfiguration {
   def aKey = "a value"
   def type = "myRunConfiguration"
   @Inject
-  MyRC(String param) { name = param }
+  MyRC(String param, Project project) { super(project); name = param }
   String getName() { return name }
   String getType() { return type }
   Map<String, Object> toMap() { return [ "name": name, "type":type, "aKey": aKey ] } 
@@ -749,7 +749,7 @@ class TestPlugin implements Plugin<Project> {
         def ideaModel = project.extensions.findByName('idea') as IdeaModel
     
         def projectSettings = (ideaModel.project as ExtensionAware).extensions.findByName("settings") as ProjectSettings
-        projectSettings.runConfigurations.registerFactory(MyRC) { String name -> project.objects.newInstance(MyRC, name) }
+        projectSettings.runConfigurations.registerFactory(MyRC) { String name -> project.objects.newInstance(MyRC, name, project) }
         
         def moduleSettings = (ideaModel.module as ExtensionAware).extensions.findByName("settings") as ModuleSettings
         moduleSettings.facets.registerFactory(MyFacet) { String name -> project.objects.newInstance(MyFacet, name) }
