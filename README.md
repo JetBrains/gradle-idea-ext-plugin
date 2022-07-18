@@ -18,7 +18,7 @@ Apply from Gradle plugin repository
       id "org.jetbrains.gradle.plugin.idea-ext" version "1.1.5"
     }
 
-Or build and drop resulting jar into root directory of a project and add following snippet to `build.grade`
+Or build and drop resulting jar into root directory of a project and add following snippet to `build.gradle`
 
     buildscript {
       dependencies {
