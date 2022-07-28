@@ -3,7 +3,12 @@ package org.jetbrains.gradle.ext
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import groovy.transform.CompileStatic
-import org.gradle.api.*
+import org.gradle.api.Action
+import org.gradle.api.GradleException
+import org.gradle.api.Plugin
+import org.gradle.api.PolymorphicDomainObjectContainer
+import org.gradle.api.Project
+import org.gradle.api.XmlProvider
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.plugins.ExtensionContainer
 import org.gradle.api.reflect.TypeOf
@@ -141,6 +146,7 @@ class ProjectSettings extends AbstractExtensibleSettings {
   private Project project
   private FrameworkDetectionExclusionSettings detectExclusions
   private IdeaFilesProcessor ideaFilesProcessor
+  private Boolean generateImlFiles;
 
   private Gson gson = new Gson()
 
@@ -164,6 +170,14 @@ class ProjectSettings extends AbstractExtensibleSettings {
     detectExclusions.excludes.addAll(ids)
   }
 
+  boolean getGenerateImlFiles() {
+    return generateImlFiles
+  }
+
+  void setGenerateImlFiles(boolean generateImlFiles) {
+    this.generateImlFiles = generateImlFiles
+  }
+
   String toString() {
     def map = collectExtensionsMap()
 
@@ -185,6 +199,10 @@ class ProjectSettings extends AbstractExtensibleSettings {
 
     if (hasNestedPostprocessors) {
       map.put("requiresPostprocessing", true)
+    }
+
+    if (generateImlFiles != null) {
+      map.put("generateImlFiles", generateImlFiles);
     }
 
     return gson.toJson(map)

@@ -46,6 +46,7 @@ rootProject.name = "ProjectName"
                }
                useDefault = "myProfile"
             }
+            generateImlFiles = true
             compiler.resourcePatterns '!*.java;!*.class'
             inspections {
                 "some" { enabled = true }
@@ -127,6 +128,10 @@ rootProject.name = "ProjectName"
             }
         }
     }"""
+    )
+    prettyOutput.contains("""
+    "generateImlFiles": true
+"""
     )
 
     result.task(":printSettings").outcome == TaskOutcome.SUCCESS
