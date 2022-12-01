@@ -143,28 +143,12 @@ class IdeaFilesProcessor {
         }
     }
 
-    private String lookUpImlPath(IdeaLayoutJson layout, String entryKey) {
-        def result = searchByProjectName(layout, entryKey)
-        if (result != null) {
-            return result
+    private String lookUpImlPath(IdeaLayoutJson layout, String sourceSetName) {
+        def imlKey = myProject.path == ":" ? myProject.name : myProject.path
+        if (sourceSetName != "") {
+            imlKey = imlKey + ":${sourceSetName}"
         }
-        return searchByProjectPath(layout, entryKey)
-    }
-
-    private String searchByProjectName(IdeaLayoutJson layout, String entryKey) {
-        def key = myProject.name
-        if (entryKey != "") {
-            key = key + ":${entryKey}"
-        }
-        return layout.modulesMap.get(key)
-    }
-
-    private String searchByProjectPath(IdeaLayoutJson layout, String entryKey) {
-        def key = myProject.path == ":" ? myProject.name : myProject.path
-        if (entryKey != "") {
-            key = key + ":${entryKey}"
-        }
-        return layout.modulesMap.get(key)
+        return layout.modulesMap.get(imlKey)
     }
 
     boolean hasPostprocessors() {

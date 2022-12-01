@@ -1199,7 +1199,9 @@ import org.w3c.dom.Node
     "ProjectName": "${rootPath}/.idea/modules/ProjectName.iml",
     "ProjectName:test": "${rootPath}/.idea/modules/ProjectName.test.iml",
     "ProjectName:main": "${rootPath}/.idea/modules/ProjectName.main.iml",
-    "Sub": "${rootPath}/.idea/modules/ProjectName.Sub.iml"
+    ":Sub": "${rootPath}/.idea/modules/ProjectName.Sub.iml",
+    ":ProjectName" : "${rootPath}/.idea/modules/ProjectName/ProjectName.ProjectName.iml",
+    ":ProjectName:main" : "${rootPath}/.idea/modules/ProjectName/ProjectName.ProjectName.main.iml"
   }
 }
 """
@@ -1262,9 +1264,23 @@ import org.w3c.dom.Node
   </component>
 </module>
 """
+
+        def projectNameDir = testProjectDir.newFolder(".idea", "modules", "ProjectName")
+        def projectNameDuplicate = new File(projectNameDir, "ProjectName.ProjectName.iml")
+        // language=xml
+        projectNameDuplicate << """<?xml version="1.0" encoding="UTF-8"?>
+<module/>
+"""
+        def projectNameDuplicateMain = new File(projectNameDir, "ProjectName.ProjectName.main.iml")
+        // language=xml
+        projectNameDuplicateMain << """<?xml version="1.0" encoding="UTF-8"?>
+<module/>
+"""
+
         settingsFile << """
 rootProject.name = "ProjectName"
 include 'Sub'
+include 'ProjectName'
 """
         // language=groovy
         buildFile << """
@@ -1299,6 +1315,30 @@ import org.w3c.dom.Node
         }
       }
 """
+
+        File projectNameDuplicateBuild = new File(testProjectDir.newFolder("ProjectName"), "build.gradle")
+        projectNameDuplicateBuild << """import org.gradle.api.DefaultTask
+import org.gradle.api.XmlProvider
+import org.jetbrains.gradle.ext.*
+import org.w3c.dom.Element
+import org.w3c.dom.Node
+
+      plugins {
+          id 'org.jetbrains.gradle.plugin.idea-ext'
+          id 'java'
+      }
+          
+      idea.module.settings {
+        withModuleXml { XmlProvider p ->
+          p.asNode().appendNode("test", ["k":"v"])
+        }
+        
+        withModuleXml(sourceSets.main) { XmlProvider p ->
+          p.asNode().appendNode("test.main", ["k":"v"])
+        }
+      }
+"""
+
         when:
         def result = GradleRunner.create()
                 .withGradleVersion(gradleVersion)
@@ -1316,6 +1356,12 @@ import org.w3c.dom.Node
 
         assertThat(subModuleFile.text)
                 .contains("""<test2 key2="value2"/>""")
+
+        assertThat(projectNameDuplicate.text)
+                .contains("""<test k="v"/>""")
+
+        assertThat(projectNameDuplicateMain.text)
+                .contains("""<test.main k="v"/>""")
 
         assertThat(layoutFile).doesNotExist()
 
