@@ -22,6 +22,7 @@ import org.gradle.internal.xml.XmlTransformer
 import org.gradle.util.GradleVersion
 
 import javax.inject.Inject
+import java.nio.charset.StandardCharsets
 import java.util.concurrent.atomic.AtomicBoolean
 
 @CompileStatic
@@ -116,7 +117,7 @@ class IdeaFilesProcessor {
             def transformer = new XmlTransformer()
             entry.value.each {transformer.addAction(it) }
             def result = transformer.transform(ideaFile.text)
-            ideaFile.write(result)
+            ideaFile.write(result, StandardCharsets.UTF_8.name())
         }
 
         imlsCallbacks.each { entry ->
@@ -139,7 +140,7 @@ class IdeaFilesProcessor {
             def transformer = new XmlTransformer()
             entry.value.each { transformer.addAction(it) }
             def result = transformer.transform(moduleFile.text)
-            moduleFile.write(result)
+            moduleFile.write(result, StandardCharsets.UTF_8.name())
         }
     }
 
