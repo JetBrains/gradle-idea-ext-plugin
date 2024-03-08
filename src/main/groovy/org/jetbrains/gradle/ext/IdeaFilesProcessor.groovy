@@ -53,6 +53,7 @@ class IdeaFilesProcessor {
                         new Action<ProcessIdeaFilesWithServiceTask>() {
                             @Override
                             void execute(ProcessIdeaFilesWithServiceTask task) {
+                                task.usesService(serviceProvider)
                                 task.service.set(serviceProvider)
                                 task.myProcessor = that
                             }
