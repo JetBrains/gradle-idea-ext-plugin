@@ -20,21 +20,28 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.internal.xml.XmlTransformer
 import org.gradle.util.GradleVersion
+import org.gradle.api.logging.Logger
 
 import javax.inject.Inject
 import java.nio.charset.StandardCharsets
-import java.util.concurrent.atomic.AtomicBoolean
 
 @CompileStatic
 class IdeaFilesProcessor {
-    Project myProject
+    Logger logger
+    String imlKey
+    File layoutFile
+
     List<Action<File>> ideaDirCallbacks = new ArrayList<>()
     Map<String, List<Action<XmlProvider>>> ideaFileXmlCallbacks = new HashMap<String, List<Action<XmlProvider>>>()
     Map<String, List<Action<File>>> imlsCallbacks = new HashMap<String, List<Action<File>>>()
     Map<String, List<Action<XmlProvider>>> xmlCallbacks = new HashMap<String, List<Action<XmlProvider>>>()
 
     IdeaFilesProcessor(Project project) {
-        myProject = project
+        logger = project.logger
+        imlKey = project.path == ":" ? project.name : project.path
+        layoutFile = project.rootProject.file("layout.json")
+
+        def myProject = project
         if (GradleVersion.current() > GradleVersion.version("6.1")) {
             def serviceProvider = project.getGradle().getSharedServices()
                     .registerIfAbsent("layoutFile", LayoutFileBuildService.class,
@@ -47,7 +54,7 @@ class IdeaFilesProcessor {
             def that = this
 
             if (findExistingTask(myProject) != null) {
-                myProject.logger.warn("Using more than one ${this.class.name} for project [$myProject.path] is not expected")
+                logger.warn("Using more than one ${this.class.name} for project [$myProject.path] is not expected")
             } else {
                 myProject.tasks.register("processIdeaSettings", ProcessIdeaFilesWithServiceTask,
                         new Action<ProcessIdeaFilesWithServiceTask>() {
@@ -62,7 +69,7 @@ class IdeaFilesProcessor {
             }
         } else {
             myProject.tasks.create("processIdeaSettings", ProcessIdeaFilesTask, this)
-            installBuildFinishedListener()
+            installBuildFinishedListener(project)
         }
     }
 
@@ -98,14 +105,14 @@ class IdeaFilesProcessor {
     }
 
     def process() {
-        process(myProject.rootProject.file("layout.json"))
+        process(layoutFile)
     }
 
     def process(File layoutFile) {
         def gson = new Gson()
         def file = layoutFile
         if (!file.exists()) {
-            myProject.logger.lifecycle("IDEA layout file 'layout.json' was not found, terminating.")
+            logger.lifecycle("IDEA layout file 'layout.json' was not found, terminating.")
             return
         }
 
@@ -124,7 +131,7 @@ class IdeaFilesProcessor {
         imlsCallbacks.each { entry ->
             def imlPath = lookUpImlPath(layout, entry.key)
             if (imlPath == null) {
-                myProject.logger.warn("No path to iml is present for key [${entry.key}].\nLayout: $layout")
+                logger.warn("No path to iml is present for key [${entry.key}].\nLayout: $layout")
                 return
             }
             def moduleFile = new File(imlPath)
@@ -134,7 +141,7 @@ class IdeaFilesProcessor {
         xmlCallbacks.each { entry ->
             String imlPath = lookUpImlPath(layout, entry.key)
             if (imlPath == null) {
-                myProject.logger.warn("No path to iml is present for key [${entry.key}].\\nLayout: $layout")
+                logger.warn("No path to iml is present for key [${entry.key}].\\nLayout: $layout")
                 return
             }
             def moduleFile = new File(imlPath)
@@ -146,7 +153,7 @@ class IdeaFilesProcessor {
     }
 
     private String lookUpImlPath(IdeaLayoutJson layout, String sourceSetName) {
-        def imlKey = myProject.path == ":" ? myProject.name : myProject.path
+        def imlKey = this.imlKey
         if (sourceSetName != "") {
             imlKey = imlKey + ":${sourceSetName}"
         }
@@ -161,9 +168,9 @@ class IdeaFilesProcessor {
     }
 
     @Synchronized
-    void installBuildFinishedListener() {
+    void installBuildFinishedListener(Project project) {
         def listener = new FilesProcessorBuildListener()
-        myProject.gradle.addBuildListener(listener)
+        project.gradle.addBuildListener(listener)
     }
 }
 
