@@ -215,9 +215,9 @@ rootProject.name = "ProjectName"
             "defaults": false,
             "type": "application",
             "name": "Run my app",
+            "beforeRun": [],
             "moduleName": "ProjectName",
             "workingDirectory": ${new Gson().toJson(projectDir)},
-            "beforeRun": [],
             "mainClass": "foo.App",
             "includeProvidedDependencies": true
         },
