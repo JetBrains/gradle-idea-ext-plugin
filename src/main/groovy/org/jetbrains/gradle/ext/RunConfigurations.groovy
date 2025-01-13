@@ -311,7 +311,7 @@ class JUnit extends ModuleRunConfiguration {
                 "vmParameters"    : vmParameters,
                 "category"        : category,
                 "workingDirectory": workingDirectory,
-                "className"       : className,
+                "class"           : className,
                 "passParentEnvs"  : passParentEnvs,
                 "packageName"     : packageName,
                 "defaults"        : defaults,
