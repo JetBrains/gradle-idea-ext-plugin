@@ -114,6 +114,7 @@ class SerializationTests {
       host = "hostname"
       port = 1234
       sharedMemoryAddress = "jvmdebug"
+      autoRestart = true
     }
 
     @Language("JSON")
@@ -126,7 +127,8 @@ class SerializationTests {
         "port": 1234,
         "transport": "SOCKET",
         "host": "hostname",
-        "sharedMemoryAddress": "jvmdebug"
+        "sharedMemoryAddress": "jvmdebug",
+        "autoRestart": true
     }
     """.trimIndent()
     assertEquals(expected, prettyPrintJSON(remote.toMap()))
