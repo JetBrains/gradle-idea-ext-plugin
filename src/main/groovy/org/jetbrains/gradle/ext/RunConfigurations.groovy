@@ -337,6 +337,7 @@ class Remote extends BaseRunConfiguration {
     String host
     Integer port
     String sharedMemoryAddress
+    Boolean autoRestart = false
 
   @Inject
   Remote(String nameParam) {
@@ -351,7 +352,8 @@ class Remote extends BaseRunConfiguration {
                 "port"               : port,
                 "transport"          : transport,
                 "host"               : host,
-                "sharedMemoryAddress": sharedMemoryAddress
+                "sharedMemoryAddress": sharedMemoryAddress,
+                "autoRestart"        : autoRestart
         ]
     }
 }
