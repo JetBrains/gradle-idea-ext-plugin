@@ -49,9 +49,6 @@ class SerializationTests {
     |    "defaults": false,
     |    "type": "application",
     |    "name": "test",
-    |    "moduleName": "test",
-    |    "envs": null,
-    |    "workingDirectory": null,
     |    "beforeRun": [
     |        {
     |            "type": "make",
@@ -62,6 +59,9 @@ class SerializationTests {
     |            "artifactName": "myName"
     |        }
     |    ],
+    |    "moduleName": "test",
+    |    "envs": null,
+    |    "workingDirectory": null,
     |    "jvmArgs": null,
     |    "programParameters": null,
     |    "mainClass": null,
@@ -87,9 +87,6 @@ class SerializationTests {
     |    "defaults": false,
     |    "type": "jarApplication",
     |    "name": "test",
-    |    "moduleName": null,
-    |    "envs": null,
-    |    "workingDirectory": null,
     |    "beforeRun": [
     |        {
     |            "type": "make",
@@ -100,6 +97,9 @@ class SerializationTests {
     |            "artifactName": "myName"
     |        }
     |    ],
+    |    "moduleName": null,
+    |    "envs": null,
+    |    "workingDirectory": null,
     |    "jvmArgs": null,
     |    "programParameters": null,
     |    "jarPath": "myJarPath"
@@ -110,7 +110,7 @@ class SerializationTests {
 
   @Test
   fun `test remote json output`() {
-    val remote = Remote("remote debug").apply {
+    val remote = Remote("remote debug", myProject).apply {
       host = "hostname"
       port = 1234
       sharedMemoryAddress = "jvmdebug"
@@ -123,6 +123,7 @@ class SerializationTests {
         "defaults": false,
         "type": "remote",
         "name": "remote debug",
+        "beforeRun": [],
         "mode": "ATTACH",
         "port": 1234,
         "transport": "SOCKET",
@@ -136,7 +137,7 @@ class SerializationTests {
 
   @Test
   fun `test JUnit config output`() {
-    val config = JUnit("myName").apply {
+    val config = JUnit("myName", myProject).apply {
       className = "my.TestClass"
       repeat = "untilFailure"
       workingDirectory = "myWorkDir"
@@ -154,6 +155,7 @@ class SerializationTests {
                     "defaults": true,
                     "type": "junit",
                     "name": "myName",
+                    "beforeRun": [],
                     "moduleName": "myModule",
                     "directory": null,
                     "repeat": "untilFailure",
@@ -176,7 +178,7 @@ class SerializationTests {
   }
 
   @Test fun `test TestNG config output`() {
-    val config = TestNG("myName").apply {
+    val config = TestNG("myName", myProject).apply {
       className = "my.TestClass"
 
       workingDirectory = "myWorkDir"
@@ -194,6 +196,7 @@ class SerializationTests {
           "defaults": true,
           "type": "testng",
           "name": "myName",
+          "beforeRun": [],
           "moduleName": "myModule",
           "package": null,
           "class": "my.TestClass",
@@ -217,7 +220,7 @@ class SerializationTests {
   @Test
   fun `test Gradle run configuration output`() {
     val absolutePath = File("").absolutePath.replace("\\", "/")
-    val config = Gradle("gradleName").apply {
+    val config = Gradle("gradleName", myProject).apply {
       projectPath = absolutePath
       taskNames = listOf(":cleanTest", ":test")
       jvmArgs = "-Dkey=val"
@@ -232,6 +235,7 @@ class SerializationTests {
           "defaults": true,
           "type": "gradle",
           "name": "gradleName",
+          "beforeRun": [],
           "projectPath": "$absolutePath",
           "taskNames": [
               ":cleanTest",

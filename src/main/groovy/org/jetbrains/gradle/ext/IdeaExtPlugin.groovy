@@ -60,10 +60,10 @@ class IdeaExtPlugin implements Plugin<Project> {
     RunConfigurationContainer runConfigurations = GradleUtils.runConfigurationsContainer(project)
 
     runConfigurations.registerFactory(Application) { String name -> project.objects.newInstance(Application, name, project) }
-    runConfigurations.registerFactory(JUnit) { String name -> project.objects.newInstance(JUnit, name) }
-    runConfigurations.registerFactory(Remote) { String name -> project.objects.newInstance(Remote, name) }
-    runConfigurations.registerFactory(TestNG) { String name -> project.objects.newInstance(TestNG, name) }
-    runConfigurations.registerFactory(Gradle) { String name -> project.objects.newInstance(Gradle, name) }
+    runConfigurations.registerFactory(JUnit) { String name -> project.objects.newInstance(JUnit, name, project) }
+    runConfigurations.registerFactory(Remote) { String name -> project.objects.newInstance(Remote, name, project) }
+    runConfigurations.registerFactory(TestNG) { String name -> project.objects.newInstance(TestNG, name, project) }
+    runConfigurations.registerFactory(Gradle) { String name -> project.objects.newInstance(Gradle, name, project) }
     runConfigurations.registerFactory(JarApplication) { String name -> project.objects.newInstance(JarApplication, name, project) }
 
     container.add(RunConfigurationContainer, "runConfigurations", runConfigurations)
