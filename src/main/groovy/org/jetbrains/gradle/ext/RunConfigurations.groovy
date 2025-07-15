@@ -113,10 +113,15 @@ abstract class JavaRunConfiguration extends ModuleRunConfiguration {
 
     @Override
     Map<String, ?> toMap() {
+        List<BeforeRunTask> beforeRunTasks = beforeRun.toList()
+        List<Map<String, ?>> maps = new ArrayList<>()
+        for (BeforeRunTask aTask : beforeRunTasks) {
+            maps.add(aTask.toMap())
+        }
         return super.toMap() << [
                 "envs"             : envs,
                 "workingDirectory" : workingDirectory,
-                "beforeRun"        : DefaultGroovyMethods.collect(beforeRun.toList() as Collection<BeforeRunTask>) { it.toMap() },
+                "beforeRun"        : maps,
                 "jvmArgs"          : jvmArgs,
                 "programParameters": programParameters
         ]
