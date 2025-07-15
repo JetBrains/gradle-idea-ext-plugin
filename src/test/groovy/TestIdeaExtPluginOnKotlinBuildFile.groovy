@@ -16,7 +16,9 @@ class IdeaModelExtensionOnKotlinBuildFileFunctionalTest extends Specification {
     File buildFile
     File settingsFile
 
-    static List<String> gradleVersionList = ["5.0", "5.6.4", "6.0", "6.8.3", "7.0", "7.2", "7.3"]
+    static List<String> gradleVersionList = Runtime.version().feature() > 16
+            ? [ "7.6.4", "8.14", "9.0.0-rc-2" ]
+            : [ "5.0", "5.6.4", "6.0", "6.8.3", "7.0" ]
 
     def setup() {
         buildFile = testProjectDir.newFile('build.gradle.kts')
