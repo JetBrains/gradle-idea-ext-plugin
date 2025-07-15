@@ -50,6 +50,13 @@ pluginBundle {
   }
 }
 
+tasks.register("testJdk17", Test) {
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+
 wrapper {
   gradleVersion = "5.6.4"
   distributionType = Wrapper.DistributionType.BIN
