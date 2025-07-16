@@ -3,16 +3,15 @@ import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.gradle.util.GradleVersion
 import org.jetbrains.gradle.ext.SerializationUtil
-import org.junit.Rule
-import org.junit.rules.TemporaryFolder
 import spock.lang.Ignore
 import spock.lang.Specification
+import spock.lang.TempDir
 
 import static org.assertj.core.api.Assertions.assertThat
 
 class IdeaModelExtensionOnKotlinBuildFileFunctionalTest extends Specification {
-    @Rule
-    TemporaryFolder testProjectDir = new TemporaryFolder()
+    @TempDir
+    File testProjectDir
     File buildFile
     File settingsFile
 
@@ -21,8 +20,8 @@ class IdeaModelExtensionOnKotlinBuildFileFunctionalTest extends Specification {
             : [ "5.0", "5.6.4", "6.0", "6.8.3", "7.0" ]
 
     def setup() {
-        buildFile = testProjectDir.newFile('build.gradle.kts')
-        settingsFile = testProjectDir.newFile('settings.gradle.kts')
+        buildFile =  new File(testProjectDir, "build.gradle.kts")
+        settingsFile = new File(testProjectDir, "settings.gradle.kts")
     }
 
     def "test compiler settings"() {
@@ -66,7 +65,7 @@ rootProject.name = "ProjectName"
         when:
         def result = GradleRunner.create()
                 .withGradleVersion(gradleVersion)
-                .withProjectDir(testProjectDir.root)
+                .withProjectDir(testProjectDir)
                 .withArguments("printSettings", "-q")
                 .withPluginClasspath()
                 .build()
@@ -116,13 +115,13 @@ rootProject.name = "ProjectName"
         when:
         def result = GradleRunner.create()
                 .withGradleVersion(gradleVersion)
-                .withProjectDir(testProjectDir.root)
+                .withProjectDir(testProjectDir)
                 .withArguments("printSettings", "-q")
                 .withPluginClasspath()
                 .build()
         then:
         def lines = result.output.readLines()
-        def moduleContentRoot = testProjectDir.root.canonicalPath.replace(File.separator, '/')
+        def moduleContentRoot = testProjectDir.canonicalPath.replace(File.separator, '/')
         lines[1] == '{"packagePrefix":{' +
                 '"' + moduleContentRoot + '/main/groovy":"com.example.main.groovy",' +
                 '"' + moduleContentRoot + '/test/java":"com.example.test.java"' +
@@ -191,7 +190,7 @@ rootProject.name = "ProjectName"
         when:
         def result = GradleRunner.create()
                 .withGradleVersion(gradleVersion)
-                .withProjectDir(testProjectDir.root)
+                .withProjectDir(testProjectDir)
                 .withArguments("printSettings", "-q")
                 .withPluginClasspath()
                 .build()
@@ -281,7 +280,7 @@ tasks.register("printSettings") {
         when:
         def result = GradleRunner.create()
                 .withGradleVersion(gradleVersion)
-                .withProjectDir(testProjectDir.root)
+                .withProjectDir(testProjectDir)
                 .withArguments("printSettings", "-q")
                 .withPluginClasspath()
                 .build()
@@ -330,7 +329,7 @@ tasks.register("printSettings") {
         when:
         def result = GradleRunner.create()
                 .withGradleVersion(gradleVersion)
-                .withProjectDir(testProjectDir.root)
+                .withProjectDir(testProjectDir)
                 .withArguments("printSettings", "-q")
                 .withPluginClasspath()
                 .build()
@@ -405,12 +404,12 @@ tasks.register<org.jetbrains.gradle.ext.BuildIdeArtifact>("buildIdeArtifact") {
         when:
         GradleRunner.create()
                 .withGradleVersion(gradleVersion)
-                .withProjectDir(testProjectDir.root)
+                .withProjectDir(testProjectDir)
                 .withArguments("buildIdeArtifact")
                 .withPluginClasspath()
                 .build()
         then:
-        new File(testProjectDir.root, "build/idea-artifacts/root/dir1/build.gradle").exists()
+        new File(testProjectDir, "build/idea-artifacts/root/dir1/build.gradle").exists()
 
         where:
         gradleVersion << gradleVersionList
@@ -468,7 +467,7 @@ tasks.register<org.jetbrains.gradle.ext.BuildIdeArtifact>("buildIdeArtifact") {
         when:
         def result = GradleRunner.create()
                 .withGradleVersion(gradleVersion)
-                .withProjectDir(testProjectDir.root)
+                .withProjectDir(testProjectDir)
                 .withArguments("printSettings", "-q")
                 .withPluginClasspath()
                 .build()
@@ -523,13 +522,13 @@ tasks.register<org.jetbrains.gradle.ext.BuildIdeArtifact>("buildIdeArtifact") {
         when:
         def result = GradleRunner.create()
                 .withGradleVersion(gradleVersion)
-                .withProjectDir(testProjectDir.root)
+                .withProjectDir(testProjectDir)
                 .withArguments("printSettings", "-q")
                 .withPluginClasspath()
                 .build()
         then:
         def lines = result.output.readLines()
-        def moduleContentRoot = testProjectDir.root.canonicalPath.replace(File.separator, '/')
+        def moduleContentRoot = testProjectDir.canonicalPath.replace(File.separator, '/')
         lines[0] == '{"packagePrefix":{' +
                 '"' + moduleContentRoot + '/src":"com.example.java",' +
                 '"' + moduleContentRoot + '/../subproject/src":"com.example.java.sub"' +
@@ -575,13 +574,13 @@ tasks.register<org.jetbrains.gradle.ext.BuildIdeArtifact>("buildIdeArtifact") {
         when:
         def result = GradleRunner.create()
                 .withGradleVersion(gradleVersion)
-                .withProjectDir(testProjectDir.root)
+                .withProjectDir(testProjectDir)
                 .withArguments("printSettings", "-q")
                 .withPluginClasspath()
                 .build()
         then:
         def lines = result.output.readLines()
-        def moduleContentRoot = testProjectDir.root.canonicalPath.replace(File.separator, '/')
+        def moduleContentRoot = testProjectDir.canonicalPath.replace(File.separator, '/')
         lines[0] == '{"packagePrefix":{"' + moduleContentRoot + '/src":"com.example.java"}}'
 
         result.task(":printSettings").outcome == TaskOutcome.SUCCESS
@@ -629,13 +628,13 @@ tasks.register<org.jetbrains.gradle.ext.BuildIdeArtifact>("buildIdeArtifact") {
         when:
         def result = GradleRunner.create()
                 .withGradleVersion(gradleVersion)
-                .withProjectDir(testProjectDir.root)
+                .withProjectDir(testProjectDir)
                 .withArguments("printSettings", "-q")
                 .withPluginClasspath()
                 .build()
         then:
         def lines = result.output.readLines()
-        def moduleContentRoot = testProjectDir.root.canonicalPath.replace(File.separator, '/')
+        def moduleContentRoot = testProjectDir.canonicalPath.replace(File.separator, '/')
         lines[0] == '{"encodings":{' +
                 '"encoding":"windows-1251",' +
                 '"bomPolicy":"WITH_NO_BOM",' +
@@ -688,7 +687,7 @@ tasks.register<org.jetbrains.gradle.ext.BuildIdeArtifact>("buildIdeArtifact") {
         when:
         def result = GradleRunner.create()
                 .withGradleVersion(gradleVersion)
-                .withProjectDir(testProjectDir.root)
+                .withProjectDir(testProjectDir)
                 .withArguments("printSettings", "-q")
                 .withPluginClasspath()
                 .build()
@@ -750,7 +749,7 @@ import org.jetbrains.gradle.ext.*
         when:
         def result = GradleRunner.create()
                 .withGradleVersion(gradleVersion)
-                .withProjectDir(testProjectDir.root)
+                .withProjectDir(testProjectDir)
                 .withArguments("printSettings", "-q")
                 .withPluginClasspath()
                 .build()
@@ -785,8 +784,8 @@ import org.jetbrains.gradle.ext.*
 
     def "test process IDEA project files task"() {
         given:
-        def layoutFile = testProjectDir.newFile('layout.json')
-        def rootPath = testProjectDir.root.absolutePath.replace('\\', '/')
+        def layoutFile = new File(testProjectDir, "layout.json")
+        def rootPath = testProjectDir.absolutePath.replace('\\', '/')
 
         layoutFile << """
 {
@@ -798,7 +797,8 @@ import org.jetbrains.gradle.ext.*
   }
 }
 """
-        def modulesFolder = testProjectDir.newFolder(".idea", "modules")
+        def modulesFolder = new File(testProjectDir, ".idea/modules")
+        modulesFolder.mkdirs()
         def ideaDir = modulesFolder.parentFile
         def vcsFile = new File(ideaDir, "vcs.xml")
         // language=xml
@@ -898,7 +898,7 @@ import groovy.util.Node
         when:
         def result = GradleRunner.create()
                 .withGradleVersion(gradleVersion)
-                .withProjectDir(testProjectDir.root)
+                .withProjectDir(testProjectDir)
                 .withArguments("processIdeaSettings")
                 .withPluginClasspath()
                 .build()

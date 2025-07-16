@@ -1,20 +1,19 @@
 package org.jetbrains.gradle.ext
 
-import org.assertj.core.api.Assertions
-import org.assertj.core.api.Assertions.*
+import org.assertj.core.api.Assertions.assertThat
 import org.gradle.api.NamedDomainObjectCollection
 import org.gradle.api.Project
-import org.gradle.api.internal.tasks.DefaultSourceSet
 import org.gradle.api.tasks.SourceSet
 import org.gradle.internal.extensibility.DefaultConvention
 import org.gradle.testfixtures.ProjectBuilder
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+
 
 class IdeaFilesProcessorTest {
     lateinit var myProject: Project
 
-    @Before
+    @BeforeEach
     fun setUp() {
         myProject = ProjectBuilder.builder().build()
     }

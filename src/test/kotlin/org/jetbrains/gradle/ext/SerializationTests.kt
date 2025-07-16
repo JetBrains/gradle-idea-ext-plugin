@@ -8,23 +8,25 @@ import org.gradle.internal.extensibility.DefaultConvention
 import org.gradle.testfixtures.ProjectBuilder
 import org.intellij.lang.annotations.Language
 import org.jetbrains.gradle.ext.SerializationUtil.prettyPrintJSON
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import java.io.File
 
 class SerializationTests {
 
   lateinit var myProject: Project
 
-  @Before fun setup() {
+  @BeforeEach
+  fun setup() {
     myProject = ProjectBuilder.builder().build()
   }
 
   data class Holder(val value: String)
 
-  @Test fun `test json special character handling`() {
+  @Test
+  fun `test json special character handling`() {
     assertEquals("""
     |{
     |    "value": "symbols: =ł"
@@ -32,7 +34,8 @@ class SerializationTests {
     """.trimMargin(), prettyPrintJSON(Holder("symbols: =ł")))
   }
 
-  @Test fun `test application json output`() {
+  @Test 
+  fun `test application json output`() {
     val application = Application("test", myProject).apply {
       beforeRun.create("make", Make::class.java).apply {
         enabled = false
@@ -71,7 +74,8 @@ class SerializationTests {
     """.trimMargin(),
             prettyPrintJSON(application.toMap()))
   }
-  @Test fun `test JarApplication json output`() {
+  @Test
+  fun `test JarApplication json output`() {
     val jarApplication = JarApplication("test", myProject).apply {
       beforeRun.create("make", Make::class.java).apply {
         enabled = false
@@ -175,7 +179,8 @@ class SerializationTests {
     assertEquals(expected, prettyPrintJSON(config.toMap()))
   }
 
-  @Test fun `test TestNG config output`() {
+  @Test
+  fun `test TestNG config output`() {
     val config = TestNG("myName").apply {
       className = "my.TestClass"
 
@@ -248,7 +253,8 @@ class SerializationTests {
     assertEquals(expected, prettyPrintJSON(config.toMap()))
   }
 
-  @Test fun `test Groovy config output`() {
+  @Test
+  fun `test Groovy config output`() {
     val config = GroovyCompilerConfiguration()
     config.excludes {
       it.file("C:/myFile.ext")
@@ -280,7 +286,8 @@ class SerializationTests {
             prettyPrintJSON(config.toMap()))
   }
 
-  @Test fun `test code style output`() {
+  @Test
+  fun `test code style output`() {
     val config = CodeStyleConfig()
 
     config.java {
@@ -334,7 +341,8 @@ class SerializationTests {
 
   }
 
-  @Test fun `test compiler options output`() {
+  @Test
+  fun `test compiler options output`() {
     val config = IdeaCompilerConfiguration(myProject)
 
     config.apply {
@@ -369,7 +377,8 @@ class SerializationTests {
     )
   }
 
-  @Test fun `test task triggers output`() {
+  @Test
+  fun `test task triggers output`() {
     val config = TaskTriggersConfig(myProject)
     val subProject = ProjectBuilder.builder()
             .withProjectDir(File(myProject.projectDir, "subProject"))
@@ -449,7 +458,8 @@ class SerializationTests {
       )
   }
 
-  @Test fun `test artifacts tree`() {
+  @Test
+  fun `test artifacts tree`() {
     val artifacts = myProject.container(TopLevelArtifact::class.java, TopLevelArtifactFactory(myProject))
 
     val rootDir = myProject.rootDir
@@ -573,7 +583,8 @@ class SerializationTests {
 
   }
 
-  @Test fun `test Make BeforeRunTask json output`() {
+  @Test
+  fun `test Make BeforeRunTask json output`() {
     val beforeRun = JavaRunConfiguration.createBeforeRun(myProject)
     beforeRun.create("make1", Make::class.java) {
       it.enabled = true
@@ -598,7 +609,8 @@ class SerializationTests {
             prettyPrintJSON(beforeRun.map { it.toMap() }))
   }
 
-  @Test fun `test GradleTask BeforeRunTask json output`() {
+  @Test
+  fun `test GradleTask BeforeRunTask json output`() {
     val taskA = myProject.tasks.create("beforeRunTestA")
     val taskB = myProject.tasks.create("beforeRunTestB")
     val escapedRootProjectPath = myProject.projectDir.path.replace("\\", "/")
@@ -628,7 +640,8 @@ class SerializationTests {
       prettyPrintJSON(beforeRun.map { it.toMap() }))
   }
 
-  @Test fun `test BuildArtifact BeforeRunTask json output`() {
+  @Test
+  fun `test BuildArtifact BeforeRunTask json output`() {
     val beforeRun = JavaRunConfiguration.createBeforeRun(myProject)
     beforeRun.create("buildArtifact1", BuildArtifact::class.java) {
       it.artifactName = "myName1"
@@ -653,7 +666,8 @@ class SerializationTests {
             prettyPrintJSON(beforeRun.map { it.toMap() }))
   }
 
-  @Test fun `test module types json output`() {
+  @Test
+  fun `test module types json output`() {
     val moduleTypes = ModuleTypesConfig(myProject,
       myProject.convention)
 

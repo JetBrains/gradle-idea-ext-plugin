@@ -1,7 +1,5 @@
 package org.jetbrains.gradle.ext
 
-import junit.framework.Assert.assertEquals
-import junit.framework.Assert.assertFalse
 import org.assertj.core.api.Assertions.assertThat
 import org.gradle.api.NamedDomainObjectCollection
 import org.gradle.api.Project
@@ -10,8 +8,10 @@ import org.gradle.internal.extensibility.DefaultConvention
 import org.gradle.plugins.ide.idea.model.IdeaModel
 import org.gradle.testfixtures.ProjectBuilder
 import org.jetbrains.gradle.ext.BuildIdeArtifact.DEFAULT_DESTINATION
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileOutputStream
@@ -25,7 +25,7 @@ class BuildIdeArtifactTest {
     lateinit var myProject: Project
     lateinit var ideArtifact: BuildIdeArtifact
 
-    @Before
+    @BeforeEach
     fun setup() {
         myProject = ProjectBuilder.builder().build()
         ideArtifact = myProject.tasks.create("testBuild", BuildIdeArtifact::class.java)

@@ -3,15 +3,14 @@ import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.gradle.util.GradleVersion
 import org.jetbrains.gradle.ext.SerializationUtil
-import org.junit.Rule
-import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
+import spock.lang.TempDir
 
 import static org.assertj.core.api.Assertions.assertThat
 
 class IdeaModelExtensionFunctionalTest extends Specification {
-  @Rule
-  TemporaryFolder testProjectDir = new TemporaryFolder()
+  @TempDir
+  File testProjectDir
   File buildFile
   File settingsFile
 
@@ -20,8 +19,8 @@ class IdeaModelExtensionFunctionalTest extends Specification {
     : [ "5.0", "5.6.4", "6.0", "6.8.3", "7.0" ]
 
   def setup() {
-    buildFile = testProjectDir.newFile('build.gradle')
-    settingsFile = testProjectDir.newFile('settings.gradle')
+      buildFile =  new File(testProjectDir, "build.gradle")
+      settingsFile = new File(testProjectDir, "settings.gradle")
   }
 
   def "test project settings"() {
@@ -79,7 +78,7 @@ rootProject.name = "ProjectName"
     when:
     def result = GradleRunner.create()
                              .withGradleVersion(gradleVersion)
-                             .withProjectDir(testProjectDir.root)
+                             .withProjectDir(testProjectDir)
                              .withArguments("printSettings", "-q", "--stacktrace")
                              .withPluginClasspath()
                              .build()
@@ -171,7 +170,7 @@ task printSettings {
     when:
     def result = GradleRunner.create()
             .withGradleVersion(gradleVersion)
-            .withProjectDir(testProjectDir.root)
+            .withProjectDir(testProjectDir)
             .withArguments("printSettings", "-q")
             .withPluginClasspath()
             .build()
@@ -217,7 +216,7 @@ task printSettings {
     when:
     def result = GradleRunner.create()
             .withGradleVersion(gradleVersion)
-            .withProjectDir(testProjectDir.root)
+            .withProjectDir(testProjectDir)
             .withArguments("printSettings", "-q", "--stacktrace")
             .withPluginClasspath()
             .build()
@@ -289,12 +288,12 @@ task buildIdeArtifact(type: org.jetbrains.gradle.ext.BuildIdeArtifact) {
     when:
     GradleRunner.create()
             .withGradleVersion(gradleVersion)
-            .withProjectDir(testProjectDir.root)
+            .withProjectDir(testProjectDir)
             .withArguments("buildIdeArtifact")
             .withPluginClasspath()
             .build()
     then:
-    new File(testProjectDir.root, "build/idea-artifacts/root/dir1/build.gradle").exists()
+    new File(testProjectDir, "build/idea-artifacts/root/dir1/build.gradle").exists()
 
     where:
     gradleVersion << gradleVersionList
@@ -335,7 +334,7 @@ task printSettings {
     when:
     def result = GradleRunner.create()
             .withGradleVersion(gradleVersion)
-            .withProjectDir(testProjectDir.root)
+            .withProjectDir(testProjectDir)
             .withArguments("printSettings", "-q", "--stacktrace")
             .withPluginClasspath()
             .build()
@@ -378,13 +377,13 @@ task printSettings {
     }
     
 """
-      testProjectDir.newFolder("p1")
-      testProjectDir.newFolder("p2")
-      testProjectDir.newFolder("p3")
+     new File(testProjectDir,"p1").mkdirs()
+     new File(testProjectDir,"p2").mkdirs()
+     new File(testProjectDir,"p3").mkdirs()
     when:
     def result = GradleRunner.create()
             .withGradleVersion(gradleVersion)
-            .withProjectDir(testProjectDir.root)
+            .withProjectDir(testProjectDir)
             .withArguments("projects", "--stacktrace")
             .withPluginClasspath()
             .build()
@@ -444,7 +443,7 @@ task printSettings {
         when:
         def result = GradleRunner.create()
                 .withGradleVersion(gradleVersion)
-                .withProjectDir(testProjectDir.root)
+                .withProjectDir(testProjectDir)
                 .withArguments("printSettings", "-q")
                 .withPluginClasspath()
                 .build()
@@ -489,13 +488,13 @@ task printSettings {
     when:
     def result = GradleRunner.create()
             .withGradleVersion(gradleVersion)
-            .withProjectDir(testProjectDir.root)
+            .withProjectDir(testProjectDir)
             .withArguments("printSettings", "-q")
             .withPluginClasspath()
             .build()
     then:
     def lines = result.output.readLines()
-    def moduleContentRoot = testProjectDir.root.canonicalPath.replace(File.separator, '/')
+    def moduleContentRoot = testProjectDir.canonicalPath.replace(File.separator, '/')
     lines[1] == '{"packagePrefix":{' +
             '"' + moduleContentRoot + '/main/groovy":"com.example.main.groovy",' +
             '"' + moduleContentRoot + '/test/java":"com.example.test.java"' +
@@ -541,13 +540,13 @@ task printSettings {
     when:
     def result = GradleRunner.create()
             .withGradleVersion(gradleVersion)
-            .withProjectDir(testProjectDir.root)
+            .withProjectDir(testProjectDir)
             .withArguments("printSettings", "-q")
             .withPluginClasspath()
             .build()
     then:
     def lines = result.output.readLines()
-    def moduleContentRoot = testProjectDir.root.canonicalPath.replace(File.separator, '/')
+    def moduleContentRoot = testProjectDir.canonicalPath.replace(File.separator, '/')
     lines[0] == '{"packagePrefix":{' +
             '"' + moduleContentRoot + '/src":"com.example.java",' +
             '"' + moduleContentRoot + '/../subproject/src":"com.example.java.sub"' +
@@ -591,13 +590,13 @@ task printSettings {
     when:
     def result = GradleRunner.create()
             .withGradleVersion(gradleVersion)
-            .withProjectDir(testProjectDir.root)
+            .withProjectDir(testProjectDir)
             .withArguments("printSettings", "-q")
             .withPluginClasspath()
             .build()
     then:
     def lines = result.output.readLines()
-    def moduleContentRoot = testProjectDir.root.canonicalPath.replace(File.separator, '/')
+    def moduleContentRoot = testProjectDir.canonicalPath.replace(File.separator, '/')
     lines[0] == '{"packagePrefix":{"' + moduleContentRoot + '/src":"com.example.java"}}'
 
     result.task(":printSettings").outcome == TaskOutcome.SUCCESS
@@ -644,13 +643,13 @@ task printSettings {
     when:
     def result = GradleRunner.create()
             .withGradleVersion(gradleVersion)
-            .withProjectDir(testProjectDir.root)
+            .withProjectDir(testProjectDir)
             .withArguments("printSettings", "-q")
             .withPluginClasspath()
             .build()
     then:
     def lines = result.output.readLines()
-    def moduleContentRoot = testProjectDir.root.canonicalPath.replace(File.separator, '/')
+    def moduleContentRoot = testProjectDir.canonicalPath.replace(File.separator, '/')
     lines[0] == '{"encodings":{' +
             '"encoding":"windows-1251",' +
             '"bomPolicy":"WITH_NO_BOM",' +
@@ -702,7 +701,7 @@ task printSettings {
     when:
     def result = GradleRunner.create()
             .withGradleVersion(gradleVersion)
-            .withProjectDir(testProjectDir.root)
+            .withProjectDir(testProjectDir)
             .withArguments("printSettings", "-q")
             .withPluginClasspath()
             .build()
@@ -801,7 +800,7 @@ task printSettings {
     when:
     def result = GradleRunner.create()
             .withGradleVersion(gradleVersion)
-            .withProjectDir(testProjectDir.root)
+            .withProjectDir(testProjectDir)
             .withArguments("printSettings", "-q")
             .withPluginClasspath()
             .build()
@@ -872,7 +871,7 @@ task printSettings {
     when:
     def result = GradleRunner.create()
             .withGradleVersion(gradleVersion)
-            .withProjectDir(testProjectDir.root)
+            .withProjectDir(testProjectDir)
             .withArguments("printSettings", "-q")
             .withPluginClasspath()
             .build()
@@ -960,7 +959,7 @@ task printSettings {
     when:
     def result = GradleRunner.create()
             .withGradleVersion(gradleVersion)
-            .withProjectDir(testProjectDir.root)
+            .withProjectDir(testProjectDir)
             .withArguments("printSettings", "-q")
             .withPluginClasspath()
             .build()
@@ -1015,7 +1014,7 @@ import org.jetbrains.gradle.ext.*
     when:
     def result = GradleRunner.create()
             .withGradleVersion(gradleVersion)
-            .withProjectDir(testProjectDir.root)
+            .withProjectDir(testProjectDir)
             .withArguments("printSettings", "-q")
             .withPluginClasspath()
             .build()
@@ -1050,8 +1049,8 @@ import org.jetbrains.gradle.ext.*
     
     def "test process IDEA project files task"() {
         given:
-        def layoutFile = testProjectDir.newFile('layout.json')
-        def rootPath = testProjectDir.root.absolutePath.replace('\\', '/')
+        def layoutFile = new File(testProjectDir, "layout.json")
+        def rootPath = testProjectDir.absolutePath.replace('\\', '/')
         layoutFile << """
 {
   "ideaDirPath": "${rootPath}/.idea",
@@ -1062,7 +1061,8 @@ import org.jetbrains.gradle.ext.*
   }
 }
 """
-        def modulesFolder = testProjectDir.newFolder(".idea", "modules")
+        def modulesFolder = new File(testProjectDir, ".idea/modules")
+        modulesFolder.mkdirs()
         def ideaDir = modulesFolder.parentFile
         def vcsFile = new File(ideaDir, "vcs.xml")
         // language=xml
@@ -1159,7 +1159,7 @@ import org.w3c.dom.Node
         when:
         def result = GradleRunner.create()
                 .withGradleVersion(gradleVersion)
-                .withProjectDir(testProjectDir.root)
+                .withProjectDir(testProjectDir)
                 .withArguments("processIdeaSettings")
                 .withPluginClasspath()
                 .withDebug(true)
@@ -1195,8 +1195,8 @@ import org.w3c.dom.Node
 
     def "test process IDEA project files in multi-module project"() {
         given:
-        File layoutFile = testProjectDir.newFile('layout.json')
-        def rootPath = testProjectDir.root.absolutePath.replace('\\', '/')
+        File layoutFile = new File(testProjectDir, "layout.json")
+        def rootPath = testProjectDir.absolutePath.replace('\\', '/')
         layoutFile << """
 {
   "ideaDirPath": "${rootPath}/.idea",
@@ -1210,7 +1210,8 @@ import org.w3c.dom.Node
   }
 }
 """
-        def modulesFolder = testProjectDir.newFolder(".idea", "modules")
+        def modulesFolder = new File(testProjectDir, ".idea/modules")
+        modulesFolder.mkdirs()
         def ideaDir = modulesFolder.parentFile
         def vcsFile = new File(ideaDir, "vcs.xml")
         // language=xml
@@ -1270,13 +1271,14 @@ import org.w3c.dom.Node
 </module>
 """
 
-        def projectNameDir = testProjectDir.newFolder(".idea", "modules", "ProjectName")
-        def projectNameDuplicate = new File(projectNameDir, "ProjectName.ProjectName.iml")
+        def ideaProjectNameDir = new File(testProjectDir, ".idea/modules/ProjectName")
+        ideaProjectNameDir.mkdirs()
+        def projectNameDuplicate = new File(ideaProjectNameDir, "ProjectName.ProjectName.iml")
         // language=xml
         projectNameDuplicate << """<?xml version="1.0" encoding="UTF-8"?>
 <module/>
 """
-        def projectNameDuplicateMain = new File(projectNameDir, "ProjectName.ProjectName.main.iml")
+        def projectNameDuplicateMain = new File(ideaProjectNameDir, "ProjectName.ProjectName.main.iml")
         // language=xml
         projectNameDuplicateMain << """<?xml version="1.0" encoding="UTF-8"?>
 <module/>
@@ -1294,7 +1296,9 @@ include 'ProjectName'
           id 'java'
       }
     """
-        File subBuildFile = new File(testProjectDir.newFolder("Sub"), "build.gradle")
+        def subDir = new File(testProjectDir, "Sub")
+        subDir.mkdirs()
+        File subBuildFile = new File(subDir, "build.gradle")
 
         // language=groovy
         subBuildFile << """import org.gradle.api.DefaultTask
@@ -1321,7 +1325,9 @@ import org.w3c.dom.Node
       }
 """
 
-        File projectNameDuplicateBuild = new File(testProjectDir.newFolder("ProjectName"), "build.gradle")
+        File projectNameDir = new File(testProjectDir, "ProjectName")
+        projectNameDir.mkdirs()
+        File projectNameDuplicateBuild = new File(projectNameDir, "build.gradle")
         projectNameDuplicateBuild << """import org.gradle.api.DefaultTask
 import org.gradle.api.XmlProvider
 import org.jetbrains.gradle.ext.*
@@ -1347,7 +1353,7 @@ import org.w3c.dom.Node
         when:
         def result = GradleRunner.create()
                 .withGradleVersion(gradleVersion)
-                .withProjectDir(testProjectDir.root)
+                .withProjectDir(testProjectDir)
                 .withArguments("processIdeaSettings", "-s")
                 .withPluginClasspath()
                 .withDebug(true)
