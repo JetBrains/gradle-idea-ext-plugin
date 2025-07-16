@@ -25,6 +25,7 @@ class CommonCodeStyleConfig implements MapConvertible {
     public ForceBraces forForceBraces
     public Boolean keepControlStatementInOneLine
 
+    @CompileStatic
     Map<String, ?> toMap() {
         return [
                 "RIGHT_MARGIN"                       : hardWrapAt,
@@ -50,6 +51,7 @@ class JavaCodeStyleConfig extends CommonCodeStyleConfig {
     public Boolean keepEmptyThrowsTags
     public Boolean keepEmptyReturnTags
 
+    @CompileStatic
     @Override
     Map<String, ?> toMap() {
         def result = super.toMap()
@@ -72,6 +74,7 @@ class GroovyCodeStyleConfig extends CommonCodeStyleConfig {
     public Integer classCountToUseImportOnDemand
     public Boolean alignMultilineNamedArguments
 
+    @CompileStatic
     @Override
     Map<String, ?> toMap() {
         def result = super.toMap()
@@ -109,6 +112,7 @@ class CodeStyleConfig implements MapConvertible {
         action.execute(languages["groovy"] as GroovyCodeStyleConfig)
     }
 
+    @CompileStatic
     Map<String, ?> toMap() {
         def map = [
                 "USE_SAME_INDENTS"                   : USE_SAME_INDENTS,

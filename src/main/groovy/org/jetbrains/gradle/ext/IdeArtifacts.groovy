@@ -1,5 +1,6 @@
 package org.jetbrains.gradle.ext
 
+import groovy.transform.CompileStatic
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
 import org.gradle.api.NamedDomainObjectFactory
@@ -26,6 +27,7 @@ abstract class TypedArtifact implements MapConvertible {
     this.project = project
   }
 
+  @CompileStatic
   @Override
   Map<String, ?> toMap() {
     return ["type":type]
@@ -106,9 +108,10 @@ abstract class RecursiveArtifact extends TypedArtifact {
     return child
   }
 
+  @CompileStatic
   @Override
   Map<String, ?> toMap() {
-    return super.toMap() << ["name": name, "children": children*.toMap() ]
+    return super.toMap() << (["name": name, "children": children*.toMap()] as Map<String, ?>)
   }
 }
 
@@ -120,9 +123,15 @@ class TopLevelArtifact extends RecursiveArtifact {
 
   @Override
   void buildTo(File destination) {
-    children.forEach {
+    children.forEach { TypedArtifact it ->
       it.buildTo(destination)
     }
+  }
+
+  @CompileStatic
+  @Override
+  Map<String, ?> toMap() {
+    return super.toMap()
   }
 }
 
@@ -167,7 +176,7 @@ class ArchiveArtifact extends RecursiveArtifact {
     def temp = project.layout.buildDirectory.dir("tmp").get().dir(randomName).asFile
     temp.mkdirs()
 
-    children.forEach {
+    children.forEach { TypedArtifact it ->
       it.buildTo(temp)
     }
 
@@ -204,6 +213,7 @@ class LibraryFiles extends TypedArtifact {
     this.configuration = configuration
   }
 
+  @CompileStatic
   @Override
   Map<String, ?> toMap() {
     ArtifactCollection artifacts = configuration.getIncoming().artifactView({
@@ -214,8 +224,10 @@ class LibraryFiles extends TypedArtifact {
     def libraries = artifacts.artifacts
             .collect { it.id.componentIdentifier }
             .findAll { it instanceof ModuleComponentIdentifier }
-            .collect { ["group":it.group, "artifact": it.module, "version": it.version] }
-    return super.toMap() << [ "libraries": libraries ]
+            .collect { ModuleComponentIdentifier moduleComponentId = it as ModuleComponentIdentifier
+              return ["group":moduleComponentId.group, "artifact": moduleComponentId.module, "version": moduleComponentId.version]
+            }
+    return super.toMap() << (["libraries": libraries] as Map<String, ?>)
   }
 
   @Override
@@ -243,9 +255,10 @@ abstract class ModuleBasedArtifact extends TypedArtifact {
     moduleName = name
   }
 
+  @CompileStatic
   @Override
   Map<String, ?> toMap() {
-    return super.toMap() << ["moduleName" : moduleName]
+    return super.toMap() << (["moduleName": moduleName] as Map<String, ?>)
   }
 
   protected Project findProject() {
@@ -319,9 +332,11 @@ class ArtifactRef extends TypedArtifact {
     super(project, ArtifactType.ARTIFACT_REF)
     artifactName = name
   }
+
+  @CompileStatic
   @Override
   Map<String, ?> toMap() {
-    return super.toMap() << ["artifactName" : artifactName]
+    return super.toMap() << (["artifactName": artifactName] as Map<String, ?>)
   }
 
   @Override
@@ -342,10 +357,11 @@ abstract class FileBasedArtifact extends TypedArtifact {
 
   protected abstract Set<File> filter(Set<File> sources)
 
+  @CompileStatic
   @Override
   Map<String, ?> toMap() {
     def filteredFiles = filter(sources.files)
-    return super.toMap() << ["sourceFiles": filteredFiles.collect { it.absolutePath.replace('\\' as char, '/' as char) }]
+    return super.toMap() << (["sourceFiles": filteredFiles.collect { it.absolutePath.replace('\\' as char, '/' as char) }] as Map<String, ?>)
   }
 }
 
