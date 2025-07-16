@@ -901,7 +901,6 @@ import groovy.util.Node
                 .withProjectDir(testProjectDir.root)
                 .withArguments("processIdeaSettings")
                 .withPluginClasspath()
-                .withDebug(true)
                 .build()
         then:
 

@@ -51,9 +51,11 @@ pluginBundle {
 }
 
 tasks.register("testJdk17", Test) {
+    group = "verification"
     javaLauncher = javaToolchains.launcherFor {
         languageVersion = JavaLanguageVersion.of(17)
     }
+    jvmArgs('--add-opens=java.base/java.lang=ALL-UNNAMED') // workaround for https://github.com/gradle/gradle/issues/22317
 }
 
 
