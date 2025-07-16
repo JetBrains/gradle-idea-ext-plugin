@@ -58,6 +58,8 @@ tasks.register("testJdk17", Test) {
     jvmArgs('--add-opens=java.base/java.lang=ALL-UNNAMED') // workaround for https://github.com/gradle/gradle/issues/22317
 }
 
+check.dependsOn(testJdk17)
+
 
 wrapper {
   gradleVersion = "5.6.4"
