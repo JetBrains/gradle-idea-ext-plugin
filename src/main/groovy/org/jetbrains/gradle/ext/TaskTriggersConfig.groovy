@@ -1,7 +1,5 @@
 package org.jetbrains.gradle.ext
 
-import com.google.common.collect.ListMultimap
-import com.google.common.collect.Multimaps
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.provider.Provider
@@ -10,31 +8,29 @@ import org.gradle.api.tasks.TaskCollection
 class TaskTriggersConfig implements MapConvertible {
 
   Project project
-  ListMultimap<String, Object> phaseMap = Multimaps
-          .newListMultimap(new LinkedHashMap<String, Collection<Object>>(),
-          { new ArrayList<Object>()})
+  Map<String, List<Object>> phaseMap = new LinkedHashMap<>()
 
   TaskTriggersConfig(Project project) {
     this.project = project
   }
 
   void beforeSync(Object... tasks) {
-    phaseMap.putAll("beforeSync", Arrays.asList(tasks))
+    phaseMap.computeIfAbsent("beforeSync", {new ArrayList<Object>() }).addAll(tasks)
   }
   void afterSync(Object... tasks) {
-    phaseMap.putAll("afterSync", Arrays.asList(tasks))
+    phaseMap.computeIfAbsent("afterSync", {new ArrayList<Object>() }).addAll(tasks)
   }
   void beforeBuild(Object... tasks) {
-    phaseMap.putAll("beforeBuild", Arrays.asList(tasks))
+    phaseMap.computeIfAbsent("beforeBuild", {new ArrayList<Object>() }).addAll(tasks)
   }
   void afterBuild(Object... tasks) {
-    phaseMap.putAll("afterBuild", Arrays.asList(tasks))
+    phaseMap.computeIfAbsent("afterBuild", {new ArrayList<Object>() }).addAll(tasks)
   }
   void beforeRebuild(Object... tasks) {
-    phaseMap.putAll("beforeRebuild", Arrays.asList(tasks))
+    phaseMap.computeIfAbsent("beforeRebuild", {new ArrayList<Object>() }).addAll(tasks)
   }
   void afterRebuild(Object... tasks) {
-    phaseMap.putAll("afterRebuild", Arrays.asList(tasks))
+    phaseMap.computeIfAbsent("afterRebuild", {new ArrayList<Object>() }).addAll(tasks)
   }
 
   @Override
