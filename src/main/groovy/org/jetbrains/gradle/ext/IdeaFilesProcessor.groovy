@@ -31,10 +31,17 @@ class IdeaFilesProcessor {
     String imlKey
     File layoutFile
 
-    List<Action<File>> ideaDirCallbacks = new ArrayList<>()
-    Map<String, List<Action<XmlProvider>>> ideaFileXmlCallbacks = new HashMap<String, List<Action<XmlProvider>>>()
-    Map<String, List<Action<File>>> imlsCallbacks = new HashMap<String, List<Action<File>>>()
-    Map<String, List<Action<XmlProvider>>> xmlCallbacks = new HashMap<String, List<Action<XmlProvider>>>()
+    private List<Action<File>> ideaDirCallbacks = new ArrayList<>()
+    private Map<String, List<Action<XmlProvider>>> ideaFileXmlCallbacks = new HashMap<String, List<Action<XmlProvider>>>()
+    private Map<String, List<Action<File>>> imlsCallbacks = new HashMap<String, List<Action<File>>>()
+    private Map<String, List<Action<XmlProvider>>> xmlCallbacks = new HashMap<String, List<Action<XmlProvider>>>()
+
+    /**
+     * True if any instance of IdeaFilesProcessor has registered any callbacks.
+     * A temporary workaround to make IDEA-Ext compatible with Project Isolation.
+     * TODO remove this field after IDEA 2025.3 natively supports project isolation in IDEA-Ext 2.0
+     */
+    public static boolean ourHasCallbacks = false
 
     IdeaFilesProcessor(Project project) {
         logger = project.logger
@@ -81,6 +88,7 @@ class IdeaFilesProcessor {
     }
 
     def withIDEAdir(Action<File> callback) {
+        ourHasCallbacks = true
         ideaDirCallbacks.add(callback)
     }
 
@@ -97,6 +105,7 @@ class IdeaFilesProcessor {
     }
 
     static <V> void put(Map<String, List<V>> collection, String key, V value) {
+        ourHasCallbacks = true
         collection.computeIfAbsent(key, { new ArrayList<V>() }).add(value)
     }
 
@@ -171,6 +180,10 @@ class IdeaFilesProcessor {
     void installBuildFinishedListener(Project project) {
         def listener = new FilesProcessorBuildListener()
         project.gradle.addBuildListener(listener)
+    }
+
+    boolean anyHasProcessors() {
+        return ourHasCallbacks
     }
 }
 

@@ -9,12 +9,15 @@ import org.gradle.api.Plugin
 import org.gradle.api.PolymorphicDomainObjectContainer
 import org.gradle.api.Project
 import org.gradle.api.XmlProvider
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.plugins.ExtensionContainer
 import org.gradle.api.reflect.TypeOf
 import org.gradle.api.tasks.SourceSet
 import org.gradle.plugins.ide.idea.model.IdeaModel
 import org.gradle.util.GradleVersion
+
+import javax.inject.Inject
 
 @CompileStatic
 class IdeaExtPlugin implements Plugin<Project> {
@@ -29,7 +32,7 @@ class IdeaExtPlugin implements Plugin<Project> {
 
     IdeaFilesProcessor ideaFilesProcessor = new IdeaFilesProcessor(project)
     if (ideaModel.project) {
-      def projectSettings = (ideaModel.project as ExtensionAware).extensions.create("settings", ProjectSettings, project, ideaFilesProcessor)
+      def projectSettings = (ideaModel.project as ExtensionAware).extensions.create("settings", ProjectSettings, project.objects, ideaFilesProcessor)
 
       def settingsExt = (projectSettings as ExtensionAware).extensions
 
@@ -80,8 +83,6 @@ class IdeaExtPlugin implements Plugin<Project> {
 }
 
 abstract class AbstractExtensibleSettings {
-  TypeOf mapConvertibleType = TypeOf.typeOf(MapConvertible)
-  TypeOf iterableType = TypeOf.typeOf(Iterable)
 
   Map<String, Object> collectExtensionsMap() {
     def result = [:]
@@ -121,12 +122,12 @@ abstract class AbstractExtensibleSettings {
       return null
     }
 
-    if (mapConvertibleType.isAssignableFrom(typeOfExt)) {
+    if (TypeOf.typeOf(MapConvertible).isAssignableFrom(typeOfExt)) {
       def map = (extension as MapConvertible).toMap().findAll { it.value != null }
       return map.isEmpty() ? null : map
     }
 
-    if (iterableType.isAssignableFrom(typeOfExt)) {
+    if (TypeOf.typeOf(Iterable).isAssignableFrom(typeOfExt)) {
       def converted = (extension as Iterable)
               .findAll { it instanceof MapConvertible }
               .collect { (it as MapConvertible).toMap().findAll { it.value != null }}
@@ -143,15 +144,13 @@ abstract class AbstractExtensibleSettings {
 
 @CompileStatic
 class ProjectSettings extends AbstractExtensibleSettings {
-  private Project project
+  private ObjectFactory objectFactory
   private FrameworkDetectionExclusionSettings detectExclusions
   private IdeaFilesProcessor ideaFilesProcessor
   private Boolean generateImlFiles;
-
-  private Gson gson = new Gson()
-
-  ProjectSettings(Project project, IdeaFilesProcessor processor) {
-    this.project = project
+  @Inject
+  ProjectSettings(ObjectFactory objectFactory, IdeaFilesProcessor processor) {
+    this.objectFactory = objectFactory
     ideaFilesProcessor = processor
   }
 
@@ -165,7 +164,7 @@ class ProjectSettings extends AbstractExtensibleSettings {
 
   def doNotDetectFrameworks(String... ids) {
     if (detectExclusions == null) {
-      detectExclusions = project.objects.newInstance(FrameworkDetectionExclusionSettings)
+      detectExclusions = objectFactory.newInstance(FrameworkDetectionExclusionSettings)
     }
     detectExclusions.excludes.addAll(ids)
   }
@@ -189,13 +188,7 @@ class ProjectSettings extends AbstractExtensibleSettings {
       map.put("requiresPostprocessing", true)
     }
 
-    boolean hasNestedPostprocessors = project.allprojects.any {
-      def ideaModel = it.extensions.findByName('idea') as IdeaModel
-      if (!ideaModel) { return false }
-      def moduleSettings = (ideaModel.module as ExtensionAware).extensions.findByName("settings") as ModuleSettings
-      if (!moduleSettings) { return false }
-      return moduleSettings.ideaFilesProcessor.hasPostprocessors()
-    }
+    boolean hasNestedPostprocessors = ideaFilesProcessor.anyHasProcessors()
 
     if (hasNestedPostprocessors) {
       map.put("requiresPostprocessing", true)
@@ -205,7 +198,7 @@ class ProjectSettings extends AbstractExtensibleSettings {
       map.put("generateImlFiles", generateImlFiles);
     }
 
-    return gson.toJson(map)
+    return new Gson().toJson(map)
   }
 }
 

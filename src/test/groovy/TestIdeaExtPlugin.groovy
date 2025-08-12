@@ -69,9 +69,10 @@ rootProject.name = "ProjectName"
       
       
       task printSettings {
+        def mySettings = project.idea.project.settings
         doLast {
           println(projectDir)
-          println(project.idea.project.settings)
+          println(mySettings)
         }
       }
     """
@@ -79,7 +80,7 @@ rootProject.name = "ProjectName"
     def result = GradleRunner.create()
                              .withGradleVersion(gradleVersion)
                              .withProjectDir(testProjectDir)
-                             .withArguments("printSettings", "-q", "--stacktrace")
+                             .withArguments("printSettings", "-q", "--stacktrace", "-Dorg.gradle.unsafe.isolated-projects=true")
                              .withPluginClasspath()
                              .build()
     then:
