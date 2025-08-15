@@ -1,4 +1,5 @@
 import com.google.gson.Gson
+import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.gradle.util.GradleVersion
@@ -67,14 +68,9 @@ rootProject.name = "ProjectName"
         }
       }
       
-      
-      task printSettings {
-        def mySettings = project.idea.project.settings
-        doLast {
-          println(projectDir)
-          println(mySettings)
-        }
-      }
+      println(projectDir)
+      println(project.idea.project.settings)
+      task printSettings { }
     """
     when:
     def result = GradleRunner.create()
@@ -136,7 +132,7 @@ rootProject.name = "ProjectName"
 """
     )
 
-    result.task(":printSettings").outcome == TaskOutcome.SUCCESS
+    assertPrintSettings(result)
     where:
     gradleVersion << gradleVersionList
   }
@@ -161,18 +157,15 @@ idea {
   }
 }
 
-task printSettings {
-  doLast {
-    println(project.idea.project.settings)
-  }
-}
+println(project.idea.project.settings)
+task printSettings { }
 """
 
     when:
     def result = GradleRunner.create()
             .withGradleVersion(gradleVersion)
             .withProjectDir(testProjectDir)
-            .withArguments("printSettings", "-q")
+            .withArguments("printSettings", "-q", "-Dorg.gradle.unsafe.isolated-projects=true")
             .withPluginClasspath()
             .build()
     then:
@@ -207,18 +200,15 @@ idea {
   }
 }
 
-task printSettings {
-  doLast {
-    println(project.idea.project.settings)
-  }
-}
+println(project.idea.project.settings)
+task printSettings { }
 """
 
     when:
     def result = GradleRunner.create()
             .withGradleVersion(gradleVersion)
             .withProjectDir(testProjectDir)
-            .withArguments("printSettings", "-q", "--stacktrace")
+            .withArguments("printSettings", "-q", "--stacktrace", "-Dorg.gradle.unsafe.isolated-projects=true")
             .withPluginClasspath()
             .build()
     then:
@@ -325,18 +315,15 @@ idea {
   }
 }
 
-task printSettings {
-  doLast {
-    println(project.idea.project.settings)
-  }
-}
+println(project.idea.project.settings)
+task printSettings { }
 """
 
     when:
     def result = GradleRunner.create()
             .withGradleVersion(gradleVersion)
             .withProjectDir(testProjectDir)
-            .withArguments("printSettings", "-q", "--stacktrace")
+            .withArguments("printSettings", "-q", "--stacktrace", "-Dorg.gradle.unsafe.isolated-projects=true")
             .withPluginClasspath()
             .build()
     then:
@@ -434,18 +421,15 @@ task printSettings {
 
           idea.module.settings.facets.spring.contexts.p2.file = 'spring_new_child.xml'
           
-          task printSettings {
-            doLast {
-              println project.projectDir
-              println project.idea.module.settings
-            }
-          }
+      println(projectDir)
+      println(project.idea.module.settings)
+      task printSettings { }
         """
         when:
         def result = GradleRunner.create()
                 .withGradleVersion(gradleVersion)
                 .withProjectDir(testProjectDir)
-                .withArguments("printSettings", "-q")
+                .withArguments("printSettings", "-q","-Dorg.gradle.unsafe.isolated-projects=true")
                 .withPluginClasspath()
                 .build()
         then:
@@ -455,7 +439,7 @@ task printSettings {
                 '[{"file":"spring_parent.xml","name":"p1","parent":null},' +
                 '{"file":"spring_new_child.xml","name":"p2","parent":"p1"}],"name":"spring"}]}'
 
-        result.task(":printSettings").outcome == TaskOutcome.SUCCESS
+        assertPrintSettings(result)
 
       where:
       gradleVersion << gradleVersionList
@@ -479,18 +463,15 @@ task printSettings {
             }
           }
           
-          task printSettings {
-            doLast {
-              println project.projectDir
-              println project.idea.module.settings
-            }
-          }
+      println(projectDir)
+      println(project.idea.module.settings)
+      task printSettings { }
         """
     when:
     def result = GradleRunner.create()
             .withGradleVersion(gradleVersion)
             .withProjectDir(testProjectDir)
-            .withArguments("printSettings", "-q")
+            .withArguments("printSettings", "-q", "-Dorg.gradle.unsafe.isolated-projects=true")
             .withPluginClasspath()
             .build()
     then:
@@ -501,7 +482,7 @@ task printSettings {
             '"' + moduleContentRoot + '/test/java":"com.example.test.java"' +
             '}}'
 
-    result.task(":printSettings").outcome == TaskOutcome.SUCCESS
+    assertPrintSettings(result)
 
     where:
     gradleVersion << gradleVersionList
@@ -532,19 +513,11 @@ task printSettings {
         }
       }
       
-      task printSettings {
-        doLast {
-          println project.idea.module.settings
-        }
-      }
+println(project.idea.module.settings)
+task printSettings { }
     """
     when:
-    def result = GradleRunner.create()
-            .withGradleVersion(gradleVersion)
-            .withProjectDir(testProjectDir)
-            .withArguments("printSettings", "-q")
-            .withPluginClasspath()
-            .build()
+    def result = runPrintSettings(gradleVersion)
     then:
     def lines = result.output.readLines()
     def moduleContentRoot = testProjectDir.canonicalPath.replace(File.separator, '/')
@@ -553,13 +526,13 @@ task printSettings {
             '"' + moduleContentRoot + '/../subproject/src":"com.example.java.sub"' +
             '}}'
 
-    result.task(":printSettings").outcome == TaskOutcome.SUCCESS
+    assertPrintSettings(result)
 
     where:
     gradleVersion << gradleVersionList
   }
 
-  def "test module settings with custom source root"() {
+    def "test module settings with custom source root"() {
     given:
     buildFile << """
       import org.jetbrains.gradle.ext.*
@@ -582,31 +555,23 @@ task printSettings {
         }
       }
       
-      task printSettings {
-        doLast {
-          println project.idea.module.settings
-        }
-      }
+      println(project.idea.module.settings)
+      task printSettings { }
     """
     when:
-    def result = GradleRunner.create()
-            .withGradleVersion(gradleVersion)
-            .withProjectDir(testProjectDir)
-            .withArguments("printSettings", "-q")
-            .withPluginClasspath()
-            .build()
+    def result = runPrintSettings(gradleVersion)
     then:
     def lines = result.output.readLines()
     def moduleContentRoot = testProjectDir.canonicalPath.replace(File.separator, '/')
     lines[0] == '{"packagePrefix":{"' + moduleContentRoot + '/src":"com.example.java"}}'
 
-    result.task(":printSettings").outcome == TaskOutcome.SUCCESS
+    assertPrintSettings(result)
 
     where:
     gradleVersion << gradleVersionList
   }
 
-  def "test complex project encoding settings"() {
+    def "test complex project encoding settings"() {
     given:
     buildFile << """
       import org.jetbrains.gradle.ext.*
@@ -635,19 +600,11 @@ task printSettings {
         }
       }
       
-      task printSettings {
-        doLast {
-          println project.idea.project.settings
-        }
-      }
+    println(project.idea.project.settings)
+    task printSettings { }
     """
     when:
-    def result = GradleRunner.create()
-            .withGradleVersion(gradleVersion)
-            .withProjectDir(testProjectDir)
-            .withArguments("printSettings", "-q")
-            .withPluginClasspath()
-            .build()
+    def result = runPrintSettings(gradleVersion)
     then:
     def lines = result.output.readLines()
     def moduleContentRoot = testProjectDir.canonicalPath.replace(File.separator, '/')
@@ -667,7 +624,7 @@ task printSettings {
             '}' +
             '}'
 
-    result.task(":printSettings").outcome == TaskOutcome.SUCCESS
+    assertPrintSettings(result)
 
     where:
     gradleVersion << gradleVersionList
@@ -693,19 +650,11 @@ task printSettings {
         }
       }
       
-      task printSettings {
-        doLast {
-          println project.idea.project.settings
-        }
-      }
+    println(project.idea.project.settings)
+    task printSettings { }
     """
     when:
-    def result = GradleRunner.create()
-            .withGradleVersion(gradleVersion)
-            .withProjectDir(testProjectDir)
-            .withArguments("printSettings", "-q")
-            .withPluginClasspath()
-            .build()
+    def result = runPrintSettings(gradleVersion)
     then:
     def lines = result.output.readLines()
     lines[0] == '{"encodings":{' +
@@ -716,7 +665,7 @@ task printSettings {
             '}' +
             '}'
 
-    result.task(":printSettings").outcome == TaskOutcome.SUCCESS
+    assertPrintSettings(result)
 
     where:
     gradleVersion << gradleVersionList
@@ -790,21 +739,13 @@ idea {
   }
 }
 
-task printSettings {
-  doLast {
-    println(project.idea.project.settings)
-    println(project.idea.module.settings)
-  }
-}
+println(project.idea.project.settings)
+println(project.idea.module.settings)
+task printSettings { }
 """
 
     when:
-    def result = GradleRunner.create()
-            .withGradleVersion(gradleVersion)
-            .withProjectDir(testProjectDir)
-            .withArguments("printSettings", "-q")
-            .withPluginClasspath()
-            .build()
+    def result = runPrintSettings(gradleVersion)
     then:
 
     def lines = result.output.readLines()
@@ -861,21 +802,13 @@ idea {
   module.settings.myTest.name = "test_module_value"
 }
 
-task printSettings {
-  doLast {
-    println(project.idea.project.settings)
-    println(project.idea.module.settings)
-  }
-}
+println(project.idea.project.settings)
+println(project.idea.module.settings)
+task printSettings { }
 """
 
     when:
-    def result = GradleRunner.create()
-            .withGradleVersion(gradleVersion)
-            .withProjectDir(testProjectDir)
-            .withArguments("printSettings", "-q")
-            .withPluginClasspath()
-            .build()
+    def result = runPrintSettings(gradleVersion)
     then:
 
     def lines = result.output.readLines()
@@ -949,21 +882,13 @@ idea {
   }
 }
 
-task printSettings {
-  doLast {
-    println(project.idea.project.settings)
-    println(project.idea.module.settings)
-  }
-}
+println(project.idea.project.settings)
+println(project.idea.module.settings)
+task printSettings { }
 """
 
     when:
-    def result = GradleRunner.create()
-            .withGradleVersion(gradleVersion)
-            .withProjectDir(testProjectDir)
-            .withArguments("printSettings", "-q")
-            .withPluginClasspath()
-            .build()
+    def result = runPrintSettings(gradleVersion)
     then:
 
     def lines = result.output.readLines()
@@ -1003,22 +928,14 @@ import org.jetbrains.gradle.ext.*
       }
       
       
-      task printSettings {
-        doLast {
-          println("LazyFlag before=[\${project.lazyFlagForTaskTrigger}]")
-          println(project.idea.project.settings)
-          println("LazyFlag after=[\${project.lazyFlagForTaskTrigger}]")
-          println(projectDir.absolutePath.replace('\\\\', '/'))
-        }
-      }
+      println("LazyFlag before=[\${project.lazyFlagForTaskTrigger}]")
+      println(project.idea.project.settings)
+      println("LazyFlag after=[\${project.lazyFlagForTaskTrigger}]")
+      println(projectDir.absolutePath.replace('\\\\', '/'))
+      task printSettings {}
     """
     when:
-    def result = GradleRunner.create()
-            .withGradleVersion(gradleVersion)
-            .withProjectDir(testProjectDir)
-            .withArguments("printSettings", "-q")
-            .withPluginClasspath()
-            .build()
+    def result = runPrintSettings(gradleVersion)
     then:
 
     def lines = result.output.readLines()
@@ -1042,7 +959,7 @@ import org.jetbrains.gradle.ext.*
     }
 }"""
 
-    result.task(":printSettings").outcome == TaskOutcome.SUCCESS
+    assertPrintSettings(result)
 
     where:
     gradleVersion << gradleVersionList.findAll { (GradleVersion.version(it) >= GradleVersion.version("5.0")) }
@@ -1383,5 +1300,20 @@ import org.w3c.dom.Node
 
     private static String prettyPrintJSON(String line) {
         return SerializationUtil.prettyPrintJsonStr(line)
+    }
+
+    private BuildResult runPrintSettings(String gradleVersion) {
+        return GradleRunner.create()
+                .withGradleVersion(gradleVersion)
+                .withProjectDir(testProjectDir)
+                .withArguments("printSettings", "-q", "-Dorg.gradle.unsafe.isolated-projects=true")
+                .withPluginClasspath()
+                .build()
+    }
+
+    private static boolean assertPrintSettings(BuildResult result) {
+        def success = result.task(":printSettings").outcome == TaskOutcome.SUCCESS
+        def upToDate = result.task(":printSettings").outcome == TaskOutcome.UP_TO_DATE
+        return success || upToDate
     }
 }
