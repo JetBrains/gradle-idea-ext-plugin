@@ -73,12 +73,7 @@ rootProject.name = "ProjectName"
       task printSettings { }
     """
     when:
-    def result = GradleRunner.create()
-                             .withGradleVersion(gradleVersion)
-                             .withProjectDir(testProjectDir)
-                             .withArguments("printSettings", "-q", "--stacktrace", "-Dorg.gradle.unsafe.isolated-projects=true")
-                             .withPluginClasspath()
-                             .build()
+    def result = runPrintSettings(gradleVersion)
     then:
 
     def lines = result.output.readLines()
@@ -132,7 +127,7 @@ rootProject.name = "ProjectName"
 """
     )
 
-    assertPrintSettings(result)
+    assertPrintSettingsSuccessOrUpToDate(result)
     where:
     gradleVersion << gradleVersionList
   }
@@ -162,12 +157,7 @@ task printSettings { }
 """
 
     when:
-    def result = GradleRunner.create()
-            .withGradleVersion(gradleVersion)
-            .withProjectDir(testProjectDir)
-            .withArguments("printSettings", "-q", "-Dorg.gradle.unsafe.isolated-projects=true")
-            .withPluginClasspath()
-            .build()
+    def result = runPrintSettings(gradleVersion)
     then:
 
     def lines = result.output.readLines()
@@ -205,12 +195,7 @@ task printSettings { }
 """
 
     when:
-    def result = GradleRunner.create()
-            .withGradleVersion(gradleVersion)
-            .withProjectDir(testProjectDir)
-            .withArguments("printSettings", "-q", "--stacktrace", "-Dorg.gradle.unsafe.isolated-projects=true")
-            .withPluginClasspath()
-            .build()
+    def result = runPrintSettings(gradleVersion)
     then:
 
     def lines = result.output.readLines()
@@ -320,12 +305,7 @@ task printSettings { }
 """
 
     when:
-    def result = GradleRunner.create()
-            .withGradleVersion(gradleVersion)
-            .withProjectDir(testProjectDir)
-            .withArguments("printSettings", "-q", "--stacktrace", "-Dorg.gradle.unsafe.isolated-projects=true")
-            .withPluginClasspath()
-            .build()
+    def result = runPrintSettings(gradleVersion)
     then:
 
     def lines = result.output.readLines()
@@ -426,12 +406,7 @@ task printSettings { }
       task printSettings { }
         """
         when:
-        def result = GradleRunner.create()
-                .withGradleVersion(gradleVersion)
-                .withProjectDir(testProjectDir)
-                .withArguments("printSettings", "-q","-Dorg.gradle.unsafe.isolated-projects=true")
-                .withPluginClasspath()
-                .build()
+        def result = runPrintSettings(gradleVersion)
         then:
         def lines = result.output.readLines()
         lines[1] == '{"moduleType":{"":"SOME_TYPE","main":"JAVA_MODULE","test":"PYTHON_MODULE"},' +
@@ -439,7 +414,7 @@ task printSettings { }
                 '[{"file":"spring_parent.xml","name":"p1","parent":null},' +
                 '{"file":"spring_new_child.xml","name":"p2","parent":"p1"}],"name":"spring"}]}'
 
-        assertPrintSettings(result)
+        assertPrintSettingsSuccessOrUpToDate(result)
 
       where:
       gradleVersion << gradleVersionList
@@ -468,12 +443,7 @@ task printSettings { }
       task printSettings { }
         """
     when:
-    def result = GradleRunner.create()
-            .withGradleVersion(gradleVersion)
-            .withProjectDir(testProjectDir)
-            .withArguments("printSettings", "-q", "-Dorg.gradle.unsafe.isolated-projects=true")
-            .withPluginClasspath()
-            .build()
+    def result = runPrintSettings(gradleVersion)
     then:
     def lines = result.output.readLines()
     def moduleContentRoot = testProjectDir.canonicalPath.replace(File.separator, '/')
@@ -482,7 +452,7 @@ task printSettings { }
             '"' + moduleContentRoot + '/test/java":"com.example.test.java"' +
             '}}'
 
-    assertPrintSettings(result)
+    assertPrintSettingsSuccessOrUpToDate(result)
 
     where:
     gradleVersion << gradleVersionList
@@ -526,7 +496,7 @@ task printSettings { }
             '"' + moduleContentRoot + '/../subproject/src":"com.example.java.sub"' +
             '}}'
 
-    assertPrintSettings(result)
+    assertPrintSettingsSuccessOrUpToDate(result)
 
     where:
     gradleVersion << gradleVersionList
@@ -565,7 +535,7 @@ task printSettings { }
     def moduleContentRoot = testProjectDir.canonicalPath.replace(File.separator, '/')
     lines[0] == '{"packagePrefix":{"' + moduleContentRoot + '/src":"com.example.java"}}'
 
-    assertPrintSettings(result)
+    assertPrintSettingsSuccessOrUpToDate(result)
 
     where:
     gradleVersion << gradleVersionList
@@ -624,7 +594,7 @@ task printSettings { }
             '}' +
             '}'
 
-    assertPrintSettings(result)
+    assertPrintSettingsSuccessOrUpToDate(result)
 
     where:
     gradleVersion << gradleVersionList
@@ -665,7 +635,7 @@ task printSettings { }
             '}' +
             '}'
 
-    assertPrintSettings(result)
+    assertPrintSettingsSuccessOrUpToDate(result)
 
     where:
     gradleVersion << gradleVersionList
@@ -959,7 +929,7 @@ import org.jetbrains.gradle.ext.*
     }
 }"""
 
-    assertPrintSettings(result)
+    assertPrintSettingsSuccessOrUpToDate(result)
 
     where:
     gradleVersion << gradleVersionList.findAll { (GradleVersion.version(it) >= GradleVersion.version("5.0")) }
@@ -1311,7 +1281,7 @@ import org.w3c.dom.Node
                 .build()
     }
 
-    private static boolean assertPrintSettings(BuildResult result) {
+    private static boolean assertPrintSettingsSuccessOrUpToDate(BuildResult result) {
         def success = result.task(":printSettings").outcome == TaskOutcome.SUCCESS
         def upToDate = result.task(":printSettings").outcome == TaskOutcome.UP_TO_DATE
         return success || upToDate
