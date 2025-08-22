@@ -39,7 +39,8 @@ class IdeaFilesProcessor {
     /**
      * True if any instance of IdeaFilesProcessor has registered any callbacks.
      * A temporary workaround to make IDEA-Ext compatible with Project Isolation.
-     * TODO remove this field after IDEA 2025.3 natively supports project isolation in IDEA-Ext 2.0
+     * TODO remove this field when IDEA natively supports project isolation (IDEA 2025.3, IDEA-Ext 2.0)
+     * TODO update the LayoutFileBuildService and FilesProcessorBuildListener who reset this state
      */
     public static boolean ourHasCallbacks = false
 
@@ -243,6 +244,7 @@ class FilesProcessorBuildListener implements  BuildListener {
         if (file.exists()) {
             file.delete()
         }
+        IdeaFilesProcessor.ourHasCallbacks = false
     }
 }
 

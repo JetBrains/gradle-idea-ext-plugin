@@ -21,5 +21,6 @@ abstract class LayoutFileBuildService implements BuildService<Params>, AutoClose
         if (file != null && file.exists()) {
             file.delete()
         }
+        IdeaFilesProcessor.ourHasCallbacks = false
     }
 }
