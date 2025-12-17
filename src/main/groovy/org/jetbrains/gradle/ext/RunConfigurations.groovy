@@ -92,6 +92,7 @@ abstract class JavaRunConfiguration extends ModuleRunConfiguration {
     String jvmArgs
     String programParameters
     Map<String, String> envs
+    String alternativeJrePath
 
     final PolymorphicDomainObjectContainer<BeforeRunTask> beforeRun
 
@@ -119,11 +120,12 @@ abstract class JavaRunConfiguration extends ModuleRunConfiguration {
             maps.add(aTask.toMap())
         }
         return super.toMap() << [
-                "envs"             : envs,
-                "workingDirectory" : workingDirectory,
-                "beforeRun"        : maps,
-                "jvmArgs"          : jvmArgs,
-                "programParameters": programParameters
+                "envs"              : envs,
+                "workingDirectory"  : workingDirectory,
+                "beforeRun"         : maps,
+                "jvmArgs"           : jvmArgs,
+                "programParameters" : programParameters,
+                "alternativeJrePath": alternativeJrePath,
         ]
     }
 }
