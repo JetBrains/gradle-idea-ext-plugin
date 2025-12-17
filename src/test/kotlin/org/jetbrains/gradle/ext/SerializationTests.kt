@@ -67,6 +67,7 @@ class SerializationTests {
     |    ],
     |    "jvmArgs": null,
     |    "programParameters": null,
+    |    "alternativeJrePath": null,
     |    "mainClass": null,
     |    "shortenCommandLine": "MANIFEST",
     |    "includeProvidedDependencies": false
@@ -84,6 +85,7 @@ class SerializationTests {
         artifactName = "myName"
       }
       jarPath = "myJarPath"
+      alternativeJrePath = "myAltJrePath"
     }
 
     assertEquals("""
@@ -106,6 +108,7 @@ class SerializationTests {
     |    ],
     |    "jvmArgs": null,
     |    "programParameters": null,
+    |    "alternativeJrePath": "myAltJrePath",
     |    "jarPath": "myJarPath"
     |}
     """.trimMargin(),
