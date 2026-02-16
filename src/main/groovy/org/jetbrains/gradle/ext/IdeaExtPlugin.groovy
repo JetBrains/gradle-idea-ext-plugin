@@ -129,7 +129,7 @@ abstract class AbstractExtensibleSettings {
 
     if (TypeOf.typeOf(Iterable).isAssignableFrom(typeOfExt)) {
       def converted = (extension as Iterable)
-              .findAll { it instanceof MapConvertible }
+              .matching { it instanceof MapConvertible }
               .collect { (it as MapConvertible).toMap().findAll { it.value != null }}
               .findAll { !it.isEmpty() }
 
