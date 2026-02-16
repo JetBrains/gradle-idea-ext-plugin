@@ -16,7 +16,7 @@ class IdeaModelExtensionFunctionalTest extends Specification {
   File settingsFile
 
   static List<String> gradleVersionList = Runtime.version().feature() > 16
-    ? [ "7.6.4", "8.14", "9.0.0-rc-2" ]
+    ? [ "7.6.4", "8.14", "9.0.0", "9.4.0-rc-1" ]
     : [ "5.0", "5.6.4", "6.0", "6.8.3", "7.0" ]
 
   def setup() {
