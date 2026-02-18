@@ -16,7 +16,7 @@ as simple as
 Apply from Gradle plugin repository
 
     plugins {
-      id "org.jetbrains.gradle.plugin.idea-ext" version "1.4"
+      id "org.jetbrains.gradle.plugin.idea-ext" version "1.4.1"
     }
 
 Or build and drop resulting jar into root directory of a project and add following snippet to `build.gradle`
